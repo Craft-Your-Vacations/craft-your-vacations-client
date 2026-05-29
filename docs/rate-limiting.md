@@ -4,7 +4,7 @@ Rate limiting lives on the **Next.js API route layer**, not on .NET. All request
 
 ## `lib/rateLimit.ts` exports
 
-- `getClientIp(req)` — extracts real client IP: `x-forwarded-for` → `x-real-ip` → `req.ip` → `"unknown"`
+- `getClientIp(req)` — extracts real client IP: `x-forwarded-for` → `x-real-ip` → `"unknown"`
 - `isRateLimited(key, limit = 10, windowMs = 60_000)` — in-memory fixed-window counter; returns `true` if over limit
 - `rateLimitResponse()` — `429 JSON { message: "Too many requests..." }` with `Retry-After: 60` header
 
