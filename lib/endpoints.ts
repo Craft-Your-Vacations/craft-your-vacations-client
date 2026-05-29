@@ -22,6 +22,8 @@ import type {
   CreateDestinationRequest,
   CreatePackageRequest,
   UpdatePackageRequest,
+  UserDocument,
+  DocumentType,
 } from "@/app/types/api";
 
 export const destinationsApi = {
@@ -58,6 +60,13 @@ export const usersApi = {
 export const bookingsApi = {
   create: (body: CreateBookingRequest) => api.post<Booking>("bookings", body),
   getMyBookings: () => api.get<Booking[]>("bookings"),
+  getById: (id: number) => api.get<Booking>(`bookings/${id}`),
+};
+
+export const documentsApi = {
+  getMyDocuments: () => api.get<UserDocument[]>("users/documents"),
+  uploadDocument: (type: DocumentType, formData: FormData) =>
+    api.putForm<UserDocument>(`users/documents/${type}`, formData),
 };
 
 export const reviewsApi = {
@@ -73,6 +82,7 @@ export const adminApi = {
   // Bookings
   getBookings: (status?: string) =>
     api.get<AdminBooking[]>(`admin/bookings${status ? `?status=${status}` : ""}`),
+  getBooking: (id: number) => api.get<AdminBooking>(`admin/bookings/${id}`),
   updateBooking: (id: number, body: AdminUpdateBookingRequest) =>
     api.patch<AdminBooking>(`admin/bookings/${id}`, body),
   // Reviews

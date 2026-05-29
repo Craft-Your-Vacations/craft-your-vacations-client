@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { CalendarDays, Users, FileText, Clock, CheckCircle2 } from "lucide-react";
 import type { Booking } from "@/app/types/api";
 import Button from "@/components/Button/Button";
@@ -15,10 +16,10 @@ export default function BookingCard({ booking, onReviewClick }: BookingCardProps
   const statusLabel = bookingStatusLabels[booking.status];
 
   return (
-    <div className="glass rounded-2xl p-6 flex flex-col gap-4">
+    <Link href={`/bookings/${booking.id}`} className="block glass rounded-2xl p-6 flex flex-col gap-4 hover:border-primary/30 border border-transparent transition-colors">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
-        <h2 className="text-headline-sm text-text">{booking.packageTitle}</h2>
+        <h2 className="text-headline-sm text-text">{booking.package.title}</h2>
         <span
           className={`shrink-0 px-3 py-1 rounded-full text-label-sm font-medium ${statusClass}`}
         >
@@ -90,6 +91,6 @@ export default function BookingCard({ booking, onReviewClick }: BookingCardProps
           )}
         </div>
       )}
-    </div>
+    </Link>
   );
 }

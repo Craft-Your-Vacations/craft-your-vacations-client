@@ -76,8 +76,8 @@ export default function AdminBookingsPage() {
                 className="border-b border-outline last:border-0 hover:bg-surface-high/50 transition-colors"
               >
                 <td className="px-6 py-4">
-                  <p className="text-body-sm text-text font-medium">{booking.packageTitle}</p>
-                  <p className="text-label-sm text-text-muted">{booking.destinationSlug}</p>
+                  <p className="text-body-sm text-text font-medium">{booking.package.title}</p>
+                  <p className="text-label-sm text-text-muted">{booking.package.destinationSlug}</p>
                 </td>
                 <td className="px-6 py-4 hidden md:table-cell">
                   <p className="text-body-sm text-text">{booking.customer.name}</p>

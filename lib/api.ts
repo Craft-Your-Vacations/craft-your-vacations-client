@@ -35,4 +35,10 @@ export const api = {
 
   delete: <T>(url: string, config?: AxiosRequestConfig) =>
     client.delete<T>(url, config).then((r) => r.data),
+
+  putForm: <T>(url: string, formData: FormData, config?: AxiosRequestConfig) =>
+    client.putForm<T>(url, formData, config).then((r) => r.data),
+
+  postForm: <T>(url: string, formData: FormData, config?: AxiosRequestConfig) =>
+    client.postForm<T>(url, formData, config).then((r) => r.data),
 };

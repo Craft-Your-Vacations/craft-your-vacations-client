@@ -1,4 +1,4 @@
-import type { BookingStatus, ActivityType } from "@/app/types/api";
+import type { BookingStatus, ActivityType, DocumentType } from "@/app/types/api";
 
 export const BOOKING_STATUSES: BookingStatus[] = [
   "pending",
@@ -31,6 +31,11 @@ export function formatMonth(value: string, short = false): string {
   const names = short ? MONTH_NAMES_SHORT : MONTH_NAMES_FULL;
   return `${names[parseInt(month, 10) - 1]} ${year}`;
 }
+
+export const DOCUMENT_OPTIONS: { value: DocumentType; label: string }[] = [
+  { value: "passport", label: "Passport" },
+  { value: "pan", label: "PAN Card" },
+];
 
 /** Tailwind classes for each booking status — used in badges/pills */
 export const bookingStatusClasses: Record<BookingStatus, string> = {

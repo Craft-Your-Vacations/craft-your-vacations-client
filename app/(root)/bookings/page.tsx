@@ -21,7 +21,7 @@ export default function BookingsPage() {
   const [reviewSuccessOpen, setReviewSuccessOpen] = useState(false);
 
   const { mutate, isPending, error: reviewError } = useSubmitReview(
-    reviewingBooking?.destinationSlug ?? ""
+    reviewingBooking?.package.destinationSlug ?? ""
   );
 
   function handleOpenReview(booking: Booking) {
@@ -109,7 +109,7 @@ export default function BookingsPage() {
       <ReviewModal
         isOpen={reviewingBooking !== null}
         onClose={handleCloseReview}
-        packageTitle={reviewingBooking?.packageTitle ?? ""}
+        packageTitle={reviewingBooking?.package.title ?? ""}
         isPending={isPending}
         error={reviewError instanceof Error ? reviewError : null}
         onSubmit={handleReviewSubmit}

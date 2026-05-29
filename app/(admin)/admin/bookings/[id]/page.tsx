@@ -1,9 +1,10 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import Link from "next/link";
-import { useAdminBookings } from "@/hooks/useAdminBookings";
+import { useAdminBookingDetail } from "@/hooks/useAdminBookingDetail";
 import { useAdminUpdateBooking } from "@/hooks/useAdminUpdateBooking";
+import { usePackageDetail } from "@/hooks/usePackageDetail";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
 import Button from "@/components/Button/Button";
@@ -12,9 +13,11 @@ import FormField from "@/components/FormField/FormField";
 import TextAreaField from "@/components/TextAreaField/TextAreaField";
 import SelectField from "@/components/SelectField/SelectField";
 import { CalendarDays, Users, FileText, Phone, Mail, Globe } from "lucide-react";
-import type { BookingStatus } from "@/app/types/api";
+import type { BookingStatus, ItineraryDay, DocumentType } from "@/app/types/api";
 import AdminBackLink from "@/app/(admin)/components/AdminBackLink";
 import BookingStatusBadge, { formatMonth } from "@/app/(admin)/components/BookingStatusBadge";
+import ItineraryEditor from "@/app/(admin)/components/ItineraryEditor/ItineraryEditor";
+import RequiredDocumentsSelector from "@/app/(admin)/components/RequiredDocumentsSelector/RequiredDocumentsSelector";
 import { BOOKING_STATUSES } from "@/lib/constants";
 
 export default function AdminBookingDetailPage({
@@ -23,17 +26,37 @@ export default function AdminBookingDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { data: bookings, isLoading, isError, error, refetch } = useAdminBookings();
-  const booking = bookings?.find((b) => b.id === Number(id));
+  const { data: booking, isLoading, isError, error, refetch } = useAdminBookingDetail(Number(id));
   const updateBooking = useAdminUpdateBooking(Number(id));
+  const { data: packageDetail } = usePackageDetail(
+    booking?.package.destinationSlug ?? "",
+    booking?.package.key ?? ""
+  );
 
   const [editStatus, setEditStatus] = useState<BookingStatus | "">("");
   const [editNotes, setEditNotes] = useState("");
   const [editTravelers, setEditTravelers] = useState("");
   const [editMonth, setEditMonth] = useState("");
+  const [requiredDocs, setRequiredDocs] = useState<DocumentType[]>([]);
+  const [itinerary, setItinerary] = useState<ItineraryDay[]>([]);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [pendingBody, setPendingBody] = useState<Record<string, unknown> | null>(null);
+
+  // Pre-populate required docs once when booking loads
+  useEffect(() => {
+    if (!booking) return;
+    setRequiredDocs(booking.requiredDocuments ?? []);
+    // If a confirmed itinerary already exists, seed from it immediately
+    if (booking.confirmedItinerary?.length) {
+      setItinerary(booking.confirmedItinerary);
+    }
+  }, [booking]);
+
+  // Seed itinerary from original package only when there is no confirmed itinerary yet
+  useEffect(() => {
+    if (!packageDetail?.itinerary?.length) return;
+    setItinerary((prev) => (prev.length === 0 ? packageDetail.itinerary : prev));
+  }, [packageDetail]);
 
   if (isLoading) return <LoadingSpinner message="Loading booking…" fullScreen={false} />;
   if (isError)
@@ -47,20 +70,29 @@ export default function AdminBookingDetailPage({
       </div>
     );
 
+  const showConfirmFields =
+    editStatus === "confirmed" || booking.status === "confirmed" || booking.status === "completed";
+
+  // --- Save ---
   function handleSave() {
-    const body: Record<string, unknown> = {};
-    if (editStatus) body.status = editStatus;
-    if (editNotes) body.notes = editNotes;
-    if (editTravelers) body.travelersCount = Number(editTravelers);
-    if (editMonth) body.preferredMonth = editMonth;
-    if (Object.keys(body).length === 0) return;
-    setPendingBody(body);
+    const hasBasicChange =
+      editStatus !== "" || editNotes !== "" || editTravelers !== "" || editMonth !== "";
+    if (!hasBasicChange && !showConfirmFields) return;
     setConfirmOpen(true);
   }
 
   function handleConfirmSave() {
-    if (!pendingBody) return;
-    updateBooking.mutate(pendingBody as Parameters<typeof updateBooking.mutate>[0], {
+    const body: Parameters<typeof updateBooking.mutate>[0] = {};
+    if (editStatus) body.status = editStatus;
+    if (editNotes) body.notes = editNotes;
+    if (editTravelers) body.travelersCount = Number(editTravelers);
+    if (editMonth) body.preferredMonth = editMonth;
+    if (showConfirmFields) {
+      body.requiredDocuments = requiredDocs;
+      body.confirmedItinerary = itinerary;
+    }
+
+    updateBooking.mutate(body, {
       onSuccess: () => {
         setSaveSuccess(true);
         setEditStatus("");
@@ -68,19 +100,25 @@ export default function AdminBookingDetailPage({
         setEditTravelers("");
         setEditMonth("");
         setConfirmOpen(false);
-        setPendingBody(null);
         setTimeout(() => setSaveSuccess(false), 3000);
       },
     });
   }
+
+  const canSave =
+    editStatus !== "" ||
+    editNotes !== "" ||
+    editTravelers !== "" ||
+    editMonth !== "" ||
+    showConfirmFields;
 
   return (
     <div className="p-8 max-w-4xl">
       <AdminBackLink href="/admin/bookings" label="Back to bookings" />
 
       <div className="mb-6">
-        <h1 className="text-display-sm text-text">{booking.packageTitle}</h1>
-        <p className="text-body-md text-text-muted mt-1">{booking.destinationSlug}</p>
+        <h1 className="text-display-sm text-text">{booking.package.title}</h1>
+        <p className="text-body-md text-text-muted mt-1">{booking.package.destinationSlug}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -92,14 +130,21 @@ export default function AdminBookingDetailPage({
             <div className="flex items-center gap-3">
               <BookingStatusBadge status={booking.status} />
               <span className="text-label-sm text-text-muted">
-                #{booking.id} · {new Date(booking.createdAt).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })}
+                #{booking.id} ·{" "}
+                {new Date(booking.createdAt).toLocaleDateString("en-US", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
               <CalendarDays className="w-4 h-4 text-primary/60 shrink-0" />
               <div>
-                <p className="text-label-sm text-text-muted uppercase tracking-widest">Travel Month</p>
+                <p className="text-label-sm text-text-muted uppercase tracking-widest">
+                  Travel Month
+                </p>
                 <p className="text-body-sm text-text">{formatMonth(booking.preferredMonth)}</p>
               </div>
             </div>
@@ -162,11 +207,11 @@ export default function AdminBookingDetailPage({
           </div>
         </div>
 
-        {/* Edit booking */}
+        {/* Update booking */}
         <div className="glass rounded-2xl p-6 flex flex-col gap-5 md:col-span-2">
           <h2 className="text-headline-sm text-text">Update Booking</h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <SelectField
               id="booking-status"
               label="Change Status"
@@ -202,15 +247,28 @@ export default function AdminBookingDetailPage({
               value={editNotes}
               onChange={(e) => setEditNotes(e.target.value)}
               rows={3}
-              className="sm:col-span-2"
+              className="md:col-span-2"
             />
           </div>
 
-          <div className="flex items-center gap-4">
+          {/* Confirmation fields — shown when setting/editing confirmed status */}
+          {showConfirmFields && (
+            <>
+              <div className="h-px bg-outline" />
+
+              <RequiredDocumentsSelector value={requiredDocs} onChange={setRequiredDocs} />
+
+              <div className="h-px bg-outline" />
+
+              <ItineraryEditor itinerary={itinerary} onChange={setItinerary} />
+            </>
+          )}
+
+          <div className="flex items-center gap-4 pt-2">
             <Button
               variant="primary"
               onClick={handleSave}
-              disabled={!(editStatus !== "" || editNotes !== "" || editTravelers !== "" || editMonth !== "") || updateBooking.isPending}
+              disabled={!canSave || updateBooking.isPending}
             >
               Save Changes
             </Button>
@@ -234,7 +292,7 @@ export default function AdminBookingDetailPage({
             variant="warning"
             isPending={updateBooking.isPending}
             onConfirm={handleConfirmSave}
-            onCancel={() => { setConfirmOpen(false); setPendingBody(null); }}
+            onCancel={() => setConfirmOpen(false)}
           />
         </div>
       </div>

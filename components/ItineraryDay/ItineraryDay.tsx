@@ -106,7 +106,7 @@ export function ItineraryDay({
       {/* Expandable body */}
       <div
         className={`transition-all duration-300 ease-in-out overflow-hidden ${
-          isOpen ? "max-h-[3000px] opacity-100" : "max-h-0 opacity-0"
+          isOpen ? "max-h-750 opacity-100" : "max-h-0 opacity-0"
         }`}
       >
         <div className="px-5 pb-5">
@@ -128,7 +128,7 @@ export function ItineraryDay({
                   className="flex gap-0 rounded-xl border border-outline border-l-2 border-l-primary/60 bg-surface-high overflow-hidden"
                 >
                   {/* Time column */}
-                  <div className="flex items-center justify-center px-4 py-3 min-w-[4.5rem] border-r border-outline shrink-0">
+                  <div className="flex items-center justify-center px-4 py-3 min-w-18 border-r border-outline shrink-0">
                     <span className="text-label-sm font-semibold text-text-muted tabular-nums">
                       {activity.time}
                     </span>

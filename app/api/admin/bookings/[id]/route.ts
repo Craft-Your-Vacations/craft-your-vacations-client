@@ -3,9 +3,34 @@ import { getToken } from "next-auth/jwt";
 import { bffFetch } from "@/lib/bff";
 import type { AdminBooking, AdminUpdateBookingRequest } from "@/app/types/api";
 
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET! });
+  if (token?.role !== "Admin") {
+    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+  }
+
+  const { id } = await params;
+
+  const result = await bffFetch<AdminBooking>(
+    `/api/Bookings/${id}/admin`,
+    req,
+    {
+      isPublic: false,
+      method: "GET",
+      cache: "no-store",
+    },
+  );
+
+  if (!result.ok) return result.response;
+  return NextResponse.json(result.data);
+}
+
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET! });
   if (token?.role !== "Admin") {
@@ -15,12 +40,16 @@ export async function PATCH(
   const { id } = await params;
   const body: AdminUpdateBookingRequest = await req.json();
 
-  const result = await bffFetch<AdminBooking>(`/api/Bookings/${id}/admin`, req, {
-    isPublic: false,
-    method: "PATCH",
-    cache: "no-store",
-    body,
-  });
+  const result = await bffFetch<AdminBooking>(
+    `/api/Bookings/${id}/admin`,
+    req,
+    {
+      isPublic: false,
+      method: "PATCH",
+      cache: "no-store",
+      body,
+    },
+  );
 
   if (!result.ok) return result.response;
   return NextResponse.json(result.data);

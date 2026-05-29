@@ -22,8 +22,6 @@ export async function POST(req: NextRequest) {
     cache: "no-store",
     body: {
       PackageId: body.packageId,
-      PackageTitle: body.packageTitle,
-      DestinationSlug: body.destinationSlug,
       TravelersCount: body.travelersCount,
       PreferredMonth: body.preferredMonth,
       Notes: body.notes,

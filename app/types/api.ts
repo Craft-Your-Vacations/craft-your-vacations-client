@@ -120,10 +120,27 @@ export interface VerifyOtpRequest {
 
 export type BookingStatus = "pending" | "confirmed" | "completed" | "cancelled";
 
+export type DocumentType = "pan" | "passport";
+
+export interface UserDocument {
+  type: DocumentType;
+  fileUrl: string;
+  uploadedAt: string;
+  updatedAt?: string;
+}
+
+export interface BookingPackage {
+  id: number;
+  key: string;
+  title: string;
+  days: number;
+  price: number;
+  excerpt: string;
+  destinationSlug: string;
+}
+
 export interface CreateBookingRequest {
   packageId: number;
-  packageTitle: string;
-  destinationSlug: string;
   travelersCount: number;
   preferredMonth: string; // "YYYY-MM"
   notes?: string;
@@ -132,14 +149,15 @@ export interface CreateBookingRequest {
 export interface Booking {
   id: number;
   packageId: number;
-  packageTitle: string;
-  destinationSlug: string;
+  package: BookingPackage;
   travelersCount: number;
   preferredMonth: string;
   notes?: string;
   status: BookingStatus;
   createdAt: string;
   hasReview?: boolean;
+  confirmedItinerary?: ItineraryDay[];
+  requiredDocuments?: DocumentType[];
 }
 
 export interface Review {
@@ -201,6 +219,8 @@ export interface AdminUpdateBookingRequest {
   travelersCount?: number;
   preferredMonth?: string;
   notes?: string;
+  confirmedItinerary?: ItineraryDay[];
+  requiredDocuments?: DocumentType[];
 }
 
 export interface CreateDestinationRequest {

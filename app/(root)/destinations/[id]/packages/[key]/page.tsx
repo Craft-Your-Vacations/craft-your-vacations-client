@@ -40,8 +40,6 @@ export default function PackageDetailPage({
     createBooking(
       {
         packageId: pkg.id,
-        packageTitle: pkg.title,
-        destinationSlug: id,
         ...data,
       },
       { onSuccess: () => { setBookingOpen(false); setBookingSuccessOpen(true); } }
