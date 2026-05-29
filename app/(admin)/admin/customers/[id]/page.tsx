@@ -6,9 +6,19 @@ import { useAdminCustomer } from "@/hooks/useAdminCustomer";
 import { useAdminBookings } from "@/hooks/useAdminBookings";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
-import { CalendarDays, Mail, Phone, Globe, Briefcase, Users, ChevronRight } from "lucide-react";
+import {
+  CalendarDays,
+  Mail,
+  Phone,
+  Globe,
+  Briefcase,
+  Users,
+  ChevronRight,
+} from "lucide-react";
 import AdminBackLink from "@/app/(admin)/components/AdminBackLink";
-import BookingStatusBadge, { formatMonth } from "@/app/(admin)/components/BookingStatusBadge";
+import BookingStatusBadge, {
+  formatMonth,
+} from "@/app/(admin)/components/BookingStatusBadge";
 
 export default function AdminCustomerDetailPage({
   params,
@@ -16,15 +26,25 @@ export default function AdminCustomerDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { data: customer, isLoading, isError, error, refetch } = useAdminCustomer(id);
+  const {
+    data: customer,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useAdminCustomer(id);
   const { data: allBookings, isLoading: bookingsLoading } = useAdminBookings();
-  const customerBookings = allBookings?.filter((b) => b.customer.id === Number(id)) ?? [];
+  const customerBookings =
+    allBookings?.filter((b) => b.customer.id === Number(id)) ?? [];
 
   if (isLoading || bookingsLoading)
     return <LoadingSpinner message="Loading customer…" fullScreen={false} />;
   if (isError)
     return (
-      <ErrorState message={error instanceof Error ? error.message : undefined} onRetry={refetch} />
+      <ErrorState
+        message={error instanceof Error ? error.message : undefined}
+        onRetry={refetch}
+      />
     );
   if (!customer)
     return (
@@ -40,7 +60,11 @@ export default function AdminCustomerDetailPage({
       <div className="mb-6">
         <h1 className="text-display-sm text-text">{customer.name}</h1>
         <p className="text-body-md text-text-muted mt-1">
-          Member since {new Date(customer.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+          Member since{" "}
+          {new Date(customer.createdAt).toLocaleDateString("en-US", {
+            month: "long",
+            year: "numeric",
+          })}
         </p>
       </div>
 
@@ -67,7 +91,9 @@ export default function AdminCustomerDetailPage({
             {customer.countryOfResidence && (
               <div className="flex items-center gap-2">
                 <Globe className="w-4 h-4 text-primary/60 shrink-0" />
-                <p className="text-body-sm text-text-muted">Lives in {customer.countryOfResidence}</p>
+                <p className="text-body-sm text-text-muted">
+                  Lives in {customer.countryOfResidence}
+                </p>
               </div>
             )}
             {customer.profession && (
@@ -80,7 +106,11 @@ export default function AdminCustomerDetailPage({
               <div className="flex items-center gap-2">
                 <CalendarDays className="w-4 h-4 text-primary/60 shrink-0" />
                 <p className="text-body-sm text-text">
-                  {new Date(customer.dateOfBirth).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
+                  {new Date(customer.dateOfBirth).toLocaleDateString("en-US", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
                 </p>
               </div>
             )}
@@ -92,12 +122,20 @@ export default function AdminCustomerDetailPage({
           <h2 className="text-headline-sm text-text">Stats</h2>
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between py-2 border-b border-outline">
-              <span className="text-body-sm text-text-muted">Total Bookings</span>
-              <span className="text-headline-sm text-text">{customer.totalBookings}</span>
+              <span className="text-body-sm text-text-muted">
+                Total Bookings
+              </span>
+              <span className="text-headline-sm text-text">
+                {customer.totalBookings}
+              </span>
             </div>
             <div className="flex items-center justify-between py-2 border-b border-outline">
-              <span className="text-body-sm text-text-muted">Phone Verified</span>
-              <span className={`text-label-sm px-2 py-0.5 rounded-full ${customer.phoneVerified ? "bg-green-500/15 text-green-400" : "bg-red-500/15 text-red-400"}`}>
+              <span className="text-body-sm text-text-muted">
+                Phone Verified
+              </span>
+              <span
+                className={`text-label-sm px-2 py-0.5 rounded-full ${customer.phoneVerified ? "bg-green-500/15 text-green-400" : "bg-red-500/15 text-red-400"}`}
+              >
                 {customer.phoneVerified ? "Yes" : "No"}
               </span>
             </div>
@@ -113,26 +151,42 @@ export default function AdminCustomerDetailPage({
         <table className="w-full">
           <thead>
             <tr className="border-b border-outline">
-              <th className="text-left px-6 py-4 text-label-sm text-text-muted uppercase tracking-widest">Package</th>
-              <th className="text-left px-6 py-4 text-label-sm text-text-muted uppercase tracking-widest hidden sm:table-cell">Month</th>
-              <th className="text-left px-6 py-4 text-label-sm text-text-muted uppercase tracking-widest hidden md:table-cell">Travelers</th>
-              <th className="text-left px-6 py-4 text-label-sm text-text-muted uppercase tracking-widest">Status</th>
+              <th className="text-left px-6 py-4 text-label-sm text-text-muted uppercase tracking-widest">
+                Package
+              </th>
+              <th className="text-left px-6 py-4 text-label-sm text-text-muted uppercase tracking-widest hidden sm:table-cell">
+                Month
+              </th>
+              <th className="text-left px-6 py-4 text-label-sm text-text-muted uppercase tracking-widest hidden md:table-cell">
+                Travelers
+              </th>
+              <th className="text-left px-6 py-4 text-label-sm text-text-muted uppercase tracking-widest">
+                Status
+              </th>
               <th className="px-6 py-4" />
             </tr>
           </thead>
           <tbody>
             {customerBookings.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-body-md text-text-muted">
+                <td
+                  colSpan={5}
+                  className="px-6 py-8 text-center text-body-md text-text-muted"
+                >
                   No bookings yet
                 </td>
               </tr>
             )}
             {customerBookings.map((b) => (
-              <tr key={b.id} className="border-b border-outline last:border-0 hover:bg-surface-high/50 transition-colors">
+              <tr
+                key={b.id}
+                className="border-b border-outline last:border-0 hover:bg-surface-high/50 transition-colors"
+              >
                 <td className="px-6 py-4">
-                  <p className="text-body-sm text-text">{b.packageTitle}</p>
-                  <p className="text-label-sm text-text-muted">{b.destinationSlug}</p>
+                  <p className="text-body-sm text-text">{b.package.title}</p>
+                  <p className="text-label-sm text-text-muted">
+                    {b.package.destinationSlug}
+                  </p>
                 </td>
                 <td className="px-6 py-4 hidden sm:table-cell">
                   <div className="flex items-center gap-1.5 text-body-sm text-text">
@@ -150,7 +204,10 @@ export default function AdminCustomerDetailPage({
                   <BookingStatusBadge status={b.status} />
                 </td>
                 <td className="px-6 py-4">
-                  <Link href={`/admin/bookings/${b.id}`} className="text-text-muted hover:text-primary transition-colors">
+                  <Link
+                    href={`/admin/bookings/${b.id}`}
+                    className="text-text-muted hover:text-primary transition-colors"
+                  >
                     <ChevronRight className="w-4 h-4" />
                   </Link>
                 </td>

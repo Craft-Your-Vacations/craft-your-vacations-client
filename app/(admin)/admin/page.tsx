@@ -95,7 +95,7 @@ export default function AdminDashboard() {
                 className="flex items-center justify-between py-2 border-b border-outline last:border-0 hover:text-primary transition-colors"
               >
                 <div>
-                  <p className="text-body-sm text-text">{b.packageTitle}</p>
+                  <p className="text-body-sm text-text">{b.package.title}</p>
                   <p className="text-label-sm text-text-muted">{b.customer.name}</p>
                 </div>
                 <BookingStatusBadge status={b.status} />
