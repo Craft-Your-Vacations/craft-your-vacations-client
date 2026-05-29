@@ -42,7 +42,9 @@ export default function LoginPage() {
   const [error, setError] = useState(
     searchParams.get("error") === "ServiceUnavailable"
       ? "Our servers are temporarily unavailable. Please try again later."
-      : "",
+      : searchParams.get("error") === "TooManyRequests"
+        ? "Too many requests. Please try again in a minute."
+        : "",
   );
   const resetSuccess = searchParams.get("reset") === "success";
   const [loading, setLoading] = useState(false);
@@ -61,7 +63,11 @@ export default function LoginPage() {
     setLoading(false);
 
     if (result?.error) {
-      setError(result.error);
+      setError(
+        result.error === "TooManyRequests"
+          ? "Too many requests. Please try again in a minute."
+          : result.error,
+      );
       return;
     }
 

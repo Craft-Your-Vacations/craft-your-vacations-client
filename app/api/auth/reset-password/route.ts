@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { bffFetch } from "@/lib/bff";
 import type { OtpResponse } from "@/app/types/api";
+import { getClientIp, isRateLimited, rateLimitResponse } from "@/lib/rateLimit";
 
 export async function POST(req: NextRequest) {
-  const { username, otp, newPassword } = await req.json();
+  if (isRateLimited(`reset-password:${getClientIp(req)}`, 5))
+    return rateLimitResponse();
+  const { identifier, otp, newPassword } = await req.json();
 
   const result = await bffFetch<OtpResponse>("/api/Auth/reset-password", req, {
     isPublic: true,
     method: "POST",
     body: {
-      identifier: username,
+      identifier: identifier,
       otp: otp,
       newPassword: newPassword,
     },

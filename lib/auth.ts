@@ -2,10 +2,24 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import type { NextAuthOptions } from "next-auth";
 import type { JWT } from "next-auth/jwt";
+import { isRateLimited } from "@/lib/rateLimit";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:5025";
 
-async function refreshBackendToken(token: JWT): Promise<JWT> {
+// Deduplicates concurrent refresh calls for the same user within this server process.
+// Without this, parallel requests with an expired token each call /refresh independently,
+// causing token rotation failures (401) for all but the first.
+const pendingRefreshes = new Map<string, Promise<JWT>>();
+
+async function doRefreshBackendToken(token: JWT): Promise<JWT> {
+  // Per-user rate limit — refresh is server-to-server so no client IP is available.
+  // 10/min per userId is very generous (normal refresh cadence is once per 15 min)
+  // but stops runaway refresh loops from broken clients or stolen refresh tokens.
+  if (isRateLimited(`refresh:${token.userId}`, 10)) {
+    console.log("[auth] Refresh rate limited for user", token.userId);
+    return { ...token, error: "RefreshAccessTokenError" };
+  }
+
   try {
     const res = await fetch(`${BACKEND_URL}/api/Auth/refresh`, {
       method: "POST",
@@ -25,6 +39,20 @@ async function refreshBackendToken(token: JWT): Promise<JWT> {
   } catch {
     console.log("[auth] Token refresh FAILED");
     return { ...token, error: "RefreshAccessTokenError" };
+  }
+}
+
+async function refreshBackendToken(token: JWT): Promise<JWT> {
+  const userId = token.userId;
+  const pending = pendingRefreshes.get(userId);
+  if (pending) return pending;
+
+  const promise = doRefreshBackendToken(token);
+  pendingRefreshes.set(userId, promise);
+  try {
+    return await promise;
+  } finally {
+    pendingRefreshes.delete(userId);
   }
 }
 

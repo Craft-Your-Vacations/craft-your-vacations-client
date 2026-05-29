@@ -3,8 +3,10 @@ import { bffFetch } from "@/lib/bff";
 import type { OtpResponse } from "@/app/types/api";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { getClientIp, isRateLimited, rateLimitResponse } from "@/lib/rateLimit";
 
 export async function POST(req: NextRequest) {
+  if (isRateLimited(`send-otp:${getClientIp(req)}`, 5)) return rateLimitResponse();
   const { mobileNumber } = await req.json();
 
   const session = await getServerSession(authOptions);

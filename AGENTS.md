@@ -14,40 +14,39 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Always use `<Image>` from `next/image` instead of `<img>` tags.
 
 ## Styling
-- Always use Tailwind CSS utility classes for styling. Avoid inline styles and custom CSS unless absolutely necessary.
-- Never use arbitrary CSS in `className` (e.g. `[box-shadow:...]`, `[color:...]`). Always use Tailwind's built-in utilities or token-based variants (e.g. `shadow-lg shadow-primary/20`, `text-primary/50`).
-- Before introducing any new color, typography, or other design tokens, check `global.css` first. Use the existing Tailwind utilities and CSS variables defined there rather than adding new ones.
+- Always use Tailwind CSS utility classes. Avoid inline styles and custom CSS unless absolutely necessary.
+- Never use arbitrary CSS in `className` (e.g. `[box-shadow:...]`). Always use Tailwind's built-in utilities or token-based variants (e.g. `shadow-lg shadow-primary/20`).
+- Before introducing any new color, typography, or design token, check `global.css` first. Use existing variables — do not add new ones.
 
 ## Mobile-first & Responsive Design
-- **Always design for mobile first.** Write base styles for mobile, then layer on `md:` overrides for desktop.
-- Use only the `md:` breakpoint (768px) for the mobile/desktop split — do not introduce `sm:`, `lg:`, or `xl:` breakpoints unless there is a clear need for an intermediate layout.
-- For layouts that place elements side-by-side (headers with action buttons, form rows, stat grids), default to stacked (`flex-col`) on mobile and switch to horizontal (`md:flex-row`) on desktop.
-- Fixed sidebars must use `md:translate-x-0` to stay visible on desktop and slide-in overlay behaviour on mobile — never use a fixed `ml-*` offset without a matching `md:ml-*`.
-- Any fixed top bar on mobile (e.g. admin top bar, `h-14`) must be compensated with matching `pt-14 md:pt-0` on the main content area.
-- When adding a new page or component, test the layout mentally at ~375px width before finalising class names.
+- **Always design for mobile first.** Base styles for mobile, `md:` overrides for desktop.
+- Use only the `md:` breakpoint (768px) for the mobile/desktop split — no `sm:`, `lg:`, `xl:` unless clearly needed.
+- Side-by-side layouts: default `flex-col` on mobile, `md:flex-row` on desktop.
+- Fixed sidebars: `md:translate-x-0` to stay visible on desktop, slide-in on mobile — never a fixed `ml-*` without matching `md:ml-*`.
+- Fixed top bar on mobile (e.g. `h-14`): compensate with `pt-14 md:pt-0` on main content.
+- Mentally test any new page at ~375px width before finalising class names.
 
 ## Components
-- Before creating a new component, check the `components/` folder for an existing one that can be reused or extended.
-- When building new components, make them reusable and place them in the `components/` folder.
+- Check `components/` for an existing component before creating a new one.
+- New components go in `components/` and must be reusable.
 
 ## Dialogs and Modals
-- Always use `components/Dialog/Dialog.tsx` as the base for any dialog or modal. Never write the overlay, backdrop, or panel wrapper manually.
-- Pass `onClose` when the dialog should be dismissible via backdrop click or Escape key. Omit it when the dialog must not be dismissible (e.g. inactivity warning).
-- Use `size="lg"` for form-heavy modals; default `size="sm"` for confirmation and simple info dialogs.
-- Use the `className` prop to add panel-level layout classes (e.g. `"items-center gap-5 text-center"`).
+- Always use `components/Dialog/Dialog.tsx` as the base. Never write overlay/backdrop/panel wrapper manually.
+- Pass `onClose` when dismissible (backdrop click / Escape). Omit for non-dismissible dialogs (e.g. inactivity warning).
+- `size="lg"` for form-heavy modals; default `size="sm"` for confirmation dialogs.
 
 ## Page vs Component responsibilities
-- **Modals belong to the page, not to child components.** Never render a modal (or control its open/close state) inside a card, list item, or other reusable component. The page owns the modal's `isOpen` state, the handler that opens it, and the rendered `<Modal />` element.
-- **Queries and mutations belong to the page.** Never call `useQuery` or `useMutation` hooks inside cards, modals, or other child components. Call them in the page component and pass data/callbacks down as props. Modals and cards are pure UI — they receive what they need via props and fire callbacks.
+- **Modals belong to the page.** Never render or control modal state inside a card, list item, or reusable component.
+- **Queries and mutations belong to the page.** Never call `useQuery` or `useMutation` inside cards, modals, or child components — pass data and callbacks as props.
 
 ---
 
 # Project Architecture
 
 ## Stack
-- **Next.js 16.2.2** — App Router. Middleware file is `proxy.ts` (not `middleware.ts`), exported function is `proxy` (not `middleware`). Read `node_modules/next/dist/docs/` before writing any Next.js-specific code.
+- **Next.js 16.2.2** — App Router. Middleware file is `proxy.ts` (not `middleware.ts`), exported function is `proxy` (not `middleware`).
 - **React 19**, **TypeScript**, **Tailwind CSS v4**
-- **NextAuth** (`next-auth` v4) for authentication — Credentials + Google OAuth providers
+- **NextAuth** (`next-auth` v4) — Credentials + Google OAuth providers
 - **TanStack React Query v5** for server state
 - **Zustand v5** for client UI state
 - **Axios** for browser-side HTTP (`lib/api.ts`)
@@ -57,7 +56,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Data Fetching Architecture
 
-There are two separate HTTP layers. Never mix them up.
+Two separate HTTP layers — **never mix them.**
 
 ```
 Browser
@@ -69,118 +68,102 @@ Next.js API Route (app/api/...)
 
 ### Layer 1 — Browser → Next.js: `lib/api.ts`
 - Used inside React components and hooks
-- Always call via `api.get<T>()`, `api.post<T>()`, `api.put<T>()`, `api.patch<T>()`, `api.delete<T>()`
-- Returns the response body directly as `T`
-- On error, rejects with a readable `Error` extracted from the response body — handle errors at the call site
+- `api.get<T>()`, `api.post<T>()`, `api.put<T>()`, `api.patch<T>()`, `api.delete<T>()`
+- Returns response body directly as `T`
+- On error, rejects with a readable `Error` extracted from the response body
 
 ### Layer 2 — Next.js → .NET: `lib/bff.ts`
-- Used only inside Next.js route handlers (`app/api/**/route.ts`)
-- Always call `bffFetch<T>(path, options)` — never call the .NET backend directly from components
-- `isPublic: true` — skips auth check (use for publicly accessible endpoints)
-- `isPublic: false` (default) — calls `getServerSession(authOptions)` first, which triggers the `jwt` callback and transparently refreshes the backend access token if it is near expiry. Returns 401 if no valid session. Attaches `Authorization: Bearer <token>` header automatically.
+- Used only inside route handlers (`app/api/**/route.ts`) — never from components
+- `isPublic: true` — skips auth check
+- `isPublic: false` (default) — calls `getServerSession(authOptions)` first, triggering the `jwt` callback which transparently refreshes the backend token if near expiry. Returns 401 if no valid session. Attaches `Authorization: Bearer <token>` automatically.
 - **Never replace `getServerSession` with `getToken` in `bffFetch`** — `getToken` bypasses the jwt callback and the token will never be refreshed inline.
-- `cache` — defaults to `{ revalidate: 300 }` (Next.js ISR, 5 min). Override per route:
-  - `{ revalidate: N }` — cache for N seconds (Next.js server cache)
-  - `"no-store"` — never cache, always hit .NET fresh (use for user-specific data)
-  - `"force-cache"` — cache indefinitely (use for static reference data)
+- `cache` defaults to `{ revalidate: 300 }` (5-min ISR). Override:
+  - `{ revalidate: N }` — cache N seconds
+  - `"no-store"` — always fresh (user-specific data)
+  - `"force-cache"` — indefinite (static reference data)
 
-### API Endpoints: `lib/endpoints.ts`
-- All API call functions are defined here as named exports grouped by domain
-- Always add new endpoint functions here, never inline `api.get(...)` calls directly in hooks or components
-- Example: `destinationsApi.getAll()`, `destinationsApi.getById(id)`
+### `lib/endpoints.ts`
+All API call functions live here, grouped by domain. Always add new functions here — never inline `api.get(...)` in hooks or components.
 
-### Query Keys: `lib/queryKeys.ts`
-- All TanStack Query keys are defined here
-- Use function-based keys for dynamic values:
-  ```ts
-  destinations: {
-    all: () => ['destinations'],
-    detail: (id: string) => ['destinations', 'detail', id],
-  }
-  ```
-- Always namespace keys by domain (e.g. `['destinations', ...]`) so `invalidateQueries` can target the whole domain
+### `lib/queryKeys.ts`
+All TanStack Query keys live here. Use function-based keys for dynamic values. Always namespace by domain so `invalidateQueries` can target the whole domain.
 
-### Custom Hooks: `hooks/`
-- Every `useQuery`/`useMutation` call lives in a dedicated hook file (e.g. `hooks/useDestinations.ts`, `hooks/useRegister.ts`)
-- Hooks import from `lib/endpoints.ts` and `lib/queryKeys.ts` — never construct URLs or keys inline
-- Always set a `staleTime` appropriate to how frequently the data changes
+### `hooks/`
+Every `useQuery`/`useMutation` call lives in a dedicated hook file. Hooks import from `lib/endpoints.ts` and `lib/queryKeys.ts` — never construct URLs or keys inline.
 
 ### Mutations pattern
-- Use `mutate(payload, { onSuccess, onError })` — never `mutateAsync` + try/catch
-- Error is available as `mutation.error` — do not create a separate error `useState` for mutation errors
-- After a successful mutation, call `queryClient.invalidateQueries` if the mutation affects cached query data
+- `mutate(payload, { onSuccess, onError })` — never `mutateAsync` + try/catch
+- Error is `mutation.error` — no separate error `useState` for mutation errors
+- Invalidate relevant query keys after successful mutations
 
 ---
 
 ## Adding a New API Endpoint — Checklist
 
-When adding a new data-fetching feature, follow this order:
-
-1. **`app/api/<resource>/route.ts`** — create the Next.js route handler; call `bffFetch` with appropriate `isPublic` and `cache`
-2. **`lib/endpoints.ts`** — add the client-side API function using `api.get/post/...`
-3. **`lib/queryKeys.ts`** — add the query key(s) for the resource
-4. **`hooks/use<Resource>.ts`** — create the React Query hook using the endpoint and query key
+1. **`app/api/<resource>/route.ts`** — route handler, call `bffFetch` with `isPublic` and `cache`
+2. **`lib/endpoints.ts`** — client-side API function
+3. **`lib/queryKeys.ts`** — query key(s)
+4. **`hooks/use<Resource>.ts`** — React Query hook
 5. **Component** — consume the hook
 
 ---
 
 ## State Management
 
-### Rule: Server state vs UI state
-
 | Data | Where it lives |
 |------|---------------|
-| Anything from the .NET backend | TanStack React Query |
+| Anything from .NET backend | TanStack React Query |
 | Auth session / user profile | NextAuth (`useSession()`) |
 | Theme (dark/light) | `next-themes` (`useTheme()`) |
 | UI state shared across 2+ components | Zustand store (`stores/`) |
 | UI state local to one component | `useState` |
 
-### TanStack React Query
-- For all data that comes from the API
-- Never duplicate API data into Zustand or `useState`
-- After a mutation (create/update/delete), invalidate the relevant query key: `queryClient.invalidateQueries({ queryKey: queryKeys.destinations.all() })`
+**Never duplicate API data into Zustand or `useState`.**
 
-### Zustand (`stores/`)
-- One store per concern, not one store per screen
-- Current stores:
-  - `stores/useUIStore.ts` — app-wide UI (mobile menu open/closed)
-- When to add a new store:
-  - State is needed by 2 or more unrelated components/screens, OR
-  - State must survive navigation (e.g. multi-step booking flow, active search filters)
-- Keep stores minimal: state + actions only. Never store derived data (compute it in the component from store + query data)
-- Future stores to add when the feature is built:
-  - `stores/useSearchStore.ts` — search query and destination filters
-  - `stores/useBookingStore.ts` — in-progress booking across multi-step flow
+Zustand — one store per concern, not per screen. Keep stores minimal: state + actions only. Current store: `stores/useUIStore.ts` (mobile menu).
 
 ---
 
 ## Authentication
 
-- Auth is handled by **NextAuth v4** (`next-auth`) — credentials + Google OAuth providers
-- NextAuth config: `lib/auth.ts` (handlers, providers, JWT callbacks)
-- Client-side session: `useSession()` from `next-auth/react`; trigger a session refresh with `update()`
+- NextAuth config: `lib/auth.ts` — providers, JWT callbacks, refresh deduplication, sign-out revocation
+- Client session: `useSession()` from `next-auth/react`
 - `proxy.ts` is a passthrough — no redirect logic lives there
 
 ### Token flow
-The .NET backend owns authentication. On login (credentials or Google OAuth), it returns `accessToken`, `refreshToken`, and `accessTokenExpiry`. NextAuth stores these in its encrypted session cookie — it does **not** issue its own tokens.
+The .NET backend owns authentication. On login it returns `accessToken`, `refreshToken`, `accessTokenExpiry`. NextAuth stores these in its encrypted session cookie — it does **not** issue its own tokens.
 
-- The `userId` is **not** encoded inside the .NET access token; it is stored separately in the NextAuth JWT as `token.userId` and exposed as `session.user.userId`.
-- Session also carries `session.user.phoneVerified: boolean` — controls onboarding redirect.
-- Auto-refresh: the `jwt` callback in `lib/auth.ts` refreshes the access token via `POST /api/Auth/refresh` when it is within 2 minutes of expiry. On failure it sets `token.error = "RefreshAccessTokenError"`.
-- `bffFetch` calls `getServerSession(authOptions)` (not `getToken`) so the `jwt` callback fires on every protected API call, refreshing the token inline before the request reaches .NET. The refreshed token is then read via `getToken` solely to extract `backendAccessToken` for the `Authorization` header.
+- `token.userId` is stored separately in the NextAuth JWT (not inside the .NET access token) and exposed as `session.user.userId`
+- `session.user.phoneVerified` — controls onboarding redirect
+- `session.user.role` — set by the backend on login; **cannot be overridden by client-side `update()` calls** (the `jwt` callback strips `role` from client-provided session updates)
+- Auto-refresh: `jwt` callback calls `POST /api/Auth/refresh` when the token is within 60 seconds of expiry. On failure: `token.error = "RefreshAccessTokenError"`
+- When `session?.error === "RefreshAccessTokenError"`, the refresh token is invalid — force sign-out. Guards check for this and redirect to `/login`
+- **`backendAccessToken` is server-only** — used inside `bffFetch` to attach the `Authorization` header. Never exposed to the browser
+- **Never replace `getServerSession` with `getToken` in `bffFetch`** — the jwt callback (and inline refresh) only fires via `getServerSession`
+
+### Concurrent refresh deduplication
+`lib/auth.ts` holds a module-level `pendingRefreshes: Map<string, Promise<JWT>>`. If multiple parallel requests trigger a refresh for the same user, only one actual `/refresh` call is made — the rest wait on the same promise. This prevents token rotation failures from concurrent 401s.
+
+### Session updates
+After OTP verification, call `update({ phoneVerified: true })` to update the session without a full re-login. The `jwt` callback applies it to the token. Do not pass `role` in updates — it is silently stripped.
+
+### Sign-out
+`events.signOut` in `lib/auth.ts` calls `POST /api/Auth/logout` with the refresh token to revoke it server-side before NextAuth clears the session.
+
+### Rate limiting
+Lives on the Next.js API route layer — **not on .NET** (all .NET requests come from the BFF's single IP). See `docs/rate-limiting.md` for the full table. `lib/rateLimit.ts` exports `getClientIp`, `isRateLimited`, `rateLimitResponse`. Login requires special handling — see the rate limiting doc.
 
 ### Inactivity logout
-Handled by `hooks/useInactivityLogout.ts`, consumed in `RootGuard`:
-- After **15 minutes** of no user activity, `InactivityDialog` is shown with a **30-second countdown**.
-- Activity events (`mousemove`, `mousedown`, `keydown`, `touchstart`, `scroll`, `click`) reset the 15-min timer. Once the warning dialog appears these events are intentionally blocked from resetting the timer — only "Keep Signed In" can dismiss it.
-- On countdown expiry or "Sign Out" click: `signOut({ redirect: false })` then `window.location.replace("/login")` — using `replace` so the browser Back button cannot return the user to the protected page they were on.
+`hooks/useInactivityLogout.ts`, consumed in `RootGuard`:
+- 15 minutes idle → `InactivityDialog` with 30-second countdown
+- Activity events reset the timer; once the dialog shows, only "Keep Signed In" dismisses it
+- On expiry or sign-out: `signOut({ redirect: false })` then `window.location.replace("/login")` — `replace` prevents Back button returning to protected page
 
 ### Route guards
-Auth redirect logic lives in client-side layouts, **not** `proxy.ts`:
-- `app/(root)/layout.tsx` — protects `/destinations`, `/packages`; redirects unverified users to `/onboarding`
-- `app/(auth)/layout.tsx` — redirects verified users away from `/login`, `/register`; redirects unauthenticated users away from `/onboarding`
-- Guards return `null` while session is loading or when a redirect is imminent (prevents flash of protected content)
+Auth redirect logic lives in **client-side layouts**, not `proxy.ts`:
+- `app/(root)/layout.tsx` — protects main app; redirects unverified users to `/onboarding`; forces sign-out on `RefreshAccessTokenError`
+- `app/(auth)/layout.tsx` — redirects verified users away from `/login`, `/register`; redirects unauthenticated from `/onboarding`
+- Guards return `null` while session loads or redirect is imminent (prevents flash of protected content)
 
 ---
 
@@ -188,7 +171,7 @@ Auth redirect logic lives in client-side layouts, **not** `proxy.ts`:
 
 ```
 app/
-  (auth)/           — Auth pages (no Navbar layout)
+  (auth)/           — Auth pages (login, register, reset-password, onboarding)
   (root)/           — Main app pages (with Navbar)
   api/              — Next.js route handlers (BFF entry points)
 components/         — Reusable UI components
@@ -196,10 +179,26 @@ hooks/              — React Query hooks (one per resource)
 lib/
   api.ts            — Axios client (browser → Next.js)
   bff.ts            — BFF fetcher (Next.js → .NET)
-  auth.ts           — NextAuth config (providers, JWT callbacks)
-  endpoints.ts      — API call functions grouped by domain
+  auth.ts           — NextAuth config (providers, JWT callbacks, refresh, sign-out)
+  rateLimit.ts      — In-memory rate limiter (getClientIp, isRateLimited, rateLimitResponse)
+  endpoints.ts      — All API call functions grouped by domain
   queryKeys.ts      — TanStack Query key factory
   utils.ts          — Shared utilities (cn, etc.)
 stores/             — Zustand stores (one per concern)
+docs/
+  rate-limiting.md  — Rate limit endpoints, keys, limits, NextAuth interception detail
 proxy.ts            — Next.js middleware (passthrough; required by framework)
 ```
+
+## Keeping Docs in Sync
+
+After any code change, update **only** the affected doc — keep edits minimal:
+
+| What changed | Update |
+|---|---|
+| New/modified rate limit endpoint, key, or limit | `docs/rate-limiting.md` — relevant table row only |
+| New hook, endpoint function, or query key | No doc update needed — code is the source of truth |
+| New reusable component or lib file added | No doc update needed unless it introduces a new pattern or convention |
+| New architectural pattern or coding rule | `AGENTS.md` — add to the relevant section only |
+
+Do not rewrite entire sections. Add or edit only the lines that changed.
