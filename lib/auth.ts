@@ -87,6 +87,22 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
   },
 
+  events: {
+    async signOut({ token }) {
+      if (!token?.backendRefreshToken) return;
+      try {
+        await fetch(`${BACKEND_URL}/api/Auth/logout`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refreshToken: token.backendRefreshToken }),
+        });
+      } catch {
+        // best-effort — never block sign-out if the backend call fails
+        console.log("Logout call failed.");
+      }
+    },
+  },
+
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === "google") {
