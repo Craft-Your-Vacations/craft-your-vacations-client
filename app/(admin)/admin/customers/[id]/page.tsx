@@ -191,7 +191,7 @@ export default function AdminCustomerDetailPage({
                 <td className="px-6 py-4 hidden sm:table-cell">
                   <div className="flex items-center gap-1.5 text-body-sm text-text">
                     <CalendarDays className="w-3.5 h-3.5 text-primary/60" />
-                    {formatMonth(b.preferredMonth)}
+                    {formatMonth(b.travelDate)}
                   </div>
                 </td>
                 <td className="px-6 py-4 hidden md:table-cell">

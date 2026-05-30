@@ -142,7 +142,7 @@ export interface BookingPackage {
 export interface CreateBookingRequest {
   packageId: number;
   travelersCount: number;
-  preferredMonth: string; // "YYYY-MM"
+  travelDate: string; // "YYYY-MM-DD"
   notes?: string;
 }
 
@@ -151,7 +151,7 @@ export interface Booking {
   packageId: number;
   package: BookingPackage;
   travelersCount: number;
-  preferredMonth: string;
+  travelDate: string;
   notes?: string;
   status: BookingStatus;
   createdAt: string;
@@ -165,7 +165,7 @@ export interface Review {
   bookingId: number;
   destinationSlug: string;
   packageTitle: string;
-  preferredMonth: string;
+  travelDate: string;
   rating: number;
   quote: string;
   imagePaths: string[];
@@ -217,7 +217,7 @@ export interface Customer {
 export interface AdminUpdateBookingRequest {
   status?: BookingStatus;
   travelersCount?: number;
-  preferredMonth?: string;
+  travelDate?: string;
   notes?: string;
   confirmedItinerary?: ItineraryDay[];
   requiredDocuments?: DocumentType[];

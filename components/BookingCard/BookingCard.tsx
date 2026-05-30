@@ -42,10 +42,10 @@ export default function BookingCard({ booking, onReviewClick }: BookingCardProps
           <CalendarDays className="w-4 h-4 text-primary/70 shrink-0" />
           <div>
             <p className="text-label-sm text-text-muted uppercase tracking-widest">
-              Travel Month
+              Travel Date
             </p>
             <p className="text-body-sm text-text">
-              {formatMonth(booking.preferredMonth)}
+              {formatMonth(booking.travelDate)}
             </p>
           </div>
         </div>

@@ -27,7 +27,7 @@ export default function ReviewCard({
   authorName,
   authorProfession,
   packageTitle,
-  preferredMonth,
+  travelDate,
   imagePaths,
   className = "",
 }: ReviewCardProps) {
@@ -79,7 +79,7 @@ export default function ReviewCard({
       <div className="flex items-center gap-1.5 text-label-sm text-primary/70 relative z-10">
         <MapPin className="w-3 h-3 shrink-0" />
         <span className="truncate">
-          {packageTitle} &middot; {formatMonth(preferredMonth)}
+          {packageTitle} &middot; {formatMonth(travelDate)}
         </span>
       </div>
 

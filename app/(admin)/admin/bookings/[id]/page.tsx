@@ -36,7 +36,7 @@ export default function AdminBookingDetailPage({
   const [editStatus, setEditStatus] = useState<BookingStatus | "">("");
   const [editNotes, setEditNotes] = useState("");
   const [editTravelers, setEditTravelers] = useState("");
-  const [editMonth, setEditMonth] = useState("");
+  const [editDate, setEditDate] = useState("");
   const [requiredDocs, setRequiredDocs] = useState<DocumentType[]>([]);
   const [itinerary, setItinerary] = useState<ItineraryDay[]>([]);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -76,7 +76,7 @@ export default function AdminBookingDetailPage({
   // --- Save ---
   function handleSave() {
     const hasBasicChange =
-      editStatus !== "" || editNotes !== "" || editTravelers !== "" || editMonth !== "";
+      editStatus !== "" || editNotes !== "" || editTravelers !== "" || editDate !== "";
     if (!hasBasicChange && !showConfirmFields) return;
     setConfirmOpen(true);
   }
@@ -86,7 +86,7 @@ export default function AdminBookingDetailPage({
     if (editStatus) body.status = editStatus;
     if (editNotes) body.notes = editNotes;
     if (editTravelers) body.travelersCount = Number(editTravelers);
-    if (editMonth) body.preferredMonth = editMonth;
+    if (editDate) body.travelDate = editDate;
     if (showConfirmFields) {
       body.requiredDocuments = requiredDocs;
       body.confirmedItinerary = itinerary;
@@ -98,7 +98,7 @@ export default function AdminBookingDetailPage({
         setEditStatus("");
         setEditNotes("");
         setEditTravelers("");
-        setEditMonth("");
+        setEditDate("");
         setConfirmOpen(false);
         setTimeout(() => setSaveSuccess(false), 3000);
       },
@@ -109,7 +109,7 @@ export default function AdminBookingDetailPage({
     editStatus !== "" ||
     editNotes !== "" ||
     editTravelers !== "" ||
-    editMonth !== "" ||
+    editDate !== "" ||
     showConfirmFields;
 
   return (
@@ -143,9 +143,9 @@ export default function AdminBookingDetailPage({
               <CalendarDays className="w-4 h-4 text-primary/60 shrink-0" />
               <div>
                 <p className="text-label-sm text-text-muted uppercase tracking-widest">
-                  Travel Month
+                  Travel Date
                 </p>
-                <p className="text-body-sm text-text">{formatMonth(booking.preferredMonth)}</p>
+                <p className="text-body-sm text-text">{formatMonth(booking.travelDate)}</p>
               </div>
             </div>
 
@@ -230,14 +230,15 @@ export default function AdminBookingDetailPage({
               placeholder={String(booking.travelersCount)}
               value={editTravelers}
               onChange={(e) => setEditTravelers(e.target.value)}
+              min="1"
             />
 
             <FormField
               id="booking-month"
-              label="Preferred Month"
-              type="month"
-              value={editMonth}
-              onChange={(e) => setEditMonth(e.target.value)}
+              label="Preferred Date"
+              type="date"
+              value={editDate}
+              onChange={(e) => setEditDate(e.target.value)}
             />
 
             <TextAreaField

@@ -3,16 +3,13 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import FormField from "@/components/FormField/FormField";
-import SelectField from "@/components/SelectField/SelectField";
 import TextAreaField from "@/components/TextAreaField/TextAreaField";
 import Button from "@/components/Button/Button";
 import Dialog from "@/components/Dialog/Dialog";
-import type { SelectOption } from "@/app/types/component";
-import { MONTH_NAMES_FULL } from "@/lib/constants";
 
 export interface BookingSubmitData {
   travelersCount: number;
-  preferredMonth: string;
+  travelDate: string;
   notes?: string;
 }
 
@@ -25,16 +22,6 @@ interface BookingModalProps {
   onSubmit: (data: BookingSubmitData) => void;
 }
 
-function getMonthOptions(): SelectOption[] {
-  const now = new Date();
-  return Array.from({ length: 12 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    const label = `${MONTH_NAMES_FULL[d.getMonth()]} ${d.getFullYear()}`;
-    return { value, label };
-  });
-}
-
 export function BookingModal({
   isOpen,
   onClose,
@@ -44,7 +31,7 @@ export function BookingModal({
   onSubmit,
 }: BookingModalProps) {
   const [travelersCount, setTravelersCount] = useState("");
-  const [preferredMonth, setPreferredMonth] = useState("");
+  const [travelDate, setTravelDate] = useState("");
   const [notes, setNotes] = useState("");
 
   // Reset form when modal closes
@@ -52,7 +39,7 @@ export function BookingModal({
     if (!isOpen) {
       const t = setTimeout(() => {
         setTravelersCount("");
-        setPreferredMonth("");
+        setTravelDate("");
         setNotes("");
       }, 200);
       return () => clearTimeout(t);
@@ -65,7 +52,7 @@ export function BookingModal({
     if (isNaN(count) || count < 1) return;
     onSubmit({
       travelersCount: count,
-      preferredMonth,
+      travelDate,
       notes: notes.trim() || undefined,
     });
   }
@@ -100,14 +87,14 @@ export function BookingModal({
           value={travelersCount}
           onChange={(e) => setTravelersCount(e.target.value)}
         />
-        <SelectField
-          id="preferredMonth"
-          label="Preferred travel month"
+        <FormField
+          id="preferredDate"
+          label="Preferred travel date"
+          type="date"
           required
-          placeholder="Select a month"
-          options={getMonthOptions()}
-          value={preferredMonth}
-          onChange={(e) => setPreferredMonth(e.target.value)}
+          value={travelDate}
+          onChange={(e) => setTravelDate(e.target.value)}
+          min={new Date().toISOString().split("T")[0]}
         />
         <TextAreaField
           id="notes"

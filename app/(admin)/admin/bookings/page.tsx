@@ -86,7 +86,7 @@ export default function AdminBookingsPage() {
                 <td className="px-6 py-4 hidden lg:table-cell">
                   <div className="flex items-center gap-1.5 text-body-sm text-text">
                     <CalendarDays className="w-3.5 h-3.5 text-primary/60 shrink-0" />
-                    {formatMonth(booking.preferredMonth)}
+                    {formatMonth(booking.travelDate)}
                   </div>
                 </td>
                 <td className="px-6 py-4 hidden sm:table-cell">

@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     body: {
       PackageId: body.packageId,
       TravelersCount: body.travelersCount,
-      PreferredMonth: body.preferredMonth,
+      TravelDate: body.travelDate,
       Notes: body.notes,
     },
   });

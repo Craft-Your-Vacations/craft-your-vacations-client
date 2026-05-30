@@ -8,6 +8,7 @@ interface FormFieldProps extends FieldBaseProps {
   defaultValue?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   autoComplete?: string;
+  min?: string;
 }
 
 export function FormField({
@@ -24,6 +25,7 @@ export function FormField({
   defaultValue,
   onChange,
   autoComplete,
+  min,
 }: FormFieldProps) {
   const hasError = Boolean(errorMessage);
 
@@ -43,6 +45,7 @@ export function FormField({
         disabled={disabled}
         autoComplete={autoComplete}
         required={required}
+        min={min}
         className={`w-full px-4 py-3 rounded-xl text-body-md text-text placeholder:text-text-subtle bg-surface-highest border border-outline outline-none transition-all
          focus:border-transparent focus:ring-2 focus:ring-primary/50
          disabled:opacity-50 disabled:cursor-not-allowed

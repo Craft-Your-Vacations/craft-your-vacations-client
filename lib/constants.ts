@@ -27,9 +27,18 @@ export const MONTH_NAMES_SHORT = [
 ];
 
 export function formatMonth(value: string, short = false): string {
-  const [year, month] = value.split("-");
+  const parts = value.split("-");
+  if (parts.length === 3) {
+    // Full date: "YYYY-MM-DD"
+    return new Date(value + "T00:00:00").toLocaleDateString("en-US", {
+      day: "numeric",
+      month: short ? "short" : "long",
+      year: "numeric",
+    });
+  }
+  // Legacy month-only: "YYYY-MM"
   const names = short ? MONTH_NAMES_SHORT : MONTH_NAMES_FULL;
-  return `${names[parseInt(month, 10) - 1]} ${year}`;
+  return `${names[parseInt(parts[1], 10) - 1]} ${parts[0]}`;
 }
 
 export const DOCUMENT_OPTIONS: { value: DocumentType; label: string }[] = [
