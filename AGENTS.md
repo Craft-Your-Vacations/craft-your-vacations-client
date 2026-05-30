@@ -16,6 +16,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 ## Styling
 - Always use Tailwind CSS utility classes. Avoid inline styles and custom CSS unless absolutely necessary.
 - Never use arbitrary CSS in `className` (e.g. `[box-shadow:...]`). Always use Tailwind's built-in utilities or token-based variants (e.g. `shadow-lg shadow-primary/20`).
+- This project uses **Tailwind CSS v4**. Always use v4 utility names — never v3 names. When in doubt about a utility name, check the Tailwind v4 docs. Do not assume v3 class names still apply.
 - Before introducing any new color, typography, or design token, check `global.css` first. Use existing variables — do not add new ones.
 
 ## Mobile-first & Responsive Design

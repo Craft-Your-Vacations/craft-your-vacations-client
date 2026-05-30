@@ -17,6 +17,8 @@ import AutoSlider from "@/components/AutoSlider/AutoSlider";
 import PageHero from "@/components/PageHero/PageHero";
 import CtaBanner from "@/components/CtaBanner/CtaBanner";
 import { useRouter } from "next/navigation";
+import UnsplashPhotoSlider from "@/components/UnsplashPhotoSlider/UnsplashPhotoSlider";
+import { useUnsplashPhotos } from "@/hooks/useUnsplashPhotos";
 
 export default function DestinationDetailPage({
   params,
@@ -29,14 +31,18 @@ export default function DestinationDetailPage({
   const { data: reviews = [] } = useDestinationReviews(id);
   const router = useRouter();
 
+  const { data: unsplashPhotos = [] } = useUnsplashPhotos(id);
+
   const [reviewSliderCount, setReviewSliderCount] = useState(1);
   const [memoriesSliderCount, setMemoriesSliderCount] = useState(1);
+  const [photoSliderCount, setPhotoSliderCount] = useState(1);
 
   useEffect(() => {
     const update = () => {
       const w = window.innerWidth;
       setReviewSliderCount(reviews.length === 1 ? 1 : w >= 1024 ? 3 : w >= 640 ? 2 : 1);
       setMemoriesSliderCount(w >= 1024 ? 4 : w >= 640 ? 2 : 1);
+      setPhotoSliderCount(w >= 1024 ? 3 : w >= 640 ? 2 : 1);
     };
     update();
     window.addEventListener("resize", update);
@@ -137,6 +143,22 @@ export default function DestinationDetailPage({
           </div>
         </div>
       </Section>
+
+      {/* Unsplash Photo Gallery */}
+      {unsplashPhotos.length > 0 && (
+        <Section id="photo-gallery" title="">
+          <div className="mb-8">
+            <h2 className="text-headline-lg text-text">Explore {title}</h2>
+            <p className="text-body-md text-text-muted mt-1">
+              A glimpse of what awaits you
+            </p>
+          </div>
+          <UnsplashPhotoSlider
+            photos={unsplashPhotos}
+            visibleCount={photoSliderCount}
+          />
+        </Section>
+      )}
 
       {/* Packages */}
       {packages.length > 0 && (

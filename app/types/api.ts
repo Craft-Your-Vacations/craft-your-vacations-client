@@ -1,3 +1,14 @@
+export interface UnsplashPhoto {
+  id: string;
+  urls: { regular: string; small: string };
+  user: {
+    name: string;
+    username: string;
+    links: { html: string };
+  };
+  links: { html: string };
+}
+
 export interface ApiResponse<T> {
   data: T;
   message: string;

@@ -24,6 +24,7 @@ import type {
   UpdatePackageRequest,
   UserDocument,
   DocumentType,
+  UnsplashPhoto,
 } from "@/app/types/api";
 
 export const destinationsApi = {
@@ -76,6 +77,11 @@ export const reviewsApi = {
   getByDestination: (slug: string) =>
     api.get<Review[]>(`reviews/destination/${slug}`),
   getApproved: () => api.get<Review[]>("reviews/approved"),
+};
+
+export const unsplashApi = {
+  getPhotos: (query: string) =>
+    api.get<UnsplashPhoto[]>(`unsplash?query=${encodeURIComponent(query)}`),
 };
 
 export const adminApi = {

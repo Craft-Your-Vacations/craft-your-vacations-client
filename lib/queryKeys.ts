@@ -20,6 +20,9 @@ export const queryKeys = {
     byDestination: (slug: string) => ['reviews', 'destination', slug] as const,
     approved: () => ['reviews', 'approved'] as const,
   },
+  unsplash: {
+    photos: (query: string) => ['unsplash', 'photos', query] as const,
+  },
   admin: {
     allBookings: () => ['admin', 'bookings'] as const,
     bookings: (status?: string) => ['admin', 'bookings', status ?? 'all'] as const,
