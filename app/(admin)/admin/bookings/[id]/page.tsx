@@ -85,7 +85,10 @@ export default function AdminBookingDetailPage({
     const body: Parameters<typeof updateBooking.mutate>[0] = {};
     if (editStatus) body.status = editStatus;
     if (editNotes) body.notes = editNotes;
-    if (editTravelers) body.travelersCount = Number(editTravelers);
+    if (editTravelers) {
+      const count = Number(editTravelers);
+      if (count >= 1 && count <= 50) body.travelersCount = count;
+    }
     if (editDate) body.travelDate = editDate;
     if (showConfirmFields) {
       body.requiredDocuments = requiredDocs;
@@ -230,7 +233,8 @@ export default function AdminBookingDetailPage({
               placeholder={String(booking.travelersCount)}
               value={editTravelers}
               onChange={(e) => setEditTravelers(e.target.value)}
-              min="1"
+              min={1}
+              max={50}
             />
 
             <FormField

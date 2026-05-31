@@ -49,7 +49,7 @@ export function BookingModal({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const count = parseInt(travelersCount, 10);
-    if (isNaN(count) || count < 1) return;
+    if (isNaN(count) || count < 1 || count > 50) return;
     onSubmit({
       travelersCount: count,
       travelDate,
@@ -84,6 +84,8 @@ export function BookingModal({
           type="number"
           required
           placeholder="e.g. 2"
+          min={1}
+          max={50}
           value={travelersCount}
           onChange={(e) => setTravelersCount(e.target.value)}
         />

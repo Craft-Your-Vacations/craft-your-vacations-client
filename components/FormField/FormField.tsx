@@ -8,7 +8,8 @@ interface FormFieldProps extends FieldBaseProps {
   defaultValue?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   autoComplete?: string;
-  min?: string;
+  min?: string | number;
+  max?: string | number;
 }
 
 export function FormField({
@@ -26,6 +27,7 @@ export function FormField({
   onChange,
   autoComplete,
   min,
+  max,
 }: FormFieldProps) {
   const hasError = Boolean(errorMessage);
 
@@ -46,6 +48,7 @@ export function FormField({
         autoComplete={autoComplete}
         required={required}
         min={min}
+        max={max}
         className={`w-full px-4 py-3 rounded-xl text-body-md text-text placeholder:text-text-subtle bg-surface-highest border border-outline outline-none transition-all
          focus:border-transparent focus:ring-2 focus:ring-primary/50
          disabled:opacity-50 disabled:cursor-not-allowed

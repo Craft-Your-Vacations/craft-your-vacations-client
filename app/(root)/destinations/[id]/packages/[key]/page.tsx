@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import PageHero from "@/components/PageHero/PageHero";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { usePackageDetail } from "@/hooks/usePackageDetail";
 import { useDestination } from "@/hooks/useDestination";
 import { useCreateBooking } from "@/hooks/useCreateBooking";
@@ -31,6 +32,7 @@ export default function PackageDetailPage({
 }) {
   const { id, key } = use(params);
   const router = useRouter();
+  const { data: session } = useSession();
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingSuccessOpen, setBookingSuccessOpen] = useState(false);
   const { mutate: createBooking, isPending: bookingPending, error: bookingError } = useCreateBooking();
@@ -205,7 +207,7 @@ export default function PackageDetailPage({
 
             <button
               type="button"
-              onClick={() => setBookingOpen(true)}
+              onClick={() => session ? setBookingOpen(true) : router.push("/login")}
               className="w-full btn-gradient font-semibold py-3 rounded-2xl transition-opacity hover:opacity-90 mt-2"
             >
               Book This Package

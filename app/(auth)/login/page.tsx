@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { signIn, getSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import { Home } from "lucide-react";
 import Logo from "@/public/logo.png";
 import LogoText from "@/public/logo_text.png";
 import Button from "@/components/Button/Button";
@@ -89,7 +90,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-10 md:py-0">
+      {/* Mobile: in-flow above card */}
+      <div className="w-full max-w-sm mb-4 flex md:hidden">
+        <Button variant="secondary" size="sm" href="/">
+          <Home className="w-4 h-4" />
+          Home
+        </Button>
+      </div>
+      {/* Desktop: absolute top-left */}
+      <div className="absolute top-4 left-4 hidden md:block">
+        <Button variant="secondary" size="sm" href="/">
+          <Home className="w-4 h-4" />
+          Home
+        </Button>
+      </div>
       <AuthCard>
         {/* Logo */}
         <div className="flex items-center gap-2">
