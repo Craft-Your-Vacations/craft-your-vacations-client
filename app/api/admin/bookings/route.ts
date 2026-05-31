@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { bffFetch } from "@/lib/bff";
-import type { AdminBooking } from "@/app/types/api";
+import type { AdminBooking, PaginatedResponse } from "@/app/types/api";
 
 export async function GET(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET! });
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   if (pageSize) query.set("pageSize", pageSize);
   const qs = query.toString() ? `?${query.toString()}` : "";
 
-  const result = await bffFetch<AdminBooking[]>(`/api/Bookings/all${qs}`, req, {
+  const result = await bffFetch<PaginatedResponse<AdminBooking>>(`/api/Bookings/all${qs}`, req, {
     isPublic: false,
     cache: "no-store",
   });

@@ -25,11 +25,12 @@ export const queryKeys = {
   },
   admin: {
     allBookings: () => ['admin', 'bookings'] as const,
-    bookings: (status?: string) => ['admin', 'bookings', status ?? 'all'] as const,
+    bookings: (status?: string, page?: number) => ['admin', 'bookings', status ?? 'all', page ?? 1] as const,
     booking: (id: number) => ['admin', 'bookings', id] as const,
-    reviews: () => ['admin', 'reviews'] as const,
-    customers: () => ['admin', 'customers'] as const,
+    reviews: (isApproved?: boolean, page?: number) => ['admin', 'reviews', isApproved ?? 'all', page ?? 1] as const,
+    customers: (page?: number) => ['admin', 'customers', page ?? 1] as const,
     customer: (id: string) => ['admin', 'customers', id] as const,
+    customerBookings: (id: string) => ['admin', 'customers', id, 'bookings'] as const,
   },
 } as const;
  

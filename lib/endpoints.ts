@@ -19,6 +19,7 @@ import type {
   AdminReview,
   AdminUpdateBookingRequest,
   Customer,
+  PaginatedResponse,
   CreateDestinationRequest,
   CreatePackageRequest,
   UpdatePackageRequest,
@@ -29,7 +30,8 @@ import type {
 
 export const destinationsApi = {
   getAll: () => api.get<Destination[]>("destinations"),
-  getBySlug: (slug: string) => api.get<DestinationDetail>(`destinations/${slug}`),
+  getBySlug: (slug: string) =>
+    api.get<DestinationDetail>(`destinations/${slug}`),
 };
 
 export const packagesApi = {
@@ -86,30 +88,55 @@ export const unsplashApi = {
 
 export const adminApi = {
   // Bookings
-  getBookings: (status?: string) =>
-    api.get<AdminBooking[]>(`admin/bookings${status ? `?status=${status}` : ""}`),
+  getBookings: (status?: string, page = 1, pageSize = 10) => {
+    const q = new URLSearchParams({
+      page: String(page),
+      pageSize: String(pageSize),
+    });
+    if (status) q.set("status", status);
+    return api.get<PaginatedResponse<AdminBooking>>(
+      `admin/bookings?${q.toString()}`,
+    );
+  },
   getBooking: (id: number) => api.get<AdminBooking>(`admin/bookings/${id}`),
   updateBooking: (id: number, body: AdminUpdateBookingRequest) =>
     api.patch<AdminBooking>(`admin/bookings/${id}`, body),
   // Reviews
-  getReviews: () => api.get<AdminReview[]>("admin/reviews"),
+  getReviews: (page = 1, isApproved?: boolean, pageSize = 20) => {
+    const q = new URLSearchParams({
+      page: String(page),
+      pageSize: String(pageSize),
+    });
+    if (isApproved !== undefined) q.set("isApproved", String(isApproved));
+    return api.get<PaginatedResponse<AdminReview>>(
+      `admin/reviews?${q.toString()}`,
+    );
+  },
   approveReview: (id: number) =>
     api.post<AdminReview>(`admin/reviews/${id}/approve`, {}),
   deleteReview: (id: number) => api.delete<void>(`admin/reviews/${id}`),
   // Customers
-  getCustomers: () => api.get<Customer[]>("admin/users"),
+  getCustomers: (page = 1, pageSize = 20) =>
+    api.get<PaginatedResponse<Customer>>(
+      `admin/users?page=${page}&pageSize=${pageSize}`,
+    ),
   getCustomer: (id: string) => api.get<Customer>(`admin/users/${id}`),
+  getCustomerBookings: (id: string) => api.get<AdminBooking[]>(`admin/bookings/customer/${id}`),
   // Destinations
   createDestination: (body: CreateDestinationRequest) =>
     api.post<Destination>("admin/destinations", body),
   updateDestination: (id: number, body: Partial<CreateDestinationRequest>) =>
     api.patch<Destination>(`admin/destinations/${id}`, body),
-  deleteDestination: (id: number) => api.delete<void>(`admin/destinations/${id}`),
+  deleteDestination: (id: number) =>
+    api.delete<void>(`admin/destinations/${id}`),
   // Packages
   createPackage: (destId: number, body: CreatePackageRequest) =>
     api.post<PackageDetail>(`admin/destinations/${destId}/packages`, body),
   updatePackage: (destId: number, key: string, body: UpdatePackageRequest) =>
-    api.put<PackageDetail>(`admin/destinations/${destId}/packages/${key}`, body),
+    api.put<PackageDetail>(
+      `admin/destinations/${destId}/packages/${key}`,
+      body,
+    ),
   deletePackage: (destId: number, key: string) =>
     api.delete<void>(`admin/destinations/${destId}/packages/${key}`),
 };

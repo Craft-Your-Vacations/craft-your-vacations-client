@@ -54,6 +54,11 @@ export const bookingStatusClasses: Record<BookingStatus, string> = {
   cancelled: "bg-red-500/15 text-red-400",
 };
 
+export const REVIEW_TABS = [
+  { value: "pending", label: "Pending" },
+  { value: "approved", label: "Approved" },
+];
+
 /** Customer-facing display labels for each booking status */
 export const bookingStatusLabels: Record<BookingStatus, string> = {
   pending: "Pending Review",

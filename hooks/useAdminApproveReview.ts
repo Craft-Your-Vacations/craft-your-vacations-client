@@ -10,7 +10,7 @@ export function useAdminApproveReview() {
   return useMutation({
     mutationFn: (id: number) => adminApi.approveReview(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.reviews() });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'reviews'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.reviews.approved() });
     },
   });

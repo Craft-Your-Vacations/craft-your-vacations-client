@@ -9,6 +9,7 @@ import { CalendarDays, Users, ChevronRight } from "lucide-react";
 import AdminPageHeader from "@/app/(admin)/components/AdminPageHeader";
 import AdminFilterTabs from "@/app/(admin)/components/AdminFilterTabs";
 import BookingStatusBadge, { formatMonth } from "@/app/(admin)/components/BookingStatusBadge";
+import Pagination from "@/components/Pagination/Pagination";
 import { BOOKING_STATUSES } from "@/lib/constants";
 
 const STATUSES = [
@@ -18,8 +19,10 @@ const STATUSES = [
 
 export default function AdminBookingsPage() {
   const [activeStatus, setActiveStatus] = useState("");
-  const { data: bookings, isLoading, isError, error, refetch } = useAdminBookings(
-    activeStatus || undefined
+  const [page, setPage] = useState(1);
+  const { data, isLoading, isError, error, refetch } = useAdminBookings(
+    activeStatus || undefined,
+    page
   );
 
   if (isLoading) return <LoadingSpinner message="Loading bookings…" fullScreen={false} />;
@@ -31,14 +34,20 @@ export default function AdminBookingsPage() {
       />
     );
 
+  const bookings = data?.data ?? [];
+
   return (
-    <div className="p-8">
+    <div className="p-8 pb-24">
       <AdminPageHeader
         title="Bookings"
-        subtitle={`${bookings?.length ?? 0} total bookings`}
+        subtitle={`${data?.total ?? 0} total bookings`}
       />
 
-      <AdminFilterTabs tabs={STATUSES} active={activeStatus} onChange={setActiveStatus} />
+      <AdminFilterTabs
+        tabs={STATUSES}
+        active={activeStatus}
+        onChange={(s) => { setActiveStatus(s); setPage(1); }}
+      />
 
       <div className="glass rounded-2xl overflow-hidden">
         <table className="w-full">
@@ -63,14 +72,14 @@ export default function AdminBookingsPage() {
             </tr>
           </thead>
           <tbody>
-            {bookings?.length === 0 && (
+            {bookings.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center text-body-md text-text-muted">
                   No bookings found
                 </td>
               </tr>
             )}
-            {bookings?.map((booking) => (
+            {bookings.map((booking) => (
               <tr
                 key={booking.id}
                 className="border-b border-outline last:border-0 hover:bg-surface-high/50 transition-colors"
@@ -111,6 +120,15 @@ export default function AdminBookingsPage() {
           </tbody>
         </table>
       </div>
+
+      {data && (
+        <Pagination
+          page={page}
+          totalPages={data.totalPages}
+          total={data.total}
+          onPageChange={setPage}
+        />
+      )}
     </div>
   );
 }

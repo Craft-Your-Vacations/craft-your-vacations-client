@@ -3,7 +3,7 @@
 import { use } from "react";
 import Link from "next/link";
 import { useAdminCustomer } from "@/hooks/useAdminCustomer";
-import { useAdminBookings } from "@/hooks/useAdminBookings";
+import { useAdminCustomerBookings } from "@/hooks/useAdminCustomerBookings";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
 import {
@@ -33,9 +33,7 @@ export default function AdminCustomerDetailPage({
     error,
     refetch,
   } = useAdminCustomer(id);
-  const { data: allBookings, isLoading: bookingsLoading } = useAdminBookings();
-  const customerBookings =
-    allBookings?.filter((b) => b.customer.id === Number(id)) ?? [];
+  const { data: customerBookings = [], isLoading: bookingsLoading } = useAdminCustomerBookings(id);
 
   if (isLoading || bookingsLoading)
     return <LoadingSpinner message="Loading customer…" fullScreen={false} />;

@@ -11,15 +11,14 @@ import ConfirmDialog from "@/components/ConfirmDialog/ConfirmDialog";
 import { Star, Check, Trash2 } from "lucide-react";
 import AdminPageHeader from "@/app/(admin)/components/AdminPageHeader";
 import AdminFilterTabs from "@/app/(admin)/components/AdminFilterTabs";
-
-const TABS = [
-  { value: "pending", label: "Pending" },
-  { value: "approved", label: "Approved" },
-];
+import Pagination from "@/components/Pagination/Pagination";
+import { REVIEW_TABS } from "@/lib/constants";
 
 export default function AdminReviewsPage() {
   const [activeTab, setActiveTab] = useState("pending");
-  const { data: reviews, isLoading, isError, error, refetch } = useAdminReviews();
+  const [page, setPage] = useState(1);
+  const isApproved = activeTab === "approved" ? true : false;
+  const { data, isLoading, isError, error, refetch } = useAdminReviews(page, isApproved);
   const approveReview = useAdminApproveReview();
   const deleteReview = useAdminDeleteReview();
   const [confirmApproveId, setConfirmApproveId] = useState<number | null>(null);
@@ -31,25 +30,29 @@ export default function AdminReviewsPage() {
       <ErrorState message={error instanceof Error ? error.message : undefined} onRetry={refetch} />
     );
 
-  const filtered = reviews?.filter((r) => r.isApproved === (activeTab === "approved")) ?? [];
+  const reviews = data?.data ?? [];
 
   return (
-    <div className="p-8">
+    <div className="p-8 pb-24">
       <AdminPageHeader
         title="Reviews"
-        subtitle={`${reviews?.filter((r) => !r.isApproved).length ?? 0} pending approval`}
+        subtitle={`${data?.total ?? 0} ${activeTab === "approved" ? "approved" : "pending approval"}`}
       />
 
-      <AdminFilterTabs tabs={TABS} active={activeTab} onChange={setActiveTab} />
+      <AdminFilterTabs
+        tabs={REVIEW_TABS}
+        active={activeTab}
+        onChange={(t) => { setActiveTab(t); setPage(1); }}
+      />
 
-      {filtered.length === 0 && (
+      {reviews.length === 0 && (
         <div className="glass rounded-2xl p-12 text-center">
           <p className="text-body-md text-text-muted">No reviews in this category</p>
         </div>
       )}
 
       <div className="flex flex-col gap-4">
-        {filtered.map((review) => (
+        {reviews.map((review) => (
           <div key={review.id} className="glass rounded-2xl p-6 flex flex-col gap-4">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -113,6 +116,15 @@ export default function AdminReviewsPage() {
           </div>
         ))}
       </div>
+
+      {data && (
+        <Pagination
+          page={page}
+          totalPages={data.totalPages}
+          total={data.total}
+          onPageChange={setPage}
+        />
+      )}
 
       <ConfirmDialog
         isOpen={confirmApproveId !== null}

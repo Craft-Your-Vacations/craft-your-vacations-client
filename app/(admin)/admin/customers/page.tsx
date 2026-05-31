@@ -7,9 +7,11 @@ import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
 import { ChevronRight, Search } from "lucide-react";
 import AdminPageHeader from "@/app/(admin)/components/AdminPageHeader";
+import Pagination from "@/components/Pagination/Pagination";
 
 export default function AdminCustomersPage() {
-  const { data: customers, isLoading, isError, error, refetch } = useAdminCustomers();
+  const [page, setPage] = useState(1);
+  const { data, isLoading, isError, error, refetch } = useAdminCustomers(page);
   const [search, setSearch] = useState("");
 
   if (isLoading) return <LoadingSpinner message="Loading customers…" fullScreen={false} />;
@@ -18,18 +20,19 @@ export default function AdminCustomersPage() {
       <ErrorState message={error instanceof Error ? error.message : undefined} onRetry={refetch} />
     );
 
-  const filtered = customers?.filter(
+  const customers = data?.data ?? [];
+  const filtered = customers.filter(
     (c) =>
       c.name.toLowerCase().includes(search.toLowerCase()) ||
       c.email.toLowerCase().includes(search.toLowerCase()) ||
       c.mobileNumber.includes(search)
-  ) ?? [];
+  );
 
   return (
-    <div className="p-8">
+    <div className="p-8 pb-24">
       <AdminPageHeader
         title="Customers"
-        subtitle={`${customers?.length ?? 0} registered customers`}
+        subtitle={`${data?.total ?? 0} registered customers`}
       />
 
       <div className="relative mb-6 max-w-sm">
@@ -105,6 +108,15 @@ export default function AdminCustomersPage() {
           </tbody>
         </table>
       </div>
+
+      {data && (
+        <Pagination
+          page={page}
+          totalPages={data.totalPages}
+          total={data.total}
+          onPageChange={setPage}
+        />
+      )}
     </div>
   );
 }

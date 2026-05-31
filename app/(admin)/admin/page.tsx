@@ -11,17 +11,19 @@ import BookingStatusBadge from "@/app/(admin)/components/BookingStatusBadge";
 
 export default function AdminDashboard() {
   const { data: bookings, isLoading: bookingsLoading } = useAdminBookings();
-  const { data: reviews, isLoading: reviewsLoading } = useAdminReviews();
+  const { data: pendingBookingsData, isLoading: pendingLoading } = useAdminBookings("pending");
+  const { data: confirmedBookingsData, isLoading: confirmedLoading } = useAdminBookings("confirmed");
+  const { data: pendingReviewsData, isLoading: reviewsLoading } = useAdminReviews(1, false);
   const { data: customers, isLoading: customersLoading } = useAdminCustomers();
 
-  const isLoading = bookingsLoading || reviewsLoading || customersLoading;
+  const isLoading = bookingsLoading || pendingLoading || confirmedLoading || reviewsLoading || customersLoading;
 
   if (isLoading) return <LoadingSpinner message="Loading dashboard…" fullScreen={false} />;
 
-  const totalBookings = bookings?.length ?? 0;
-  const pendingBookings = bookings?.filter((b) => b.status === "pending").length ?? 0;
-  const pendingReviews = reviews?.filter((r) => !r.isApproved).length ?? 0;
-  const totalCustomers = customers?.length ?? 0;
+  const totalBookings = bookings?.total ?? 0;
+  const pendingBookings = pendingBookingsData?.total ?? 0;
+  const pendingReviews = pendingReviewsData?.total ?? 0;
+  const totalCustomers = customers?.total ?? 0;
 
   const stats = [
     {
@@ -36,7 +38,7 @@ export default function AdminDashboard() {
       value: pendingReviews,
       icon: Star,
       href: "/admin/reviews",
-      sub: `${(reviews?.length ?? 0) - pendingReviews} approved`,
+      sub: "awaiting approval",
     },
     {
       label: "Customers",
@@ -47,7 +49,7 @@ export default function AdminDashboard() {
     },
     {
       label: "Confirmed",
-      value: bookings?.filter((b) => b.status === "confirmed").length ?? 0,
+      value: confirmedBookingsData?.total ?? 0,
       icon: Clock,
       href: "/admin/bookings?status=confirmed",
       sub: "bookings confirmed",
@@ -88,7 +90,7 @@ export default function AdminDashboard() {
             </Link>
           </div>
           <div className="flex flex-col gap-3">
-            {bookings?.slice(0, 5).map((b) => (
+            {bookings?.data.slice(0, 5).map((b) => (
               <Link
                 key={b.id}
                 href={`/admin/bookings/${b.id}`}
@@ -113,25 +115,22 @@ export default function AdminDashboard() {
             </Link>
           </div>
           <div className="flex flex-col gap-3">
-            {reviews
-              ?.filter((r) => !r.isApproved)
-              .slice(0, 5)
-              .map((r) => (
-                <div
-                  key={r.id}
-                  className="flex items-center justify-between py-2 border-b border-outline last:border-0"
-                >
-                  <div>
-                    <p className="text-body-sm text-text">{r.authorName}</p>
-                    <p className="text-label-sm text-text-muted">{r.destinationSlug}</p>
-                  </div>
-                  <div className="flex items-center gap-1 text-label-sm text-primary">
-                    <Star className="w-3 h-3 fill-primary" />
-                    {r.rating}
-                  </div>
+            {pendingReviewsData?.data.slice(0, 5).map((r) => (
+              <div
+                key={r.id}
+                className="flex items-center justify-between py-2 border-b border-outline last:border-0"
+              >
+                <div>
+                  <p className="text-body-sm text-text">{r.authorName}</p>
+                  <p className="text-label-sm text-text-muted">{r.destinationSlug}</p>
                 </div>
-              ))}
-            {reviews?.filter((r) => !r.isApproved).length === 0 && (
+                <div className="flex items-center gap-1 text-label-sm text-primary">
+                  <Star className="w-3 h-3 fill-primary" />
+                  {r.rating}
+                </div>
+              </div>
+            ))}
+            {pendingReviews === 0 && (
               <p className="text-body-sm text-text-muted">No pending reviews</p>
             )}
           </div>
