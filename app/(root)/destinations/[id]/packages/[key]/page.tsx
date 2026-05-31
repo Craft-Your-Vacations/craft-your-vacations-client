@@ -207,7 +207,7 @@ export default function PackageDetailPage({
 
             <button
               type="button"
-              onClick={() => session ? setBookingOpen(true) : router.push("/login")}
+              onClick={() => session ? setBookingOpen(true) : router.replace("/login")}
               className="w-full btn-gradient font-semibold py-3 rounded-2xl transition-opacity hover:opacity-90 mt-2"
             >
               Book This Package
