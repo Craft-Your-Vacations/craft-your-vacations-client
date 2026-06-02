@@ -92,9 +92,10 @@ export default function ReviewCard({
               className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0"
             >
               <Image
-                src={src}
+                src={`/api/reviews/images?path=${encodeURIComponent(src)}`}
                 alt={`Trip photo ${i + 1}`}
                 fill
+                sizes="56px"
                 className="object-cover"
               />
             </div>

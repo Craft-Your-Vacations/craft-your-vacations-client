@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    localPatterns: [
+      { pathname: "/**" },
+      { pathname: "/api/reviews/images", search: "**" },
+    ],
     remotePatterns: [
       {
         protocol: "https",
@@ -13,14 +17,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // async headers() {
-  //   return [
-  //     {
-  //       source: "/(login|register|onboarding)",
-  //       headers: [{ key: "Cache-Control", value: "no-store" }],
-  //     },
-  //   ];
-  // },
 };
 
 export default nextConfig;

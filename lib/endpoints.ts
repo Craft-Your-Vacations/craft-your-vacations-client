@@ -75,7 +75,7 @@ export const documentsApi = {
 export const reviewsApi = {
   create: (body: CreateReviewRequest) => api.post<Review>("reviews", body),
   uploadImages: (id: number, formData: FormData) =>
-    api.post<Review>(`reviews/${id}/images`, formData),
+    api.postForm<Review>(`reviews/${id}/images`, formData),
   getByDestination: (slug: string) =>
     api.get<Review[]>(`reviews/destination/${slug}`),
   getApproved: () => api.get<Review[]>("reviews/approved"),

@@ -8,6 +8,7 @@ import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
 import Button from "@/components/Button/Button";
 import ConfirmDialog from "@/components/ConfirmDialog/ConfirmDialog";
+import Image from "next/image";
 import { Star, Check, Trash2 } from "lucide-react";
 import AdminPageHeader from "@/app/(admin)/components/AdminPageHeader";
 import AdminFilterTabs from "@/app/(admin)/components/AdminFilterTabs";
@@ -85,12 +86,15 @@ export default function AdminReviewsPage() {
             {review.imagePaths?.length > 0 && (
               <div className="flex gap-2 flex-wrap">
                 {review.imagePaths.map((path, i) => (
-                  <img
-                    key={i}
-                    src={path}
-                    alt="Review"
-                    className="w-20 h-20 rounded-lg object-cover"
-                  />
+                  <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden shrink-0">
+                    <Image
+                      src={`/api/reviews/images?path=${encodeURIComponent(path)}`}
+                      alt="Review"
+                      fill
+                      sizes="80px"
+                      className="object-cover"
+                    />
+                  </div>
                 ))}
               </div>
             )}
