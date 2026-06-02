@@ -15,12 +15,14 @@ interface ButtonProps {
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
+  xs: "px-3 py-1.5 text-body-sm",
   sm: "px-4 py-2 text-body-sm",
   md: "px-6 py-3 text-body-md",
   lg: "px-8 py-4 text-body-lg",
 };
 
 const iconSizeClasses: Record<ButtonSize, string> = {
+  xs: "w-7 h-7 text-[14px]",
   sm: "w-9 h-9 text-[18px]",
   md: "w-12 h-12 text-[20px]",
   lg: "w-14 h-14 text-[24px]",
@@ -56,6 +58,11 @@ export function Button({
     case "icon":
       variantClass =
         "rounded-full bg-surface-high text-text-muted hover:text-primary";
+      sizeClass = iconSizeClasses[size];
+      break;
+    case "overlay":
+      variantClass =
+        "rounded-full bg-black/40 backdrop-blur-sm text-white hover:bg-black/60";
       sizeClass = iconSizeClasses[size];
       break;
     case "text":

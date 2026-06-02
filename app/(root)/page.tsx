@@ -1,8 +1,6 @@
 "use client";
 import Button from "@/components/Button/Button";
 import {
-  Loader,
-  LucideArrowRightCircle,
   Compass,
   PenLine,
   Plane,
@@ -11,7 +9,7 @@ import {
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import IntroIcon1 from "@/public/introImage1.jpg";
-import IntroIcon5 from "@/public/introImage5.jpg";
+import IntroIcon2 from "@/public/introImage2.jpg";
 import CtaBanner from "@/components/CtaBanner/CtaBanner";
 import DestinationCard from "@/components/DestinationCard/DestinationCard";
 import ReviewCard from "@/components/ReviewCard/ReviewCard";
@@ -69,11 +67,12 @@ export default function HomePage() {
                   src={IntroIcon1}
                   fill
                   objectFit="cover"
+                  sizes="40vw"
                   alt="Intro icon"
                 />
               </div>
               <div className="absolute bottom-0 left-0 w-3/5 h-[50%] rounded-3xl overflow-hidden shadow-2xl z-30 border-8 border-white">
-                <Image src={IntroIcon5} alt="Intro icon" />
+                <Image src={IntroIcon2} alt="Intro icon" fill={true} sizes="30vw" />
               </div>
             </div>
           </div>

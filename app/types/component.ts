@@ -1,7 +1,7 @@
 import React from "react";
 
-export type ButtonVariant = "primary" | "secondary" | "error" | "icon" | "text";
-export type ButtonSize = "sm" | "md" | "lg";
+export type ButtonVariant = "primary" | "secondary" | "error" | "icon" | "overlay" | "text";
+export type ButtonSize = "xs" | "sm" | "md" | "lg";
 
 export interface NavLink {
   label: string;

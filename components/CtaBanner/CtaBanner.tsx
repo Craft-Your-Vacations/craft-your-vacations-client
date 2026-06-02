@@ -1,8 +1,8 @@
-import Image, { StaticImageData } from "next/image";
+import Image from "next/image";
 import Link from "next/link";
 import { Phone } from "lucide-react";
 import { DISPLAY_PHONE, WHATSAPP_URL } from "@/lib/contact";
-import BannerBg from "@/public/introImage2.jpg";
+import BannerBg from "@/public/introImage3.jpg";
 
 interface CtaBannerProps {
   heading?: string;

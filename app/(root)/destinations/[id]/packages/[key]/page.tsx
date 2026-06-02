@@ -23,7 +23,6 @@ import BookingModal from "@/components/BookingModal/BookingModal";
 import type { BookingSubmitData } from "@/components/BookingModal/BookingModal";
 import ModalSuccess from "@/components/ModalSuccess/ModalSuccess";
 import CtaBanner from "@/components/CtaBanner/CtaBanner";
-import FallbackBg from "@/public/introImage4.jpg";
 
 export default function PackageDetailPage({
   params,
@@ -88,7 +87,7 @@ export default function PackageDetailPage({
     destination?.packages.filter((p) => p.key !== key) ?? [];
 
   return (
-    <div className="section-gap">
+    <div className="pt-(--section-gap)">
       {/* ─── Hero ─── */}
       <PageHero
         imagePath={destination?.imagePath}

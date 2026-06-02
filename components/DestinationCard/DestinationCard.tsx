@@ -28,6 +28,7 @@ export function DestinationCard({
           src={imagePath}
           alt={title}
           fill
+          sizes="(max-width: 768px) 100vw, 33vw"
           className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
         />
       </div>

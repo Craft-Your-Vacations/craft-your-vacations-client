@@ -74,7 +74,7 @@ export default function DestinationDetailPage({
     allDestinations?.filter((d) => d.slug !== id).slice(0, 4) ?? [];
 
   return (
-    <div className="section-gap">
+    <div className="pt-(--section-gap)">
       {/* Hero */}
       <PageHero
         imagePath={imagePath}

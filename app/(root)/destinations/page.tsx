@@ -3,11 +3,9 @@ import DestinationCard from "@/components/DestinationCard/DestinationCard";
 import DestinationLandscapeCard from "@/components/DestinationLandscapeCard/DestinationLandscapeCard";
 import ErrorState from "@/components/ErrorState/ErrorState";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
-import Section from "@/components/Section/Sections";
 import CtaBanner from "@/components/CtaBanner/CtaBanner";
 import { useDestinations } from "@/hooks/useDestinations";
 import { MapPin } from "lucide-react";
-import BannerBg from "@/public/introImage3.jpg";
 
 export function DestinationsScreen() {
   const { data, isLoading, isError, error, refetch } = useDestinations();
@@ -33,7 +31,7 @@ export function DestinationsScreen() {
 
   return (
     <div>
-      <div id="destinations" className="section-gap mx-auto max-w-7xl px-6">
+      <div id="destinations" className="pt-(--section-gap) mx-auto max-w-7xl px-6">
         <div className="z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-col items-center">
             <h1 className="text-display-lg md:text-display-xl lg:text-display-xxl text-text tracking-tighter leading-hero">

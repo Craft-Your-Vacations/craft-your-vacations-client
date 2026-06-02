@@ -41,6 +41,7 @@ export default function PageHero({
           src={imagePath}
           alt={imageAlt}
           fill
+          sizes="100vw"
           className="object-cover scale-105"
           priority
         />
