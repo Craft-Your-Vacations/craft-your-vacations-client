@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { signOut } from "next-auth/react";
 
-const INACTIVITY_TIMEOUT_MS = 60 * 1000; // 15 minutes
+const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 const COUNTDOWN_SECONDS = 30;
 const COUNTDOWN_MS = COUNTDOWN_SECONDS * 1000;
 const LAST_ACTIVITY_KEY = "cyv_last_activity";

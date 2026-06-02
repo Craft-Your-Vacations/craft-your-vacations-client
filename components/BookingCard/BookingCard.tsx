@@ -85,7 +85,7 @@ export default function BookingCard({ booking, onReviewClick }: BookingCardProps
               Review submitted
             </div>
           ) : (
-            <Button variant="secondary" onClick={onReviewClick}>
+            <Button variant="secondary" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onReviewClick?.(); }}>
               Share Your Experience
             </Button>
           )}
