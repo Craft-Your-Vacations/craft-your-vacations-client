@@ -1,7 +1,5 @@
-import { getToken } from "next-auth/jwt";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { NextResponse } from "next/server";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:5025";
 
@@ -30,7 +28,6 @@ type BffResult<T> =
 
 export async function bffFetch<T>(
   path: string,
-  req: NextRequest,
   options: BffFetchOptions = {},
 ): Promise<BffResult<T>> {
   const {
@@ -42,9 +39,9 @@ export async function bffFetch<T>(
     rawBody,
   } = options;
 
-  // 1. Auth check — getServerSession triggers the jwt callback, which runs
-  // the token refresh logic before we ever reach the .NET backend.
-  const session = isPublic ? null : await getServerSession(authOptions);
+  // 1. Auth check — auth() triggers the jwt callback, which runs the token refresh
+  // logic and in v5 properly writes the refreshed token back to the session cookie.
+  const session = isPublic ? null : await auth();
 
   if (!isPublic && !session?.user?.userId) {
     return {
@@ -53,11 +50,6 @@ export async function bffFetch<T>(
     };
   }
 
-  // Read the (now refreshed) token from the cookie for the Authorization header.
-  const token = isPublic
-    ? null
-    : await getToken({ req, secret: process.env.NEXTAUTH_SECRET! });
-
   // 2. Build headers
   // rawBody (e.g. FormData) must not have Content-Type set manually — the
   // fetch API derives the correct multipart boundary automatically.
@@ -65,8 +57,10 @@ export async function bffFetch<T>(
     ? { ...headers }
     : { "Content-Type": "application/json", ...headers };
 
-  if (token?.backendAccessToken) {
-    fetchHeaders["Authorization"] = `Bearer ${token.backendAccessToken}`;
+  // session.backendAccessToken is the freshly-refreshed token (v5 writes cookie
+  // on refresh, so this is never stale unlike getToken({ req }) in v4).
+  if (session?.backendAccessToken) {
+    fetchHeaders["Authorization"] = `Bearer ${session.backendAccessToken}`;
   }
 
   // 3. Build fetch options (supports both Next.js revalidate and standard cache)

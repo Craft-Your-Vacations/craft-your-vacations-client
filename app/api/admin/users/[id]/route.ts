@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
 import { bffFetch } from "@/lib/bff";
+import { auth } from "@/lib/auth";
 import type { Customer } from "@/app/types/api";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET! });
-  if (token?.role !== "Admin") {
+  const session = await auth();
+  if (session?.user?.role !== "Admin") {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
 
   const { id } = await params;
 
-  const result = await bffFetch<Customer>(`/api/Users/${id}/admin`, req, {
+  const result = await bffFetch<Customer>(`/api/Users/${id}/admin`, {
     isPublic: false,
     cache: "no-store",
   });

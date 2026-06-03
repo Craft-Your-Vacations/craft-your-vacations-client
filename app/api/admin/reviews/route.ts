@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
 import { bffFetch } from "@/lib/bff";
+import { auth } from "@/lib/auth";
 import type { AdminReview, PaginatedResponse } from "@/app/types/api";
 
 export async function GET(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET! });
-  if (token?.role !== "Admin") {
+  const session = await auth();
+  if (session?.user?.role !== "Admin") {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
 
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   if (isApproved !== null) query.set("isApproved", isApproved);
   const qs = query.toString() ? `?${query.toString()}` : "";
 
-  const result = await bffFetch<PaginatedResponse<AdminReview>>(`/api/Reviews/all${qs}`, req, {
+  const result = await bffFetch<PaginatedResponse<AdminReview>>(`/api/Reviews/all${qs}`, {
     isPublic: false,
     cache: "no-store",
   });

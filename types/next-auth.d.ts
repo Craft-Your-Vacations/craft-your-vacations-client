@@ -12,6 +12,8 @@ declare module "next-auth" {
   }
 
   interface Session {
+    /** Server-side BFF use only — never read from client components. */
+    backendAccessToken: string;
     user: {
       userId: string;
       phoneVerified: boolean;

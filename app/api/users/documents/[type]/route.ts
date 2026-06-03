@@ -10,9 +10,7 @@ export async function PUT(
   const formData = await req.formData();
 
   const result = await bffFetch<UserDocument>(
-    `/api/Users/me/documents/${type}`,
-    req,
-    {
+    `/api/Users/me/documents/${type}`, {
       isPublic: false,
       method: "PUT",
       cache: "no-store",

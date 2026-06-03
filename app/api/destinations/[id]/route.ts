@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   const { id } = await params;
-  const result = await bffFetch<DestinationDetail>(`/api/Destinations/${id}`, req, {
+  const result = await bffFetch<DestinationDetail>(`/api/Destinations/${id}`, {
     isPublic: true,
     cache: "no-store",
   });

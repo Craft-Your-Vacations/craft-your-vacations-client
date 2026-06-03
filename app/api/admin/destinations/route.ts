@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
 import { bffFetch } from "@/lib/bff";
+import { auth } from "@/lib/auth";
 import type { Destination, CreateDestinationRequest } from "@/app/types/api";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET! });
-  if (token?.role !== "Admin") {
+  const session = await auth();
+  if (session?.user?.role !== "Admin") {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
 
   const body: CreateDestinationRequest = await req.json();
 
-  const result = await bffFetch<Destination>("/api/Destinations", req, {
+  const result = await bffFetch<Destination>("/api/Destinations", {
     isPublic: false,
     method: "POST",
     cache: "no-store",

@@ -47,7 +47,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 ## Stack
 - **Next.js 16.2.2** — App Router. Middleware file is `proxy.ts` (not `middleware.ts`), exported function is `proxy` (not `middleware`).
 - **React 19**, **TypeScript**, **Tailwind CSS v4**
-- **NextAuth** (`next-auth` v4) — Credentials + Google OAuth providers
+- **Auth.js** (`next-auth` v5 beta) — Credentials + Google OAuth providers
 - **TanStack React Query v5** for server state
 - **Zustand v5** for client UI state
 - **Axios** for browser-side HTTP (`lib/api.ts`)
@@ -76,8 +76,8 @@ Next.js API Route (app/api/...)
 ### Layer 2 — Next.js → .NET: `lib/bff.ts`
 - Used only inside route handlers (`app/api/**/route.ts`) — never from components
 - `isPublic: true` — skips auth check
-- `isPublic: false` (default) — calls `getServerSession(authOptions)` first, triggering the `jwt` callback which transparently refreshes the backend token if near expiry. Returns 401 if no valid session. Attaches `Authorization: Bearer <token>` automatically.
-- **Never replace `getServerSession` with `getToken` in `bffFetch`** — `getToken` bypasses the jwt callback and the token will never be refreshed inline.
+- `isPublic: false` (default) — calls `auth()` (Auth.js v5) first, triggering the `jwt` callback which transparently refreshes the backend token if near expiry and **writes the refreshed cookie back** (v5 fix). Returns 401 if no valid session. Attaches `Authorization: Bearer <token>` automatically via `session.backendAccessToken`.
+- **Never use `getToken` or `getServerSession` in route handlers** — use `auth()` from `@/lib/auth`. `getToken` reads the stale request cookie and bypasses the jwt callback.
 - `cache` defaults to `{ revalidate: 300 }` (5-min ISR). Override:
   - `{ revalidate: N }` — cache N seconds
   - `"no-store"` — always fresh (user-specific data)
@@ -127,8 +127,9 @@ Zustand — one store per concern, not per screen. Keep stores minimal: state + 
 
 ## Authentication
 
-- NextAuth config: `lib/auth.ts` — providers, JWT callbacks, refresh deduplication, sign-out revocation
+- Auth.js v5 config: `lib/auth.ts` — exports `{ handlers, auth, serverSignIn, serverSignOut }` via `NextAuth({...})`
 - Client session: `useSession()` from `next-auth/react`
+- Server session: `auth()` imported from `@/lib/auth` — use in route handlers and server components
 - `proxy.ts` is a passthrough — no redirect logic lives there
 
 ### Token flow
@@ -139,8 +140,8 @@ The .NET backend owns authentication. On login it returns `accessToken`, `refres
 - `session.user.role` — set by the backend on login; **cannot be overridden by client-side `update()` calls** (the `jwt` callback strips `role` from client-provided session updates)
 - Auto-refresh: `jwt` callback calls `POST /api/Auth/refresh` when the token is within 60 seconds of expiry. On failure: `token.error = "RefreshAccessTokenError"`
 - When `session?.error === "RefreshAccessTokenError"`, the refresh token is invalid — force sign-out. Guards check for this and redirect to `/login`
-- **`backendAccessToken` is server-only** — used inside `bffFetch` to attach the `Authorization` header. Never exposed to the browser
-- **Never replace `getServerSession` with `getToken` in `bffFetch`** — the jwt callback (and inline refresh) only fires via `getServerSession`
+- **`session.backendAccessToken` is server-only** — available via `auth()` in route handlers, used by `bffFetch` for the `Authorization` header. Never read `session.backendAccessToken` in client components (`useSession()`)
+- **Always use `auth()` from `@/lib/auth` in route handlers** — never `getToken` or `getServerSession`. Auth.js v5's `auth()` properly writes the refreshed cookie back, preventing the stale-token race condition.
 
 ### Concurrent refresh deduplication
 `lib/auth.ts` holds a module-level `pendingRefreshes: Map<string, Promise<JWT>>`. If multiple parallel requests trigger a refresh for the same user, only one actual `/refresh` call is made — the rest wait on the same promise. This prevents token rotation failures from concurrent 401s.

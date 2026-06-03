@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { auth } from "@/lib/auth";
 import { bffFetch } from "@/lib/bff";
 import type { UserDocument } from "@/app/types/api";
 
@@ -11,10 +11,12 @@ export async function GET(
 ) {
   const { type } = await params;
 
-  // Use bffFetch to get document metadata — triggers token refresh inline
+  // auth() is memoized per-request in v5 — calling it here and inside bffFetch
+  // both return the same fresh session without a double refresh.
+  const session = await auth();
+
   const metaResult = await bffFetch<UserDocument[]>(
     "/api/Users/me/documents",
-    req,
     { isPublic: false, cache: "no-store" },
   );
 
@@ -28,12 +30,9 @@ export async function GET(
     );
   }
 
-  // Token is now refreshed — read it to attach auth header for the file fetch
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET! });
-
   const fileRes = await fetch(`${BACKEND_URL}${doc.fileUrl}`, {
     headers: {
-      Authorization: `Bearer ${token?.backendAccessToken}`,
+      Authorization: `Bearer ${session?.backendAccessToken}`,
     },
   });
 

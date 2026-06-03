@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { auth } from "@/lib/auth";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:5025";
 
@@ -10,11 +10,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: "Invalid path" }, { status: 400 });
   }
 
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET! });
+  const session = await auth();
 
   const headers: Record<string, string> = {};
-  if (token?.backendAccessToken) {
-    headers["Authorization"] = `Bearer ${token.backendAccessToken}`;
+  if (session?.backendAccessToken) {
+    headers["Authorization"] = `Bearer ${session.backendAccessToken}`;
   }
 
   let fileRes: Response;

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { signIn, getSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Home } from "lucide-react";
 import Logo from "@/public/logo.png";
@@ -65,16 +65,12 @@ export default function LoginPage() {
     setLoading(false);
 
     if (result?.error) {
-      setError(
-        result.error === "TooManyRequests"
-          ? "Too many requests. Please try again in a minute."
-          : result.error,
-      );
+      setError("Invalid email or password.");
       return;
     }
 
-    const freshSession = await getSession();
-    router.replace(freshSession?.user?.role === "Admin" ? "/admin" : "/");
+    // RootGuard handles admin redirect — just navigate to / after login
+    router.replace("/");
   };
 
   const handleGoogleSignIn = async () => {

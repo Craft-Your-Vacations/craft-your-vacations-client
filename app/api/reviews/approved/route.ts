@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   const limit = searchParams.get("limit");
   const path = limit ? `/api/Reviews/approved?limit=${limit}` : "/api/Reviews/approved";
 
-  const result = await bffFetch<Review[]>(path, req, {
+  const result = await bffFetch<Review[]>(path, {
     isPublic: true,
     cache: "no-store",
   });

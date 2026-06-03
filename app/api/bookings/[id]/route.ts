@@ -8,7 +8,7 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const result = await bffFetch<Booking>(`/api/Bookings/${id}`, req, {
+  const result = await bffFetch<Booking>(`/api/Bookings/${id}`, {
     isPublic: false,
     method: "GET",
     cache: "no-store",

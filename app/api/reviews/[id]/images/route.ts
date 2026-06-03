@@ -9,7 +9,7 @@ export async function POST(
   const { id } = await params;
   const formData = await req.formData();
 
-  const result = await bffFetch<Review>(`/api/Reviews/${id}/images`, req, {
+  const result = await bffFetch<Review>(`/api/Reviews/${id}/images`, {
     isPublic: false,
     method: "POST",
     cache: "no-store",

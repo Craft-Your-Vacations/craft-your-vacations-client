@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
 import { bffFetch } from "@/lib/bff";
+import { auth } from "@/lib/auth";
 import type { PackageDetail, UpdatePackageRequest } from "@/app/types/api";
 
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; key: string }> }
 ): Promise<NextResponse> {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET! });
-  if (token?.role !== "Admin") {
+  const session = await auth();
+  if (session?.user?.role !== "Admin") {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
 
@@ -16,9 +16,7 @@ export async function PUT(
   const body: UpdatePackageRequest = await req.json();
 
   const result = await bffFetch<PackageDetail>(
-    `/api/Destinations/${id}/Packages/${key}`,
-    req,
-    {
+    `/api/Destinations/${id}/Packages/${key}`, {
       isPublic: false,
       method: "PUT",
       cache: "no-store",
@@ -34,17 +32,15 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; key: string }> }
 ): Promise<NextResponse> {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET! });
-  if (token?.role !== "Admin") {
+  const session = await auth();
+  if (session?.user?.role !== "Admin") {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
 
   const { id, key } = await params;
 
   const result = await bffFetch<void>(
-    `/api/Destinations/${id}/Packages/${key}`,
-    req,
-    {
+    `/api/Destinations/${id}/Packages/${key}`, {
       isPublic: false,
       method: "DELETE",
       cache: "no-store",

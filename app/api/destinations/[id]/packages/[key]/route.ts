@@ -8,9 +8,7 @@ export async function GET(
 ): Promise<NextResponse> {
   const { id, key } = await params;
   const result = await bffFetch<PackageDetail>(
-    `/api/Destinations/${id}/Packages/${key}`,
-    req,
-    { isPublic: true, cache: "no-store" }
+    `/api/Destinations/${id}/Packages/${key}`, { isPublic: true, cache: "no-store" }
   );
   if (!result.ok) return result.response;
   return NextResponse.json(result.data);

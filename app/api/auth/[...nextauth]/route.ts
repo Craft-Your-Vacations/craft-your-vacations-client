@@ -1,15 +1,10 @@
-import NextAuth from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { handlers } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
-import { getClientIp, isRateLimited, rateLimitResponse } from "@/lib/rateLimit";
+import { getClientIp, isRateLimited } from "@/lib/rateLimit";
 
-const handler = NextAuth(authOptions);
+export const GET = handlers.GET;
 
-export async function GET(req: NextRequest, ctx: unknown) {
-  return (handler as Function)(req, ctx);
-}
-
-export async function POST(req: NextRequest, ctx: unknown) {
+export async function POST(req: NextRequest) {
   if (req.nextUrl.pathname === "/api/auth/callback/credentials") {
     if (isRateLimited(`login:${getClientIp(req)}`)) {
       // NextAuth's signIn() does new URL(data.url) on the response — must be a valid URL.
@@ -20,5 +15,5 @@ export async function POST(req: NextRequest, ctx: unknown) {
       );
     }
   }
-  return (handler as Function)(req, ctx);
+  return handlers.POST(req);
 }

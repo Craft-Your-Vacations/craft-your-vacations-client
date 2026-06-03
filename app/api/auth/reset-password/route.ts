@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     return rateLimitResponse();
   const { identifier, otp, newPassword } = await req.json();
 
-  const result = await bffFetch<OtpResponse>("/api/Auth/reset-password", req, {
+  const result = await bffFetch<OtpResponse>("/api/Auth/reset-password", {
     isPublic: true,
     method: "POST",
     body: {

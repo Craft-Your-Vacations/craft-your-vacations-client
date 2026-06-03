@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     return rateLimitResponse();
   const { identifier } = await req.json();
 
-  const result = await bffFetch<OtpResponse>("/api/Auth/start-reset", req, {
+  const result = await bffFetch<OtpResponse>("/api/Auth/start-reset", {
     isPublic: true,
     method: "POST",
     body: { identifier: identifier },

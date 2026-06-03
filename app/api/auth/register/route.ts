@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   if (isRateLimited(`register:${getClientIp(req)}`, 5)) return rateLimitResponse();
   const body = await req.json();
 
-  const result = await bffFetch<User>("/api/Auth/register", req, {
+  const result = await bffFetch<User>("/api/Auth/register", {
     isPublic: true,
     method: "POST",
     body: {
