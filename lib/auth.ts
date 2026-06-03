@@ -1,10 +1,20 @@
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { encode } from "next-auth/jwt";
+import { cookies } from "next/headers";
 import type { NextAuthOptions } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import { isRateLimited } from "@/lib/rateLimit";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:5025";
+
+// v4 session cookie name — matches what next-auth uses internally.
+// In v4, session tokens are encoded with salt="" (empty string).
+// See next-auth/src/jwt/index.ts: "empty salt means a session token".
+const SESSION_COOKIE =
+  process.env.NEXTAUTH_URL?.startsWith("https://") || !!process.env.VERCEL
+    ? "__Secure-next-auth.session-token"
+    : "next-auth.session-token";
 
 // Deduplicates concurrent refresh calls for the same user within this server process.
 // Without this, parallel requests with an expired token each call /refresh independently,
@@ -29,13 +39,49 @@ async function doRefreshBackendToken(token: JWT): Promise<JWT> {
     if (!res.ok) throw new Error("Refresh failed");
     console.log("[auth] Refreshed backend token successfully");
     const data = await res.json();
-    return {
+    const refreshed: JWT = {
       ...token,
       backendAccessToken: data.accessToken,
       backendRefreshToken: data.refreshToken,
       backendTokenExpiry: data.accessTokenExpiry,
       error: undefined,
     };
+
+    // Write the refreshed token back to the session cookie immediately.
+    // getServerSession() in App Router route handlers has no response object,
+    // so the jwt callback's updated token is never written back. Without this,
+    // every sequential request arrives with the stale (already rotated) refresh
+    // token and .NET rejects it. This write fixes that for any number of instances.
+    try {
+      const encoded = await encode({
+        token: refreshed,
+        secret: process.env.NEXTAUTH_SECRET!,
+        // v4: salt="" means session token (next-auth/src/jwt/index.ts line 18)
+        salt: "",
+      });
+      // next-auth chunks cookies > 3936 bytes across multiple cookie names (.0, .1, ...).
+      // Our single cookies().set() only writes the base name — guard here so any
+      // future payload growth fails loudly instead of silently corrupting the session.
+      if (encoded.length > 3936) {
+        console.error(
+          `[auth] Encoded session token is ${encoded.length} bytes — exceeds the 3936-byte chunk threshold. Cookie NOT written.`,
+        );
+      } else {
+        (await cookies()).set(SESSION_COOKIE, encoded, {
+          httpOnly: true,
+          secure: SESSION_COOKIE.startsWith("__Secure-"),
+          sameSite: "lax",
+          path: "/",
+          maxAge: 30 * 24 * 60 * 60,
+        });
+        console.log("[auth] Session cookie updated after token refresh");
+      }
+    } catch (cookieErr) {
+      // Non-fatal — pendingRefreshes still prevents concurrent double-refreshes.
+      console.log("[auth] Could not write session cookie:", cookieErr);
+    }
+
+    return refreshed;
   } catch {
     console.log("[auth] Token refresh FAILED");
     return { ...token, error: "RefreshAccessTokenError" };
