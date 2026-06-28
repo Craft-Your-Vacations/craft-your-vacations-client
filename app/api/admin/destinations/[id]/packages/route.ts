@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { revalidateTag } from "next/cache";
+import { requireAdmin } from "@/lib/routeHelpers";
 import { bffFetch } from "@/lib/bff";
 import type { PackageDetail, CreatePackageRequest } from "@/app/types/api";
 
@@ -7,10 +8,8 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET! });
-  if (token?.role !== "Admin") {
-    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
-  }
+  const guard = await requireAdmin(req);
+  if (guard instanceof NextResponse) return guard;
 
   const { id } = await params;
   const body: CreatePackageRequest = await req.json();
@@ -27,5 +26,7 @@ export async function POST(
   );
 
   if (!result.ok) return result.response;
+  revalidateTag("packages", { expire: 0 });
+  revalidateTag("destinations", { expire: 0 });
   return NextResponse.json(result.data, { status: 201 });
 }

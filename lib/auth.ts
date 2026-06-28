@@ -16,9 +16,11 @@ const SESSION_COOKIE =
     ? "__Secure-next-auth.session-token"
     : "next-auth.session-token";
 
-// Deduplicates concurrent refresh calls for the same user within this server process.
-// Without this, parallel requests with an expired token each call /refresh independently,
-// causing token rotation failures (401) for all but the first.
+// Deduplicates concurrent refresh calls within this server process.
+// Keyed by refreshToken (not userId) so late-arriving requests that carry the same
+// already-consumed refresh token find the cached result instead of re-attempting a
+// dead refresh. The 10s grace period covers the window between the server writing the
+// Set-Cookie header and the browser receiving it and sending the updated cookie.
 const pendingRefreshes = new Map<string, Promise<JWT>>();
 
 async function doRefreshBackendToken(token: JWT): Promise<JWT> {
@@ -29,6 +31,7 @@ async function doRefreshBackendToken(token: JWT): Promise<JWT> {
     console.log("[auth] Refresh rate limited for user", token.userId);
     return { ...token, error: "RefreshAccessTokenError" };
   }
+  console.log("[auth] Refresh Token", token.backendRefreshToken);
 
   try {
     const res = await fetch(`${BACKEND_URL}/api/Auth/refresh`, {
@@ -89,17 +92,21 @@ async function doRefreshBackendToken(token: JWT): Promise<JWT> {
 }
 
 async function refreshBackendToken(token: JWT): Promise<JWT> {
-  const userId = token.userId;
-  const pending = pendingRefreshes.get(userId);
+  const key = token.backendRefreshToken as string;
+  const pending = pendingRefreshes.get(key);
   if (pending) return pending;
 
   const promise = doRefreshBackendToken(token);
-  pendingRefreshes.set(userId, promise);
-  try {
-    return await promise;
-  } finally {
-    pendingRefreshes.delete(userId);
-  }
+  pendingRefreshes.set(key, promise);
+  // Keep the resolved promise for 10 seconds so late-arriving requests with the same
+  // (already consumed) refresh token reuse the cached result rather than hitting .NET.
+  // On network failure, doRefreshBackendToken resolves with error — still cache it
+  // briefly to avoid hammering a down backend, but clear sooner (2s).
+  promise.then((result) => {
+    const ttl = result.error ? 2_000 : 10_000;
+    setTimeout(() => pendingRefreshes.delete(key), ttl);
+  });
+  return promise;
 }
 
 export const authOptions: NextAuthOptions = {

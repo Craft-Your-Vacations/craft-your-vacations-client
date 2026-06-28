@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { requireAdmin } from "@/lib/routeHelpers";
 import { bffFetch } from "@/lib/bff";
 import type { Customer, PaginatedResponse } from "@/app/types/api";
 
 export async function GET(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET! });
-  if (token?.role !== "Admin") {
-    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
-  }
+  const guard = await requireAdmin(req);
+  if (guard instanceof NextResponse) return guard;
 
   const { searchParams } = new URL(req.url);
   const page = searchParams.get("page");

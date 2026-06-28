@@ -88,7 +88,7 @@ export default function ReviewDialog({
           {imagePaths.map((src, i) => (
             <div key={i} className="relative w-36 h-24 rounded-xl overflow-hidden shrink-0">
               <Image
-                src={`/api/reviews/images?path=${encodeURIComponent(src)}`}
+                src={src}
                 alt={`Trip photo ${i + 1}`}
                 fill
                 sizes="144px"

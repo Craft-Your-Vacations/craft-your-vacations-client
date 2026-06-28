@@ -9,7 +9,7 @@ interface BffFetchOptions {
   /** If true, skips the auth check. Use for public endpoints. */
   isPublic?: boolean;
   /** Next.js cache strategy. Defaults to revalidate every 300s. */
-  cache?: RequestCache | { revalidate: number };
+  cache?: RequestCache | { revalidate: number; tags?: string[] };
   /** Extra headers to forward to .NET */
   headers?: Record<string, string>;
   /** HTTP method. Defaults to GET. */
@@ -72,7 +72,7 @@ export async function bffFetch<T>(
   // 3. Build fetch options (supports both Next.js revalidate and standard cache)
   const cacheConfig =
     typeof cache === "object" && "revalidate" in cache
-      ? { next: cache as { revalidate: number } }
+      ? { next: cache as { revalidate: number; tags?: string[] } }
       : { cache: cache as RequestCache };
 
   const fetchOptions: RequestInit = {

@@ -43,7 +43,7 @@ return (
     <>
       {/* ── Card ── */}
       <div
-        className={`flex flex-col glass rounded-2xl overflow-hidden shadow-lg shadow-primary/20 max-w-sm w-full h-[460px] ${className}`}
+        className={`flex flex-col glass rounded-2xl overflow-hidden shadow-lg shadow-primary/20 max-w-sm w-full h-[400px] ${className}`}
       >
         {/* ── Cards WITH images: carousel + author overlay ── */}
         {hasImages ? (
@@ -56,7 +56,7 @@ return (
                 }`}
               >
                 <Image
-                  src={`/api/reviews/images?path=${encodeURIComponent(src)}`}
+                  src={src}
                   alt={`${authorName}'s trip photo ${i + 1}`}
                   fill
                   sizes="(max-width: 768px) 100vw, 384px"

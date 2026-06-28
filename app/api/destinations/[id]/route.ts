@@ -9,7 +9,7 @@ export async function GET(
   const { id } = await params;
   const result = await bffFetch<DestinationDetail>(`/api/Destinations/${id}`, req, {
     isPublic: true,
-    cache: "no-store",
+    cache: { revalidate: 300, tags: ["destinations"] }, // matches 5-min staleTime in useDestination
   });
 
   if (!result.ok) return result.response;

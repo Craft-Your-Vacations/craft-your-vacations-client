@@ -249,7 +249,7 @@ export default function BookingDetailPage({
             </div>
             <div className="h-[70vh]">
               <iframe
-                src={`/api/users/documents/${viewDoc.type}/file`}
+                src={viewDoc.fileUrl}
                 className="w-full h-full"
                 title={DOCUMENT_LABELS[viewDoc.type]}
               />

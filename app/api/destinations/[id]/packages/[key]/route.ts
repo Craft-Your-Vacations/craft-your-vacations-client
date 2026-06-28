@@ -10,7 +10,7 @@ export async function GET(
   const result = await bffFetch<PackageDetail>(
     `/api/Destinations/${id}/Packages/${key}`,
     req,
-    { isPublic: true, cache: "no-store" }
+    { isPublic: true, cache: { revalidate: 300, tags: ["packages"] } } // matches 5-min staleTime in usePackageDetail
   );
   if (!result.ok) return result.response;
   return NextResponse.json(result.data);

@@ -242,7 +242,7 @@ export default function DestinationDetailPage({
                   className="relative aspect-square rounded-2xl overflow-hidden"
                 >
                   <Image
-                    src={`/api/reviews/images?path=${encodeURIComponent(src)}`}
+                    src={src}
                     alt={`Customer memory ${i + 1}`}
                     fill
                     sizes="(max-width: 768px) 50vw, 25vw"

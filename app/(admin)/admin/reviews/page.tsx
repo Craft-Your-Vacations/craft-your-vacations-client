@@ -88,7 +88,7 @@ export default function AdminReviewsPage() {
                 {review.imagePaths.map((path, i) => (
                   <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden shrink-0">
                     <Image
-                      src={`/api/reviews/images?path=${encodeURIComponent(path)}`}
+                      src={path}
                       alt="Review"
                       fill
                       sizes="80px"
