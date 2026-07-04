@@ -67,7 +67,7 @@ export default function AdminDestinationsPage() {
 
               <button
                 onClick={() => setConfirmDeleteId(dest.id)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-body-sm text-text-muted bg-surface hover:bg-red-500/10 hover:text-red-400 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-body-sm text-text-muted bg-surface hover:bg-error/10 hover:text-error transition-colors"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 Delete

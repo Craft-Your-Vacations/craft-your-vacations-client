@@ -96,7 +96,7 @@ export default function NewDestinationPage() {
             {createDestination.isPending ? "Creating…" : "Create Destination"}
           </Button>
           {createDestination.error && (
-            <span className="text-body-sm text-red-400">
+            <span className="text-body-sm text-error">
               {createDestination.error instanceof Error
                 ? createDestination.error.message
                 : "Failed to create"}

@@ -43,7 +43,7 @@ export function SelectField({
           className={`w-full px-4 py-3 pr-10 rounded-xl text-body-md text-text bg-surface-highest border border-outline outline-none appearance-none cursor-pointer transition-all
            focus:ring-2 focus:ring-primary/50 focus:border-primary/40
            disabled:opacity-50 disabled:cursor-not-allowed
-           ${hasError ? "ring-2 ring-red-500/50 border-red-500/50" : ""}
+           ${hasError ? "ring-2 ring-error/50 border-error/50" : ""}
          `}
         >
           {placeholder && (
@@ -65,7 +65,7 @@ export function SelectField({
           <ChevronDown/>
         </span>
       </div>
-      {hasError && <p className="text-body-sm text-red-400">{errorMessage}</p>}
+      {hasError && <p className="text-body-sm text-error">{errorMessage}</p>}
       {!hasError && helperText && (
         <p className="text-body-sm text-text-subtle">{helperText}</p>
       )}

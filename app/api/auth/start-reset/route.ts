@@ -15,6 +15,13 @@ export async function POST(req: NextRequest) {
     cache: "no-store",
   });
 
-  if (!result.ok) return result.response;
+  if (!result.ok) {
+    if (result.response.status >= 500)
+      return NextResponse.json(
+        { message: "Failed to send OTP. Please try again later." },
+        { status: 500 },
+      );
+    return result.response;
+  }
   return NextResponse.json(result.data);
 }

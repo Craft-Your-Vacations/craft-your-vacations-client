@@ -76,7 +76,7 @@ export default function ReviewModal({
         {/* Star picker */}
         <div className="flex flex-col gap-2">
           <label className="text-label-sm text-text-muted uppercase tracking-widest">
-            Your rating <span className="text-red-400">*</span>
+            Your rating <span className="text-error">*</span>
           </label>
           <div className="flex gap-2" onMouseLeave={() => setHoverRating(0)}>
             {Array.from({ length: 5 }).map((_, i) => {
@@ -144,7 +144,7 @@ export default function ReviewModal({
         </div>
 
         {error && (
-          <p className="text-body-sm text-red-400">
+          <p className="text-body-sm text-error">
             {error.message || "Something went wrong. Please try again."}
           </p>
         )}

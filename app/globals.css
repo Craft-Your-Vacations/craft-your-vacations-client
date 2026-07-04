@@ -34,6 +34,11 @@
   /* App main theme color will be the same for both themes */
   --color-primary-app: #75d2f7;
 
+  /* --- Semantic status --- */
+  --color-error: #dc2626;   /* red-600 — readable on light surfaces */
+  --color-warning: #d97706; /* amber-600 — readable on light surfaces */
+  --color-success: #16a34a; /* green-600 — readable on light surfaces */
+
   /* --- Ghost Border (accessibility only) --- */
   --color-outline: rgba(190, 200, 206, 0.2);
 
@@ -83,6 +88,11 @@
   /* App main theme color will be the same for both themes */
   --color-primary-app: #75d2f7;
 
+  /* --- Semantic status --- */
+  --color-error: #f87171;   /* red-400 — readable on dark surfaces */
+  --color-warning: #fbbf24; /* amber-400 — readable on dark surfaces */
+  --color-success: #4ade80; /* green-400 — readable on dark surfaces */
+
   /* --- Ghost Border fallback (accessibility only) --- */
   --color-outline: rgba(120, 120, 120, 0.15); /* outline_variant @15%   */
 
@@ -128,6 +138,11 @@
   --color-text-muted: var(--color-text-muted);
   --color-text-subtle: var(--color-text-subtle);
   --color-outline: var(--color-outline);
+
+  /* Semantic status */
+  --color-error: var(--color-error);
+  --color-warning: var(--color-warning);
+  --color-success: var(--color-success);
 
   /* Overlay */
   --color-overlay: var(--color-overlay);

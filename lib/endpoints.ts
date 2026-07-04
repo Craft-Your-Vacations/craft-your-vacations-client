@@ -26,6 +26,7 @@ import type {
   UserDocument,
   DocumentType,
   UnsplashPhoto,
+  SendChangeEmailRequest,
 } from "@/app/types/api";
 
 export const destinationsApi = {
@@ -52,6 +53,15 @@ export const phoneApi = {
     api.post<OtpResponse>("phone/send-otp", body),
   verifyOtp: (body: VerifyOtpRequest) =>
     api.post<OtpResponse>("phone/verify-otp", body),
+};
+
+export const emailApi = {
+  sendVerification: () =>
+    api.post<OtpResponse>("email/send-verification", {}),
+  verifyToken: (body: { token: string }) =>
+    api.post<{ purpose: string }>("email/verify-token", body),
+  sendChange: (body: SendChangeEmailRequest) =>
+    api.post<OtpResponse>("email/send-change", body),
 };
 
 export const usersApi = {

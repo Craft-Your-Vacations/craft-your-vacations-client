@@ -31,11 +31,11 @@ export default function ConfirmDialog({
     <Dialog isOpen={isOpen} onClose={onCancel} ariaLabel={title} className="items-center gap-5 text-center">
       <div
         className={`w-12 h-12 rounded-full flex items-center justify-center ${
-          variant === "danger" ? "bg-red-500/15" : "bg-primary/15"
+          variant === "danger" ? "bg-error/15" : "bg-primary/15"
         }`}
       >
         <AlertTriangle
-          className={`w-6 h-6 ${variant === "danger" ? "text-red-400" : "text-primary"}`}
+          className={`w-6 h-6 ${variant === "danger" ? "text-error" : "text-primary"}`}
           strokeWidth={1.5}
         />
       </div>

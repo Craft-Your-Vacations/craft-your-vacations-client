@@ -84,10 +84,15 @@ export interface User {
   image?: string;
   mobileNumber: string;
   phoneVerified: boolean;
+  emailVerified: boolean;
   dateOfBirth?: string;
   nationality?: string;
   countryOfResidence?: string;
   profession?: string;
+}
+
+export interface SendChangeEmailRequest {
+  newEmail: string;
 }
 
 export interface OtpResponse {

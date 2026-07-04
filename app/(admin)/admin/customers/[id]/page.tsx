@@ -132,7 +132,7 @@ export default function AdminCustomerDetailPage({
                 Phone Verified
               </span>
               <span
-                className={`text-label-sm px-2 py-0.5 rounded-full ${customer.phoneVerified ? "bg-green-500/15 text-green-400" : "bg-red-500/15 text-red-400"}`}
+                className={`text-label-sm px-2 py-0.5 rounded-full ${customer.phoneVerified ? "bg-success/15 text-success" : "bg-error/15 text-error"}`}
               >
                 {customer.phoneVerified ? "Yes" : "No"}
               </span>

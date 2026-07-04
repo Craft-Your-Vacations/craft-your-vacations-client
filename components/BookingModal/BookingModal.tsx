@@ -109,7 +109,7 @@ export function BookingModal({
         />
 
         {error && (
-          <p className="text-body-sm text-red-400">
+          <p className="text-body-sm text-error">
             {error.message || "Something went wrong. Please try again."}
           </p>
         )}

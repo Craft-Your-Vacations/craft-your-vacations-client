@@ -111,7 +111,7 @@ export default function AdminReviewsPage() {
               )}
               <button
                 onClick={() => setConfirmDeleteId(review.id)}
-                className="flex items-center gap-1.5 text-body-sm text-text-muted hover:text-red-400 transition-colors"
+                className="flex items-center gap-1.5 text-body-sm text-text-muted hover:text-error transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
                 Delete

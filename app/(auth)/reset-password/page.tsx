@@ -76,7 +76,7 @@ function IdentifierStep({
         required
         autoComplete="email"
       />
-      {error && <p className="text-body-sm text-red-400">{error.message}</p>}
+      {error && <p className="text-body-sm text-error">{error.message}</p>}
       <Button
         variant="primary"
         size="md"
@@ -196,7 +196,7 @@ function ResetStep({ identifier }: { identifier: string }) {
       />
 
       {error && (
-        <p className="text-body-sm text-red-400 text-center">{error.message}</p>
+        <p className="text-body-sm text-error text-center">{error.message}</p>
       )}
 
       <Button

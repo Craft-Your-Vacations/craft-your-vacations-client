@@ -93,7 +93,7 @@ export default function ItineraryEditor({ itinerary, onChange }: ItineraryEditor
               <button
                 type="button"
                 onClick={() => removeDay(dayIndex)}
-                className="text-text-muted hover:text-red-400 transition-colors"
+                className="text-text-muted hover:text-error transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -151,7 +151,7 @@ export default function ItineraryEditor({ itinerary, onChange }: ItineraryEditor
                     <button
                       type="button"
                       onClick={() => removeActivity(dayIndex, actIndex)}
-                      className="p-2 text-text-muted hover:text-red-400 transition-colors shrink-0"
+                      className="p-2 text-text-muted hover:text-error transition-colors shrink-0"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

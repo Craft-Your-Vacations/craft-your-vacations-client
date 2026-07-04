@@ -53,7 +53,7 @@ export default function DocumentUpload({
           <span className="text-body-sm font-semibold text-text">{label}</span>
         </div>
         {existingDocument ? (
-          <span className="flex items-center gap-1.5 text-label-sm text-green-500 font-medium">
+          <span className="flex items-center gap-1.5 text-label-sm text-success font-medium">
             <CheckCircle className="w-3.5 h-3.5" />
             Uploaded
           </span>
@@ -68,8 +68,8 @@ export default function DocumentUpload({
           <>
             {/* Document info row */}
             <div className="flex items-center gap-3 p-3 rounded-xl">
-              <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center shrink-0">
-                <FileCheck className="w-5 h-5 text-green-500" />
+              <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
+                <FileCheck className="w-5 h-5 text-success" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-body-sm font-medium text-text">

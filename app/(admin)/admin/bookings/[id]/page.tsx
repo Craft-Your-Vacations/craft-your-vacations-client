@@ -278,10 +278,10 @@ export default function AdminBookingDetailPage({
               Save Changes
             </Button>
             {saveSuccess && (
-              <span className="text-body-sm text-green-400">Saved successfully</span>
+              <span className="text-body-sm text-success">Saved successfully</span>
             )}
             {updateBooking.error && (
-              <span className="text-body-sm text-red-400">
+              <span className="text-body-sm text-error">
                 {updateBooking.error instanceof Error
                   ? updateBooking.error.message
                   : "Failed to save"}

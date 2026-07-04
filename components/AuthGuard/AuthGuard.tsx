@@ -9,12 +9,12 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
+  const isAuthPage = pathname === "/login" || pathname === "/register";
 
   useEffect(() => {
     if (status === "loading") return;
 
     const isOnboarding = pathname === "/onboarding";
-    const isAuthPage = pathname === "/login" || pathname === "/register";
 
     if (!session && isOnboarding) {
       router.replace("/login");
@@ -25,8 +25,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (isAuthPage && session && session?.user?.phoneVerified === true) {
-      router.replace("/");
+    if (isAuthPage && session) {
+      router.replace(session.user?.phoneVerified ? "/" : "/onboarding");
     }
   }, [session, status, pathname, router]);
 
@@ -34,8 +34,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (session?.user?.role === "Admin") return null;
 
-  if (pathname === "/login" && session && session?.user?.phoneVerified === true)
-    return null;
+  if (isAuthPage && session) return null;
 
   return <main className="min-h-screen bg-bg">{children}</main>;
 }

@@ -117,7 +117,7 @@ export default function NewPackagePage({
             {createPackage.isPending ? "Creating…" : "Create Package"}
           </Button>
           {createPackage.error && (
-            <span className="text-body-sm text-red-400">
+            <span className="text-body-sm text-error">
               {createPackage.error instanceof Error
                 ? createPackage.error.message
                 : "Failed to create"}

@@ -140,9 +140,9 @@ export default function EditPackagePage({
           >
             Save Changes
           </Button>
-          {saveSuccess && <span className="text-body-sm text-green-400">Saved successfully</span>}
+          {saveSuccess && <span className="text-body-sm text-success">Saved successfully</span>}
           {updatePackage.error && (
-            <span className="text-body-sm text-red-400">
+            <span className="text-body-sm text-error">
               {updatePackage.error instanceof Error
                 ? updatePackage.error.message
                 : "Failed to save"}

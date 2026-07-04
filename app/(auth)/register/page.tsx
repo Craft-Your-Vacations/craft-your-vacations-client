@@ -13,6 +13,7 @@ import AuthCard from "@/components/AuthCard/AuthCard";
 import { useRegister } from "@/hooks/useRegister";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
+import { isValidEmail } from "@/lib/utils";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -24,11 +25,17 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [signInError, setSignInError] = useState("");
+  const [validationError, setValidationError] = useState("");
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
     setSignInError("");
+    setValidationError("");
 
+    if (!isValidEmail(email.trim())) {
+      setValidationError("Please enter a valid email address.");
+      return;
+    }
     if (password !== confirmPassword) return;
 
     register(
@@ -130,9 +137,9 @@ export default function RegisterPage() {
             }
           />
 
-          {(error || signInError) && (
-            <p className="text-body-sm text-red-400">
-              {error?.message ?? signInError}
+          {(validationError || error || signInError) && (
+            <p className="text-body-sm text-error">
+              {validationError || error?.message || signInError}
             </p>
           )}
 

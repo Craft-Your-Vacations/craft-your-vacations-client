@@ -141,9 +141,9 @@ export default function EditDestinationPage({
           >
             {updateDestination.isPending ? "Saving…" : "Save Changes"}
           </Button>
-          {saveSuccess && <span className="text-body-sm text-green-400">Saved successfully</span>}
+          {saveSuccess && <span className="text-body-sm text-success">Saved successfully</span>}
           {updateDestination.error && (
-            <span className="text-body-sm text-red-400">
+            <span className="text-body-sm text-error">
               {updateDestination.error instanceof Error
                 ? updateDestination.error.message
                 : "Failed to save"}
@@ -191,7 +191,7 @@ export default function EditDestinationPage({
 
                 <button
                   onClick={() => setConfirmDeleteKey(pkg.key)}
-                  className="p-1.5 rounded-lg text-text-muted hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                  className="p-1.5 rounded-lg text-text-muted hover:text-error hover:bg-error/10 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>

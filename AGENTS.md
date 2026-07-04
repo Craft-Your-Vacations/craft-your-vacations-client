@@ -18,6 +18,11 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Never use arbitrary CSS in `className` (e.g. `[box-shadow:...]`). Always use Tailwind's built-in utilities or token-based variants (e.g. `shadow-lg shadow-primary/20`).
 - This project uses **Tailwind CSS v4**. Always use v4 utility names — never v3 names. When in doubt about a utility name, check the Tailwind v4 docs. Do not assume v3 class names still apply.
 - Before introducing any new color, typography, or design token, check `global.css` first. Use existing variables — do not add new ones.
+- **Status colors — always use semantic tokens, never raw Tailwind palette colors:**
+  - Error / destructive: `text-error`, `bg-error/10`, `ring-error/50`, `border-error/50`, `hover:text-error`, `hover:bg-error/10`
+  - Warning: `text-warning`, `bg-warning/10`, `border-warning/20`
+  - Success: `text-success`, `bg-success/10`, `bg-success/15`
+  - These tokens are defined in `globals.css` and automatically adapt to light/dark theme. Never use `text-red-*`, `text-amber-*`, `text-green-*`, `bg-red-*`, etc. for semantic status.
 
 ## Mobile-first & Responsive Design
 - **Always design for mobile first.** Base styles for mobile, `md:` overrides for desktop.
@@ -29,16 +34,40 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Components
 - Check `components/` for an existing component before creating a new one.
-- New components go in `components/` and must be reusable.
+- New components go in `components/<Name>/<Name>.tsx` and must be reusable.
+- **Never write a wall of JSX directly in a page.** Pages should be composed of named components — if a UI block has a clear identity, extract it.
+
+### When to extract a component
+Extract into its own file when the block is any of the following:
+
+| Signal | Examples |
+|--------|---------|
+| **Reusable** — used or likely to be used in 2+ places | banners, document cards, upload rows |
+| **Self-contained** — has its own local state, step logic, or refs | dialogs, OTP inputs, multi-step flows |
+| **Independently meaningful** — has a clear name distinct from the page | `ChangePhoneDialog`, `EmailVerificationBanner` |
+
+### When NOT to extract
+- A few lines of JSX with no state and no reuse potential
+- Tightly coupled to one page's specific data with no logical boundary of its own
+- So simple that extracting would only move code without adding clarity
 
 ## Dialogs and Modals
 - Always use `components/Dialog/Dialog.tsx` as the base. Never write overlay/backdrop/panel wrapper manually.
+- **Every dialog gets its own component file** in `components/<Name>Dialog/<Name>Dialog.tsx` — never write dialog JSX inline in a page.
 - Pass `onClose` when dismissible (backdrop click / Escape). Omit for non-dismissible dialogs (e.g. inactivity warning).
 - `size="lg"` for form-heavy modals; default `size="sm"` for confirmation dialogs.
 
 ## Page vs Component responsibilities
-- **Modals belong to the page.** Never render or control modal state inside a card, list item, or reusable component.
-- **Queries and mutations belong to the page.** Never call `useQuery` or `useMutation` inside cards, modals, or child components — pass data and callbacks as props.
+- **Modals belong to the page.** The page controls `isOpen` state and renders the dialog component — never control modal open/close inside a card, list item, or child component.
+- **Queries and mutations belong to the page.** Never call `useQuery` or `useMutation` inside dialog or card components — pass data and callbacks as props.
+- **Components own their local UI state.** Field values, step toggles (e.g. `sent`, `otpSent`), OTP digit arrays, and input refs all live inside the component, not the page.
+
+### Callback pattern for dialogs
+Pass mutations down as `onAction(value: string, onSuccess: () => void)` — the page fires the mutation and calls `onSuccess` on completion; the dialog uses `onSuccess` to advance its own step state (e.g. `() => setSent(true)`). Never pass raw mutation functions directly.
+
+### Close handler convention
+- **Page close handler:** `setOpen(false)` + `resetMutation()` only — never reset component-internal state from the page.
+- **Component:** `useEffect(() => { if (!isOpen) resetLocalState(); }, [isOpen])` — the component is responsible for cleaning up its own state when closed.
 
 ---
 

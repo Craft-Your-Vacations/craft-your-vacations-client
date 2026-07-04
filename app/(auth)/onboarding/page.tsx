@@ -15,6 +15,7 @@ import AuthCard from "@/components/AuthCard/AuthCard";
 import { useSendOtp } from "@/hooks/useSendOtp";
 import { useVerifyOtp } from "@/hooks/useVerifyOtp";
 import { useUpdateProfile } from "@/hooks/useUpdateProfile";
+import { isValidPhone } from "@/lib/utils";
 
 // ─── Progress indicator ────────────────────────────────────────────────────────
 
@@ -50,9 +51,15 @@ function ProgressDots({ current }: { current: (typeof STEPS)[number] }) {
 function PhoneStep() {
   const { phone, setPhone, nextStep } = useOnboardingStore();
   const { mutate: sendOtp, isPending, error } = useSendOtp();
+  const [validationError, setValidationError] = useState("");
 
   const handleSend = () => {
     if (!phone.trim()) return;
+    if (!isValidPhone(phone.trim())) {
+      setValidationError("Please enter a valid 10-digit phone number.");
+      return;
+    }
+    setValidationError("");
     sendOtp({ mobileNumber: phone.trim() }, { onSuccess: () => nextStep() });
   };
 
@@ -68,13 +75,15 @@ function PhoneStep() {
         id="phone"
         label="Phone number"
         type="tel"
-        placeholder="+1 234 567 8900"
+        placeholder="+91 1234567890"
         value={phone}
-        onChange={(e) => setPhone(e.target.value)}
+        onChange={(e) => { setPhone(e.target.value); setValidationError(""); }}
         required
         autoComplete="tel"
       />
-      {error && <p className="text-body-sm text-red-400">{error.message}</p>}
+      {(validationError || error) && (
+        <p className="text-body-sm text-error">{validationError || error?.message}</p>
+      )}
       <Button
         variant="primary"
         size="md"
@@ -188,7 +197,7 @@ function OtpStep() {
       </div>
 
       {(verifyError || resendError) && (
-        <p className="text-body-sm text-red-400 text-center">
+        <p className="text-body-sm text-error text-center">
           {(verifyError ?? resendError)!.message}
         </p>
       )}
@@ -284,7 +293,7 @@ function ProfileStep() {
         />
       </div>
 
-      {error && <p className="text-body-sm text-red-400">{error.message}</p>}
+      {error && <p className="text-body-sm text-error">{error.message}</p>}
 
       <Button
         variant="primary"

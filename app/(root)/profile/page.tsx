@@ -3,16 +3,23 @@
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { CircleUser, BadgeCheck, X } from "lucide-react";
+import { CircleUser, BadgeCheck } from "lucide-react";
 import AuthCard from "@/components/AuthCard/AuthCard";
 import FormField from "@/components/FormField/FormField";
 import Button from "@/components/Button/Button";
-import Dialog from "@/components/Dialog/Dialog";
 import DocumentUpload from "@/components/DocumentUpload/DocumentUpload";
+import EmailVerificationBanner from "@/components/EmailVerificationBanner/EmailVerificationBanner";
+import ChangeEmailDialog from "@/components/ChangeEmailDialog/ChangeEmailDialog";
+import ChangePhoneDialog from "@/components/ChangePhoneDialog/ChangePhoneDialog";
+import DocumentViewerDialog from "@/components/DocumentViewerDialog/DocumentViewerDialog";
 import { useProfile } from "@/hooks/useProfile";
 import { useUpdateProfile } from "@/hooks/useUpdateProfile";
 import { useUserDocuments } from "@/hooks/useUserDocuments";
 import { useUploadDocument } from "@/hooks/useUploadDocument";
+import { useSendOtp } from "@/hooks/useSendOtp";
+import { useVerifyOtp } from "@/hooks/useVerifyOtp";
+import { useSendEmailVerification } from "@/hooks/useSendEmailVerification";
+import { useSendChangeEmail } from "@/hooks/useSendChangeEmail";
 import { queryKeys } from "@/lib/queryKeys";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import type { UserDocument, DocumentType } from "@/app/types/api";
@@ -37,9 +44,20 @@ export default function ProfilePage() {
   const [nationality, setNationality] = useState("");
   const [countryOfResidence, setCountryOfResidence] = useState("");
   const [profession, setProfession] = useState("");
-  const [mobile, setMobile] = useState("");
 
-  // Initialise fields once profile data arrives
+  // Email verification banner
+  const { mutate: sendEmailVerification, isPending: isSendingVerif, error: sendVerifError } = useSendEmailVerification();
+  const [emailVerifSent, setEmailVerifSent] = useState(false);
+
+  // Change email modal
+  const [changeEmailOpen, setChangeEmailOpen] = useState(false);
+  const { mutate: sendChangeEmail, isPending: isSendingChangeEmail, error: sendChangeEmailError, reset: resetChangeEmail } = useSendChangeEmail();
+
+  // Change phone modal
+  const [changePhoneOpen, setChangePhoneOpen] = useState(false);
+  const { mutate: sendOtp, isPending: isSendingPhoneOtp, error: sendPhoneError, reset: resetSendOtp } = useSendOtp();
+  const { mutate: verifyOtp, isPending: isVerifyingPhone, error: verifyPhoneError, reset: resetVerifyOtp } = useVerifyOtp();
+
   useEffect(() => {
     if (!profile) return;
     setName(profile.name ?? "");
@@ -47,7 +65,6 @@ export default function ProfilePage() {
     setNationality(profile.nationality ?? "");
     setCountryOfResidence(profile.countryOfResidence ?? "");
     setProfession(profile.profession ?? "");
-    setMobile(profile.mobileNumber ?? "");
   }, [profile]);
 
   const initial = {
@@ -56,7 +73,6 @@ export default function ProfilePage() {
     nationality: profile?.nationality ?? "",
     countryOfResidence: profile?.countryOfResidence ?? "",
     profession: profile?.profession ?? "",
-    mobileNumber: profile?.mobileNumber ?? "",
   };
 
   const isDirty =
@@ -64,8 +80,7 @@ export default function ProfilePage() {
     dateOfBirth !== initial.dateOfBirth ||
     nationality !== initial.nationality ||
     countryOfResidence !== initial.countryOfResidence ||
-    profession !== initial.profession ||
-    mobile != initial.mobileNumber;
+    profession !== initial.profession;
 
   const docMap = Object.fromEntries((documents ?? []).map((d) => [d.type, d]));
 
@@ -80,13 +95,45 @@ export default function ProfilePage() {
       { name, dateOfBirth, nationality, countryOfResidence, profession },
       {
         onSuccess: async (updatedUser) => {
-          if (name !== initial.name) {
-            await update({ name });
-          }
+          if (name !== initial.name) await update({ name });
           queryClient.setQueryData(queryKeys.profile.me(), updatedUser);
         },
       },
     );
+  };
+
+  // Change phone handlers
+  const handleSendPhoneOtp = (phone: string, onSuccess: () => void) => {
+    sendOtp({ mobileNumber: phone }, { onSuccess });
+  };
+
+  const handleVerifyPhoneOtp = (phone: string, otp: string, onSuccess: () => void) => {
+    verifyOtp(
+      { mobileNumber: phone, otp },
+      {
+        onSuccess: async () => {
+          await update({ phoneVerified: true });
+          queryClient.invalidateQueries({ queryKey: queryKeys.profile.me() });
+          onSuccess();
+        },
+      },
+    );
+  };
+
+  const closeChangePhoneModal = () => {
+    setChangePhoneOpen(false);
+    resetSendOtp();
+    resetVerifyOtp();
+  };
+
+  // Change email handlers
+  const handleSendChangeEmail = (email: string, onSuccess: () => void) => {
+    sendChangeEmail({ newEmail: email }, { onSuccess });
+  };
+
+  const closeChangeEmailModal = () => {
+    setChangeEmailOpen(false);
+    resetChangeEmail();
   };
 
   const userInitials = (profile?.name ?? "")
@@ -96,9 +143,7 @@ export default function ProfilePage() {
     .toUpperCase()
     .slice(0, 2);
 
-  if (isLoading) {
-    return <LoadingSpinner message="Fetching your profile" />;
-  }
+  if (isLoading) return <LoadingSpinner message="Fetching your profile" />;
 
   return (
     <div className="pt-24 pb-10 px-6 md:px-10 max-w-(--container-max-w) mx-auto flex justify-center">
@@ -113,6 +158,21 @@ export default function ProfilePage() {
             <p className="text-body-sm text-text-muted">{profile?.email}</p>
           </div>
         </div>
+
+        {/* Email verification banner */}
+        {profile && !profile.emailVerified && (
+          <EmailVerificationBanner
+            email={profile.email ?? ""}
+            onResend={() =>
+              sendEmailVerification(undefined, {
+                onSuccess: () => setEmailVerifSent(true),
+              })
+            }
+            isSending={isSendingVerif}
+            error={sendVerifError}
+            sent={emailVerifSent}
+          />
+        )}
 
         {/* Tab nav */}
         <div className="w-full flex border-b border-outline -mb-2">
@@ -140,27 +200,59 @@ export default function ProfilePage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
-            <FormField
-              id="email"
-              label="Email"
-              type="email"
-              value={profile?.email ?? ""}
-              disabled
-            />
-            <FormField
-              id="mobile"
-              label="Mobile Number"
-              placeholder="+91 1234567890"
-              value={mobile}
-              disabled={true}
-              onChange={(e) => setMobile(e.target.value)}
-            />
-            {profile?.phoneVerified && (
-              <span className="flex items-center gap-1 text-label-sm text-primary">
-                <BadgeCheck className="w-4 h-4" />
-                Verified
-              </span>
-            )}
+
+            {/* Email */}
+            <div className="flex flex-col gap-1">
+              <FormField
+                id="email"
+                label="Email"
+                type="email"
+                value={profile?.email ?? ""}
+                disabled
+              />
+              <div className="flex items-center gap-3">
+                {profile?.emailVerified ? (
+                  <span className="flex items-center gap-1 text-label-sm text-primary">
+                    <BadgeCheck className="w-4 h-4" />
+                    Verified
+                  </span>
+                ) : (
+                  <span className="text-label-sm text-warning">Unverified</span>
+                )}
+                <button
+                  onClick={() => setChangeEmailOpen(true)}
+                  className="text-label-sm text-primary hover:underline cursor-pointer"
+                >
+                  Change
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile */}
+            <div className="flex flex-col gap-1">
+              <FormField
+                id="mobile"
+                label="Mobile Number"
+                placeholder="+91 1234567890"
+                value={profile?.mobileNumber ?? ""}
+                disabled
+              />
+              <div className="flex items-center gap-3">
+                {profile?.phoneVerified && (
+                  <span className="flex items-center gap-1 text-label-sm text-primary">
+                    <BadgeCheck className="w-4 h-4" />
+                    Verified
+                  </span>
+                )}
+                <button
+                  onClick={() => setChangePhoneOpen(true)}
+                  className="text-label-sm text-primary hover:underline cursor-pointer"
+                >
+                  Change
+                </button>
+              </div>
+            </div>
+
             <FormField
               id="dob"
               label="Date of birth"
@@ -189,9 +281,7 @@ export default function ProfilePage() {
               value={profession}
               onChange={(e) => setProfession(e.target.value)}
             />
-            {error && (
-              <p className="text-body-sm text-red-400">{error.message}</p>
-            )}
+            {error && <p className="text-body-sm text-error">{error.message}</p>}
             {isDirty && (
               <Button
                 variant="primary"
@@ -235,32 +325,33 @@ export default function ProfilePage() {
         </Button>
       </AuthCard>
 
-      <Dialog
+      <DocumentViewerDialog
         isOpen={!!viewDoc}
         onClose={() => setViewDoc(null)}
-        ariaLabel={viewDoc ? `View ${DOCUMENT_LABELS[viewDoc.type]}` : ""}
-        size="lg"
-      >
-        {viewDoc && (
-          <>
-            <div className="flex items-center justify-between">
-              <p className="text-body-md font-semibold text-text">
-                {DOCUMENT_LABELS[viewDoc.type]}
-              </p>
-              <Button variant="icon" size="sm" onClick={() => setViewDoc(null)} aria-label="Close">
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-            <div className="h-[70vh]">
-              <iframe
-                src={viewDoc.fileUrl}
-                className="w-full h-full"
-                title={DOCUMENT_LABELS[viewDoc.type]}
-              />
-            </div>
-          </>
-        )}
-      </Dialog>
+        document={viewDoc}
+        label={viewDoc ? DOCUMENT_LABELS[viewDoc.type] : ""}
+      />
+
+      <ChangeEmailDialog
+        isOpen={changeEmailOpen}
+        onClose={closeChangeEmailModal}
+        currentEmail={profile?.email ?? ""}
+        onSend={handleSendChangeEmail}
+        isSending={isSendingChangeEmail}
+        error={sendChangeEmailError}
+      />
+
+      <ChangePhoneDialog
+        isOpen={changePhoneOpen}
+        onClose={closeChangePhoneModal}
+        currentPhone={profile?.mobileNumber ?? ""}
+        onSendOtp={handleSendPhoneOtp}
+        onVerifyOtp={handleVerifyPhoneOtp}
+        isSendingOtp={isSendingPhoneOtp}
+        isVerifying={isVerifyingPhone}
+        sendOtpError={sendPhoneError}
+        verifyError={verifyPhoneError}
+      />
     </div>
   );
 }

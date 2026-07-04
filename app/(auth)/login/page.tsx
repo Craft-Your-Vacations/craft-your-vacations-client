@@ -121,7 +121,7 @@ export default function LoginPage() {
         </div>
 
         {resetSuccess && (
-          <p className="text-body-sm text-green-500 text-center w-full">
+          <p className="text-body-sm text-success text-center w-full">
             Password reset successfully. You can now sign in.
           </p>
         )}
@@ -169,7 +169,7 @@ export default function LoginPage() {
               required
               autoComplete="current-password"
             />
-            {error && <p className="text-body-sm text-red-400">{error}</p>}
+            {error && <p className="text-body-sm text-error">{error}</p>}
             <Button
               variant="primary"
               size="md"
