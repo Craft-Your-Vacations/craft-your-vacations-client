@@ -54,7 +54,7 @@ export default function PageHero({
       <div className="absolute inset-0 bg-linear-to-r from-black/60 via-black/15 to-transparent" />
 
       {/* Back button — glass pill */}
-      <div className="absolute top-6 left-0 right-0 max-w-7xl mx-auto px-6">
+      <div className="absolute top-6 left-0 right-0 max-w-(--container-max-w) mx-auto px-6 md:px-10">
         <button
           type="button"
           onClick={onBack}
@@ -66,7 +66,7 @@ export default function PageHero({
       </div>
 
       {/* Content — sits in the lower portion with generous spacing */}
-      <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-6 md:px-10 pb-12 flex flex-col gap-5">
+      <div className="absolute bottom-0 left-0 right-0 max-w-(--container-max-w) mx-auto px-6 md:px-10 pb-12 flex flex-col gap-5">
 
         {/* Location tags */}
         {tags && tags.length > 0 && (

@@ -39,9 +39,9 @@ export default function HomePage() {
 
   return (
     <div className="no-scrollbar overflow-y-auto">
-      <section className="relative min-h-[60vh] md:min-h-[75vh] lg:h-230.25 px-6 md:pl-30 md:pr-0 pt-20 md:pt-0 flex items-center overflow-hidden bg-surface-low">
-        <div className="flex flex-row max-w-6xl">
-          <div className="z-10 max-w-3xl">
+      <section className="relative min-h-[60vh] md:min-h-[75vh] lg:h-230.25 pt-20 md:pt-0 flex items-center overflow-hidden bg-surface-low">
+        <div className="mx-auto max-w-(--container-max-w) px-6 md:px-10 w-full">
+          <div className="z-10 lg:w-1/2">
             <span className="label text-primary font-bold tracking-[0.2em] mb-6 block uppercase text-label-sm">
               Elevate Your Perspective
             </span>
@@ -80,7 +80,7 @@ export default function HomePage() {
       </section>
       {/* About Us */}
       <section id="about" className="mt-10 md:mt-16">
-        <div className="mx-auto max-w-7xl px-6">
+        <div className="mx-auto max-w-(--container-max-w) px-6 md:px-10">
           {/* Top block */}
           <div className="flex flex-col lg:flex-row lg:items-center gap-12 mb-16">
             {/* Left — text */}
@@ -159,7 +159,7 @@ export default function HomePage() {
         className="mt-10 md:mt-16 border-t border-outline"
       >
         {data && (
-          <div className="mx-auto max-w-7xl px-6 mt-8 md:mt-16">
+          <div className="mx-auto max-w-(--container-max-w) px-6 md:px-10 mt-8 md:mt-16">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-8 md:mb-16">
               <div className="flex flex-col gap-4">
                 <span className="text-headline-lg text-text">
@@ -205,7 +205,7 @@ export default function HomePage() {
           id="testimonials"
           className="mt-10 md:mt-16 border-t border-outline"
         >
-          <div className="mx-auto max-w-7xl px-6 mt-8 md:mt-16">
+          <div className="mx-auto max-w-(--container-max-w) px-6 md:px-10 mt-8 md:mt-16">
             <div className="flex flex-row items-center justify-between mb-6 md:mb-12">
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-2">

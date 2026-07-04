@@ -54,6 +54,9 @@
 
   /* --- Spacing rhythm --- */
   --section-gap: 80px;
+
+  /* --- Layout --- */
+  --container-max-w: 90rem; /* 1440px — standard page container */
 }
 
 [data-theme="dark"] {

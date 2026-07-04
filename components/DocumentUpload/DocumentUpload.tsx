@@ -32,40 +32,97 @@ export default function DocumentUpload({
     }
   }
 
+  const formattedDate = existingDocument
+    ? new Date(
+        existingDocument.updatedAt ?? existingDocument.uploadedAt
+      ).toLocaleDateString("en-US", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : null;
+
   return (
-    <div className="flex flex-col gap-3 p-4 rounded-2xl border border-outline bg-surface-high">
-      <div className="flex items-center gap-2">
-        <FileCheck className="w-4 h-4 text-primary/70 shrink-0" />
-        <span className="text-body-sm text-text font-medium">{label}</span>
+    <div className="glass ghost-border rounded-2xl overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-outline">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">
+            <FileCheck className="w-4 h-4 text-primary" />
+          </div>
+          <span className="text-body-sm font-semibold text-text">{label}</span>
+        </div>
+        {existingDocument ? (
+          <span className="flex items-center gap-1.5 text-label-sm text-green-500 font-medium">
+            <CheckCircle className="w-3.5 h-3.5" />
+            Uploaded
+          </span>
+        ) : (
+          <span className="text-label-sm text-text-subtle">Not uploaded</span>
+        )}
       </div>
 
-      {existingDocument ? (
-        <Button
-          variant="secondary"
-          onClick={() => onView(existingDocument)}
-          className="w-full justify-between px-3 py-2.5"
-          size="sm"
-        >
-          <div className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-green-400 shrink-0" />
-            <div className="text-left">
-              <p className="text-label-sm font-medium">Document uploaded</p>
-              <p className="text-label-sm text-text-muted font-normal">
-                {new Date(
-                  existingDocument.updatedAt ?? existingDocument.uploadedAt
-                ).toLocaleDateString("en-US", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })}
+      {/* Body */}
+      <div className="p-4 flex flex-col gap-3">
+        {existingDocument ? (
+          <>
+            {/* Document info row */}
+            <div className="flex items-center gap-3 p-3 rounded-xl">
+              <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center shrink-0">
+                <FileCheck className="w-5 h-5 text-green-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-body-sm font-medium text-text">
+                  Document on file
+                </p>
+                <p className="text-label-sm text-text-muted">
+                  Updated {formattedDate}
+                </p>
+              </div>
+              <Button
+                variant="icon"
+                size="sm"
+                onClick={() => onView(existingDocument)}
+                aria-label="View document"
+              >
+                <Eye className="w-4 h-4" />
+              </Button>
+            </div>
+
+            {/* Update action */}
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => inputRef.current?.click()}
+              disabled={isUploading}
+              className="w-full justify-center"
+            >
+              <Upload className="w-4 h-4" />
+              {isUploading ? "Uploading…" : "Update document"}
+            </Button>
+          </>
+        ) : (
+          /* Upload zone */
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            disabled={isUploading}
+            className="flex flex-col items-center gap-3 py-8 rounded-xl border-2 border-dashed border-outline hover:border-primary/50 hover:bg-primary/5 transition-all group disabled:opacity-50 cursor-pointer"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-surface-high group-hover:bg-primary/10 transition-colors flex items-center justify-center">
+              <Upload className="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" />
+            </div>
+            <div className="text-center">
+              <p className="text-body-sm text-text-muted group-hover:text-text transition-colors">
+                {isUploading ? "Uploading…" : "Click to upload"}
+              </p>
+              <p className="text-label-sm text-text-subtle mt-0.5">
+                PDF, JPG or PNG
               </p>
             </div>
-          </div>
-          <Eye className="w-4 h-4 text-text-muted shrink-0" />
-        </Button>
-      ) : (
-        <p className="text-label-sm text-text-muted">Not yet uploaded</p>
-      )}
+          </button>
+        )}
+      </div>
 
       <input
         ref={inputRef}
@@ -75,16 +132,6 @@ export default function DocumentUpload({
         onChange={handleFileChange}
         disabled={isUploading}
       />
-
-      <Button
-        variant="secondary"
-        onClick={() => inputRef.current?.click()}
-        disabled={isUploading}
-        className="w-full justify-center"
-      >
-        <Upload className="w-4 h-4 mr-2" />
-        {isUploading ? "Uploading…" : existingDocument ? "Update Document" : "Upload"}
-      </Button>
     </div>
   );
 }

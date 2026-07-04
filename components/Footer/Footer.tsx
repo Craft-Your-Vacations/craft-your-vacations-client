@@ -60,7 +60,7 @@ export function Footer({
 
   return (
     <footer className={`bg-surface-low border-t border-outline ${className}`}>
-      <div className="mx-auto max-w-7xl px-6 py-16">
+      <div className="mx-auto max-w-(--container-max-w) px-6 md:px-10 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           {/* Brand column */}
           <div className="flex flex-col gap-4">

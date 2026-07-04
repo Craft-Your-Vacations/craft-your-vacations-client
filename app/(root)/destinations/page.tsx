@@ -31,7 +31,7 @@ export function DestinationsScreen() {
 
   return (
     <div>
-      <div id="destinations" className="pt-(--section-gap) mx-auto max-w-7xl px-6">
+      <div id="destinations" className="pt-(--section-gap) mx-auto max-w-(--container-max-w) px-6 md:px-10">
         <div className="z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-col items-center">
             <h1 className="text-display-lg md:text-display-xl lg:text-display-xxl text-text tracking-tighter leading-hero">

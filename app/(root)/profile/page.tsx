@@ -101,7 +101,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="pt-24 pb-10 px-4 flex justify-center">
+    <div className="pt-24 pb-10 px-6 md:px-10 max-w-(--container-max-w) mx-auto flex justify-center">
       <AuthCard className="max-w-md gap-6">
         {/* Avatar + identity */}
         <div className="flex flex-col items-center gap-3">

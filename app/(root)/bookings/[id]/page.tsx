@@ -83,7 +83,7 @@ export default function BookingDetailPage({
   const docMap = Object.fromEntries((documents ?? []).map((d) => [d.type, d]));
 
   return (
-    <div className="pt-24 pb-16 px-4 max-w-4xl mx-auto">
+    <div className="pt-24 pb-16 px-6 md:px-10 max-w-(--container-max-w) mx-auto">
       {/* Back link */}
       <Link
         href="/bookings"

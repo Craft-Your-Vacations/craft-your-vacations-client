@@ -69,7 +69,7 @@ export default function BookingsPage() {
   }
 
   return (
-    <div className="pt-24 pb-16 px-4 max-w-4xl mx-auto">
+    <div className="pt-24 pb-16 px-6 md:px-10 max-w-(--container-max-w) mx-auto">
       {/* Page header */}
       <div className="mb-10">
         <h1 className="text-display-sm text-text">My Bookings</h1>
