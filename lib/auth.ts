@@ -4,8 +4,6 @@ import { encode } from "next-auth/jwt";
 import { cookies } from "next/headers";
 import type { NextAuthOptions } from "next-auth";
 import type { JWT } from "next-auth/jwt";
-import { isRateLimited } from "@/lib/rateLimit";
-
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:5025";
 
 // v4 session cookie name — matches what next-auth uses internally.
@@ -24,13 +22,6 @@ const SESSION_COOKIE =
 const pendingRefreshes = new Map<string, Promise<JWT>>();
 
 async function doRefreshBackendToken(token: JWT): Promise<JWT> {
-  // Per-user rate limit — refresh is server-to-server so no client IP is available.
-  // 10/min per userId is very generous (normal refresh cadence is once per 15 min)
-  // but stops runaway refresh loops from broken clients or stolen refresh tokens.
-  if (isRateLimited(`refresh:${token.userId}`, 10)) {
-    console.log("[auth] Refresh rate limited for user", token.userId);
-    return { ...token, error: "RefreshAccessTokenError" };
-  }
   console.log("[auth] Refresh Token", token.backendRefreshToken);
 
   try {
@@ -121,14 +112,25 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) return null;
+
+        // Forward client IP so .NET can rate-limit by real client IP.
+        const loginHeaders: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        const forwarded = req?.headers?.["x-forwarded-for"];
+        if (forwarded) {
+          loginHeaders["X-Forwarded-For"] = Array.isArray(forwarded)
+            ? forwarded[0]
+            : forwarded;
+        }
 
         let res: Response;
         try {
           res = await fetch(`${BACKEND_URL}/api/Auth/login`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: loginHeaders,
             body: JSON.stringify({
               Username: credentials.email,
               Password: credentials.password,

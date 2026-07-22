@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Home } from "lucide-react";
+import { useToastStore } from "@/stores/useToastStore";
 import Logo from "@/public/logo.png";
 import LogoText from "@/public/logo_text.png";
 import Button from "@/components/Button/Button";
@@ -38,22 +39,24 @@ const GoogleIcon = () => (
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const addToast = useToastStore((s) => s.addToast);
   const [activeTab, setActiveTab] = useState<Tab>("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(
-    searchParams.get("error") === "ServiceUnavailable"
-      ? "Our servers are temporarily unavailable. Please try again later."
-      : searchParams.get("error") === "TooManyRequests"
-        ? "Too many requests. Please try again in a minute."
-        : "",
-  );
-  const resetSuccess = searchParams.get("reset") === "success";
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const err = searchParams.get("error");
+    if (err === "ServiceUnavailable") {
+      addToast({ key: "login", type: "error", message: "Our servers are temporarily unavailable. Please try again later." });
+    }
+    if (searchParams.get("reset") === "success") {
+      addToast({ key: "reset-success", type: "success", message: "Password reset successfully. You can now sign in." });
+    }
+  }, []);
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
 
     const result = await signIn("credentials", {
@@ -65,11 +68,7 @@ export default function LoginPage() {
     setLoading(false);
 
     if (result?.error) {
-      setError(
-        result.error === "TooManyRequests"
-          ? "Too many requests. Please try again in a minute."
-          : result.error,
-      );
+      addToast({ key: "login", type: "error", message: result.error });
       return;
     }
 
@@ -87,7 +86,6 @@ export default function LoginPage() {
 
   const switchTab = (tab: Tab) => {
     setActiveTab(tab);
-    setError("");
   };
 
   return (
@@ -119,12 +117,6 @@ export default function LoginPage() {
             Sign in to continue planning your next journey
           </p>
         </div>
-
-        {resetSuccess && (
-          <p className="text-body-sm text-success text-center w-full">
-            Password reset successfully. You can now sign in.
-          </p>
-        )}
 
         {/* Tab switcher */}
         <div className="flex w-full bg-surface-highest rounded-2xl p-1 gap-1">
@@ -169,14 +161,13 @@ export default function LoginPage() {
               required
               autoComplete="current-password"
             />
-            {error && <p className="text-body-sm text-error">{error}</p>}
             <Button
               variant="primary"
               size="md"
               type="submit"
-              disabled={loading}
+              loading={loading}
             >
-              {loading ? "Signing in…" : "Sign in"}
+              Sign in
             </Button>
             <Link
               href="/reset-password"

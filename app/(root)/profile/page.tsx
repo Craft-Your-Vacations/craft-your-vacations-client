@@ -21,6 +21,7 @@ import { useVerifyOtp } from "@/hooks/useVerifyOtp";
 import { useSendEmailVerification } from "@/hooks/useSendEmailVerification";
 import { useSendChangeEmail } from "@/hooks/useSendChangeEmail";
 import { queryKeys } from "@/lib/queryKeys";
+import { useToastStore } from "@/stores/useToastStore";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import type { UserDocument, DocumentType } from "@/app/types/api";
 
@@ -32,8 +33,9 @@ const DOCUMENT_LABELS: Record<DocumentType, string> = {
 export default function ProfilePage() {
   const { update } = useSession();
   const { data: profile, isLoading } = useProfile();
-  const { mutate: updateProfile, isPending, error } = useUpdateProfile();
+  const { mutate: updateProfile, isPending } = useUpdateProfile();
   const queryClient = useQueryClient();
+  const addToast = useToastStore((s) => s.addToast);
   const [viewDoc, setViewDoc] = useState<UserDocument | null>(null);
   const { data: documents } = useUserDocuments();
   const { mutate: uploadDocument, isPending: isUploading, variables: uploadingVars } = useUploadDocument();
@@ -87,7 +89,17 @@ export default function ProfilePage() {
   function handleUpload(type: DocumentType, file: File) {
     const formData = new FormData();
     formData.append("file", file);
-    uploadDocument({ type, formData });
+    uploadDocument(
+      { type, formData },
+      {
+        onSuccess: () => {
+          addToast({ key: `upload-${type}`, type: "success", message: `${DOCUMENT_LABELS[type]} uploaded successfully` });
+        },
+        onError: (err) => {
+          addToast({ key: `upload-${type}`, type: "error", message: err instanceof Error ? err.message : `Failed to upload ${DOCUMENT_LABELS[type]}` });
+        },
+      },
+    );
   }
 
   const handleSave = () => {
@@ -97,6 +109,10 @@ export default function ProfilePage() {
         onSuccess: async (updatedUser) => {
           if (name !== initial.name) await update({ name });
           queryClient.setQueryData(queryKeys.profile.me(), updatedUser);
+          addToast({ key: "update-profile", type: "success", message: "Profile updated successfully" });
+        },
+        onError: (err) => {
+          addToast({ key: "update-profile", type: "error", message: err instanceof Error ? err.message : "Failed to update profile" });
         },
       },
     );
@@ -163,9 +179,12 @@ export default function ProfilePage() {
         {profile && !profile.emailVerified && (
           <EmailVerificationBanner
             email={profile.email ?? ""}
-            onResend={() =>
+            onResend={(onSuccess) =>
               sendEmailVerification(undefined, {
-                onSuccess: () => setEmailVerifSent(true),
+                onSuccess: () => {
+                  setEmailVerifSent(true);
+                  onSuccess();
+                },
               })
             }
             isSending={isSendingVerif}
@@ -281,16 +300,15 @@ export default function ProfilePage() {
               value={profession}
               onChange={(e) => setProfession(e.target.value)}
             />
-            {error && <p className="text-body-sm text-error">{error.message}</p>}
             {isDirty && (
               <Button
                 variant="primary"
                 size="md"
                 onClick={handleSave}
-                disabled={isPending}
+                loading={isPending}
                 className="w-full"
               >
-                {isPending ? "Saving…" : "Save changes"}
+                Save changes
               </Button>
             )}
           </div>

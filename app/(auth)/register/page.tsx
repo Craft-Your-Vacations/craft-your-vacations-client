@@ -147,9 +147,9 @@ export default function RegisterPage() {
             variant="primary"
             size="md"
             type="submit"
-            disabled={isPending}
+            loading={isPending}
           >
-            {isPending ? "Creating account…" : "Create account"}
+            Create account
           </Button>
         </form>
 

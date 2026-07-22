@@ -11,6 +11,7 @@ import TextAreaField from "@/components/TextAreaField/TextAreaField";
 import type { ItineraryDay } from "@/app/types/api";
 import AdminBackLink from "@/app/(admin)/components/AdminBackLink";
 import ItineraryEditor from "@/app/(admin)/components/ItineraryEditor/ItineraryEditor";
+import { useToastStore } from "@/stores/useToastStore";
 
 function emptyDay(dayNumber: number): ItineraryDay {
   return { dayNumber, title: "", activities: [{ time: "", description: "", type: "leisure" }] };
@@ -25,6 +26,7 @@ export default function NewPackagePage({
   const router = useRouter();
   const { data: destination, isLoading } = useDestination(destSlug);
   const createPackage = useCreatePackage(destination?.id ?? 0, destSlug);
+  const addToast = useToastStore((s) => s.addToast);
 
   const [key, setKey] = useState("");
   const [title, setTitle] = useState("");
@@ -40,7 +42,13 @@ export default function NewPackagePage({
     createPackage.mutate(
       { key, title, price: Number(price), days: Number(days), excerpt, itinerary },
       {
-        onSuccess: () => router.push(`/admin/destinations/${destSlug}`),
+        onSuccess: () => {
+          addToast({ key: "create-package", type: "success", message: "Package created" });
+          router.push(`/admin/destinations/${destSlug}`);
+        },
+        onError: (err) => {
+          addToast({ key: "create-package", type: "error", message: err instanceof Error ? err.message : "Failed to create package" });
+        },
       }
     );
   }
@@ -113,16 +121,9 @@ export default function NewPackagePage({
         <ItineraryEditor itinerary={itinerary} onChange={setItinerary} />
 
         <div className="flex items-center gap-4">
-          <Button variant="primary" type="submit" disabled={createPackage.isPending}>
-            {createPackage.isPending ? "Creating…" : "Create Package"}
+          <Button variant="primary" type="submit" loading={createPackage.isPending}>
+            Create Package
           </Button>
-          {createPackage.error && (
-            <span className="text-body-sm text-error">
-              {createPackage.error instanceof Error
-                ? createPackage.error.message
-                : "Failed to create"}
-            </span>
-          )}
         </div>
       </form>
     </div>

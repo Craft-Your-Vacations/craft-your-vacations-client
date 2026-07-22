@@ -59,7 +59,9 @@ export const emailApi = {
   sendVerification: () =>
     api.post<OtpResponse>("email/send-verification", {}),
   verifyToken: (body: { token: string }) =>
-    api.post<{ purpose: string }>("email/verify-token", body),
+    api.post<boolean>("email/verify-token", body),
+  verifyChangeEmailToken: (body: { token: string }) =>
+    api.post<boolean>("email/verify-change-email-token", body),
   sendChange: (body: SendChangeEmailRequest) =>
     api.post<OtpResponse>("email/send-change", body),
 };

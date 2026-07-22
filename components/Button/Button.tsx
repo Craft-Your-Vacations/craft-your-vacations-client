@@ -9,6 +9,7 @@ interface ButtonProps {
   href?: string;
   onClick?: (e: React.MouseEvent) => void;
   disabled?: boolean;
+  loading?: boolean;
   type?: "button" | "submit" | "reset";
   className?: string;
   "aria-label"?: string;
@@ -28,6 +29,20 @@ const iconSizeClasses: Record<ButtonSize, string> = {
   lg: "w-14 h-14 text-[24px]",
 };
 
+function Spinner() {
+  return (
+    <svg
+      className="animate-spin h-4 w-4"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+    </svg>
+  );
+}
+
 export function Button({
   variant = "primary",
   size = "md",
@@ -35,6 +50,7 @@ export function Button({
   href,
   onClick,
   disabled = false,
+  loading = false,
   type = "button",
   className = "",
   "aria-label": ariaLabel,
@@ -80,6 +96,8 @@ export function Button({
 
   const allClasses = `${baseClass} ${variantClass} ${sizeClass} ${className}`;
 
+  const content = loading ? <Spinner /> : children;
+
   if (href) {
     return (
       <Link
@@ -88,7 +106,7 @@ export function Button({
         className={allClasses}
         aria-label={ariaLabel}
       >
-        {children}
+        {content}
       </Link>
     );
   }
@@ -97,11 +115,11 @@ export function Button({
     <button
       type={type}
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled || loading}
       className={allClasses}
       aria-label={ariaLabel}
     >
-      {children}
+      {content}
     </button>
   );
 }

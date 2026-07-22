@@ -8,10 +8,12 @@ import FormField from "@/components/FormField/FormField";
 import TextAreaField from "@/components/TextAreaField/TextAreaField";
 import AdminBackLink from "@/app/(admin)/components/AdminBackLink";
 import CityTagInput from "@/app/(admin)/components/CityTagInput";
+import { useToastStore } from "@/stores/useToastStore";
 
 export default function NewDestinationPage() {
   const router = useRouter();
   const createDestination = useCreateDestination();
+  const addToast = useToastStore((s) => s.addToast);
 
   const [slug, setSlug] = useState("");
   const [title, setTitle] = useState("");
@@ -25,7 +27,13 @@ export default function NewDestinationPage() {
     createDestination.mutate(
       { slug, title, imagePath, content, isFeatured, destinationCities: cities },
       {
-        onSuccess: () => router.push("/admin/destinations"),
+        onSuccess: () => {
+          addToast({ key: "create-destination", type: "success", message: "Destination created" });
+          router.push("/admin/destinations");
+        },
+        onError: (err) => {
+          addToast({ key: "create-destination", type: "error", message: err instanceof Error ? err.message : "Failed to create destination" });
+        },
       }
     );
   }
@@ -92,16 +100,9 @@ export default function NewDestinationPage() {
         </div>
 
         <div className="flex items-center gap-4">
-          <Button variant="primary" type="submit" disabled={createDestination.isPending}>
-            {createDestination.isPending ? "Creating…" : "Create Destination"}
+          <Button variant="primary" type="submit" loading={createDestination.isPending}>
+            Create Destination
           </Button>
-          {createDestination.error && (
-            <span className="text-body-sm text-error">
-              {createDestination.error instanceof Error
-                ? createDestination.error.message
-                : "Failed to create"}
-            </span>
-          )}
         </div>
       </form>
     </div>

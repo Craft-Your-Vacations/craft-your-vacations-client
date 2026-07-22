@@ -69,6 +69,29 @@ Pass mutations down as `onAction(value: string, onSuccess: () => void)` — the 
 - **Page close handler:** `setOpen(false)` + `resetMutation()` only — never reset component-internal state from the page.
 - **Component:** `useEffect(() => { if (!isOpen) resetLocalState(); }, [isOpen])` — the component is responsible for cleaning up its own state when closed.
 
+## User Feedback
+
+### Toast notifications (`stores/useToastStore.ts`)
+- Global toast system via Zustand. Import `useToastStore` and call `addToast(...)`.
+- Positioned top-right below navbar. Auto-dismiss (5s default). Max 3 visible.
+- Key-based deduplication: provide a `key` to prevent duplicate toasts from repeated actions.
+- Always provide a `key` for mutation feedback (e.g. `"update-profile"`, `"delete-package"`).
+
+### When to use what
+
+| Scenario | Pattern |
+|---|---|
+| Routine CRUD success (save, update, delete) | Success toast (auto-dismiss) |
+| Routine CRUD error | Error toast (auto-dismiss) |
+| Significant milestone success (booking created, review submitted) | `ModalSuccess` dialog |
+| Significant milestone error (booking/review creation failure) | `ModalError` dialog with "Try Again" |
+| Form validation in active dialogs | Inline error in dialog (unchanged) |
+| Auth page errors (login) | Toast |
+| Auth page errors (register, reset, onboarding) | Inline error |
+
+**Never** show inline success/error text next to buttons for mutation results — always use toast.
+**Button loading:** Use the `loading` prop on `Button` — shows spinner, hides children, auto-disables. Never change button text to "Saving…" etc.
+
 ---
 
 # Project Architecture
@@ -181,7 +204,7 @@ After OTP verification, call `update({ phoneVerified: true })` to update the ses
 `events.signOut` in `lib/auth.ts` calls `POST /api/Auth/logout` with the refresh token to revoke it server-side before NextAuth clears the session.
 
 ### Rate limiting
-Lives on the Next.js API route layer — **not on .NET** (all .NET requests come from the BFF's single IP). See `docs/rate-limiting.md` for the full table. `lib/rateLimit.ts` exports `getClientIp`, `isRateLimited`, `rateLimitResponse`. Login requires special handling — see the rate limiting doc.
+Lives on the **.NET backend**. The BFF forwards client IP via `X-Forwarded-For` / `X-Real-IP` headers (set automatically in `lib/bff.ts` and `lib/auth.ts`). See `docs/rate-limiting.md` for the full endpoint table and limits.
 
 ### Inactivity logout
 `hooks/useInactivityLogout.ts`, consumed in `RootGuard`:
@@ -210,13 +233,13 @@ lib/
   api.ts            — Axios client (browser → Next.js)
   bff.ts            — BFF fetcher (Next.js → .NET)
   auth.ts           — NextAuth config (providers, JWT callbacks, refresh, sign-out)
-  rateLimit.ts      — In-memory rate limiter (getClientIp, isRateLimited, rateLimitResponse)
+
   endpoints.ts      — All API call functions grouped by domain
   queryKeys.ts      — TanStack Query key factory
   utils.ts          — Shared utilities (cn, etc.)
 stores/             — Zustand stores (one per concern)
 docs/
-  rate-limiting.md  — Rate limit endpoints, keys, limits, NextAuth interception detail
+  rate-limiting.md  — Rate limit endpoints, keys, limits (enforced by .NET backend)
 proxy.ts            — Next.js middleware (passthrough; required by framework)
 ```
 

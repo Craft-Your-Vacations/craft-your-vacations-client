@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   if (!token || typeof token !== "string")
     return NextResponse.json({ message: "Token is required" }, { status: 400 });
 
-  const result = await bffFetch<boolean>("/api/Auth/verify-email-token", req, {
+  const result = await bffFetch<boolean>("/api/Auth/verify-change-email-token", req, {
     isPublic: true,
     method: "POST",
     body: { Token: token },

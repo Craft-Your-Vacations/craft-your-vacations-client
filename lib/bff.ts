@@ -69,6 +69,13 @@ export async function bffFetch<T>(
     fetchHeaders["Authorization"] = `Bearer ${token.backendAccessToken}`;
   }
 
+  // Forward client IP so .NET can rate-limit by real client IP, not the BFF's IP.
+  const forwardedFor = req.headers.get("x-forwarded-for");
+  console.log("forwardedFor", forwardedFor);
+  if (forwardedFor) fetchHeaders["X-Forwarded-For"] = forwardedFor;
+  const realIp = req.headers.get("x-real-ip");
+  if (realIp) fetchHeaders["X-Real-IP"] = realIp;
+
   // 3. Build fetch options (supports both Next.js revalidate and standard cache)
   const cacheConfig =
     typeof cache === "object" && "revalidate" in cache

@@ -1,8 +1,9 @@
+import { useState, useEffect } from "react";
 import Button from "@/components/Button/Button";
 
 interface EmailVerificationBannerProps {
   email: string;
-  onResend: () => void;
+  onResend: (onSuccess: () => void) => void;
   isSending: boolean;
   error: Error | null;
   sent: boolean;
@@ -15,6 +16,17 @@ export default function EmailVerificationBanner({
   error,
   sent,
 }: EmailVerificationBannerProps) {
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(id);
+  }, [cooldown]);
+
+  const handleResend = () => {
+    onResend(() => setCooldown(30));
+  };
   if (sent) {
     return (
       <div className="w-full rounded-xl bg-primary/8 border border-primary/20 p-4 flex flex-col gap-2">
@@ -23,11 +35,15 @@ export default function EmailVerificationBanner({
           <span className="font-semibold">{email}</span>.
         </p>
         <button
-          onClick={onResend}
-          disabled={isSending}
+          onClick={handleResend}
+          disabled={isSending || cooldown > 0}
           className="text-label-sm text-primary hover:underline cursor-pointer disabled:opacity-50 self-start"
         >
-          {isSending ? "Resending…" : "Resend link"}
+          {isSending
+            ? "Resending…"
+            : cooldown > 0
+              ? `Resend link in ${cooldown}s`
+              : "Resend link"}
         </button>
       </div>
     );
@@ -40,7 +56,7 @@ export default function EmailVerificationBanner({
         <span className="font-semibold">{email}</span> to secure your account.
       </p>
       {error && <p className="text-body-sm text-error">{error.message}</p>}
-      <Button variant="primary" size="sm" onClick={onResend} disabled={isSending}>
+      <Button variant="primary" size="sm" onClick={handleResend} disabled={isSending}>
         {isSending ? "Sending…" : "Send verification link"}
       </Button>
     </div>

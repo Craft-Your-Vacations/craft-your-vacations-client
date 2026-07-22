@@ -1,51 +1,56 @@
 # Rate Limiting
 
-Rate limiting lives on the **Next.js API route layer**, not on .NET. All requests to .NET come from the Next.js server's single IP — IP-based limiting there would bucket all users into one counter.
+Rate limiting lives on the **.NET backend**, not the BFF. The BFF forwards the real client IP via `X-Forwarded-For` and `X-Real-IP` headers so .NET can rate-limit per-client.
 
-## `lib/rateLimit.ts` exports
+## How client IP reaches .NET
 
-- `getClientIp(req)` — extracts real client IP: `x-forwarded-for` → `x-real-ip` → `"unknown"`
-- `isRateLimited(key, limit = 10, windowMs = 60_000)` — in-memory fixed-window counter; returns `true` if over limit
-- `rateLimitResponse()` — `429 JSON { message: "Too many requests..." }` with `Retry-After: 60` header
+`lib/bff.ts` automatically forwards `X-Forwarded-For` and `X-Real-IP` from the incoming browser request to every .NET call. For login specifically, `lib/auth.ts` forwards `X-Forwarded-For` from the NextAuth request context to `/api/Auth/login`.
 
-The store is a module-level `Map<string, { count, resetAt }>`. Expired entries are overwritten on next access — no background cleanup needed.
+.NET must configure `ForwardedHeaders` middleware to trust these headers from the BFF's IP and extract the real client IP.
 
 ## Protected endpoints
 
-| Endpoint | File | Key format | Limit |
-|----------|------|-----------|-------|
-| Login (credentials) | `app/api/auth/[...nextauth]/route.ts` | `login:<ip>` | 10/min |
-| Register | `app/api/auth/register/route.ts` | `register:<ip>` | 5/min |
-| Start password reset | `app/api/auth/start-reset/route.ts` | `start-reset:<ip>` | 5/min |
-| Reset password | `app/api/auth/reset-password/route.ts` | `reset-password:<ip>` | 5/min |
-| Send OTP | `app/api/phone/send-otp/route.ts` | `send-otp:<ip>` | 5/min |
-| Token refresh | `lib/auth.ts` (jwt callback) | `refresh:<userId>` | 10/min |
+### Tier 1 — Auth (unauthenticated, strictest)
 
-Refresh uses `userId` (not IP) because it runs server-to-server inside the `jwt` callback — there is no request object with a client IP available there.
+| .NET Endpoint | Limit | Key | Rationale |
+|---|---|---|---|
+| `POST /api/Auth/login` | 10/min | IP | Credential stuffing |
+| `POST /api/Auth/register` | 5/min | IP | Mass account creation |
+| `POST /api/Auth/google-signin` | 10/min | IP | OAuth abuse guard |
 
-## Login — special handling
+### Tier 2 — OTP / Email (triggers external services)
 
-Login goes through NextAuth's `[...nextauth]` catch-all route. The POST handler in that file intercepts only `/api/auth/callback/credentials` — all other NextAuth paths (session, csrf, signout) pass through untouched.
+| .NET Endpoint | Limit | Key | Rationale |
+|---|---|---|---|
+| `POST /api/Auth/send-otp` | 5/min | IP | SMS bombing |
+| `POST /api/Auth/verify-otp` | 10/min | IP | OTP brute-force |
+| `POST /api/Auth/start-reset` | 5/min | IP | SMS/email bombing |
+| `POST /api/Auth/reset-password` | 5/min | IP | OTP brute-force on reset |
+| `POST /api/Auth/send-email-verification` | 3/min | IP | Email spam |
+| `POST /api/Auth/send-change-email` | 3/min | IP | Email spam |
 
-When rate limited, the response must be **NextAuth-compatible JSON** (not a plain 429) because NextAuth's client does `new URL(data.url)` on the response — passing a plain `{ message }` body causes `TypeError: Failed to construct 'URL': Invalid URL`.
+### Tier 3 — Token operations (lenient)
 
-The correct response:
-```ts
-return NextResponse.json(
-  { url: `${req.nextUrl.origin}/login?error=TooManyRequests` },
-  { status: 429 },
-);
-```
+| .NET Endpoint | Limit | Key | Rationale |
+|---|---|---|---|
+| `POST /api/Auth/verify-email-token` | 10/min | IP | Token scanning guard |
+| `POST /api/Auth/verify-change-email-token` | 10/min | IP | Token scanning guard |
+| `POST /api/Auth/refresh` | 10/min | UserId | Refresh loop prevention |
 
-NextAuth extracts `error` from the URL search params and returns `result.error = "TooManyRequests"` to the `signIn()` caller. The login page maps this to a human-readable message:
-```ts
-if (result?.error === "TooManyRequests") {
-  setError("Too many requests. Please try again in a minute.");
-}
-```
+### Tier 4 — Authenticated CRUD
 
-The login page also handles `?error=TooManyRequests` in the URL search params (shown via `useState` initializer) in case NextAuth redirects the browser directly.
+| .NET Endpoint | Limit | Key | Rationale |
+|---|---|---|---|
+| `POST /api/Bookings` | 10/min | UserId | Booking spam |
+| `POST /api/Reviews` | 5/min | UserId | Review spam |
+| `PUT /api/Users/profile` | 10/min | UserId | Update spam |
 
-## UI handling for other endpoints
+### Not rate limited
 
-For all non-NextAuth endpoints, the axios interceptor in `lib/api.ts` extracts `error.response?.data?.message` from the 429 response body. This means `mutation.error.message` will be `"Too many requests. Please try again in a minute."` automatically — no special handling needed beyond rendering `error.message` in the UI (which all auth forms already do).
+Read endpoints (`GET /api/Destinations`, `GET /api/Bookings/my`, etc.) and admin endpoints — naturally bounded by auth and low traffic.
+
+## UI handling
+
+When .NET returns 429, the response body is `{ message: "Too many requests. Please try again in a minute." }`. The axios interceptor in `lib/api.ts` extracts `error.response?.data?.message`, so `mutation.error.message` contains the rate limit message automatically.
+
+For login, the 429 flows through the `authorize()` callback → thrown as an error → `result.error` contains the message → login page shows it via toast.

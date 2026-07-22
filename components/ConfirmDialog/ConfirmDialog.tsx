@@ -57,10 +57,10 @@ export default function ConfirmDialog({
         <Button
           variant={variant === "danger" ? "error" : "primary"}
           onClick={onConfirm}
-          disabled={isPending}
+          loading={isPending}
           className="flex-1"
         >
-          {isPending ? "Please wait…" : confirmLabel}
+          {confirmLabel}
         </Button>
       </div>
     </Dialog>

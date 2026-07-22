@@ -1,8 +1,8 @@
 import { create } from "zustand";
 
-type OnboardingStep = "phone" | "otp" | "profile";
+type OnboardingStep = "phone" | "otp" | "email" | "profile";
 
-const STEP_ORDER: OnboardingStep[] = ["phone", "otp", "profile"];
+const STEP_ORDER: OnboardingStep[] = ["phone", "otp", "email", "profile"];
 
 interface OnboardingStore {
   step: OnboardingStep;

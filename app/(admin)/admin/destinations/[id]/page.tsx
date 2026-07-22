@@ -14,6 +14,7 @@ import TextAreaField from "@/components/TextAreaField/TextAreaField";
 import { Plus, Trash2 } from "lucide-react";
 import AdminBackLink from "@/app/(admin)/components/AdminBackLink";
 import CityTagInput from "@/app/(admin)/components/CityTagInput";
+import { useToastStore } from "@/stores/useToastStore";
 
 export default function EditDestinationPage({
   params,
@@ -33,8 +34,8 @@ export default function EditDestinationPage({
   const [imagePath, setImagePath] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
-  const [saveSuccess, setSaveSuccess] = useState(false);
   const [confirmSaveOpen, setConfirmSaveOpen] = useState(false);
+  const addToast = useToastStore((s) => s.addToast);
   const [confirmDeleteKey, setConfirmDeleteKey] = useState<string | null>(null);
 
   useEffect(() => {
@@ -70,8 +71,10 @@ export default function EditDestinationPage({
       {
         onSuccess: () => {
           setConfirmSaveOpen(false);
-          setSaveSuccess(true);
-          setTimeout(() => setSaveSuccess(false), 3000);
+          addToast({ key: "update-destination", type: "success", message: "Destination saved successfully" });
+        },
+        onError: (err) => {
+          addToast({ key: "update-destination", type: "error", message: err instanceof Error ? err.message : "Failed to save" });
         },
       }
     );
@@ -129,6 +132,7 @@ export default function EditDestinationPage({
           <Button
             variant="primary"
             type="submit"
+            loading={updateDestination.isPending}
             disabled={
               !(
                 title !== destination.title ||
@@ -136,19 +140,11 @@ export default function EditDestinationPage({
                 imagePath !== destination.imagePath ||
                 isFeatured !== destination.isFeatured ||
                 JSON.stringify(cities) !== JSON.stringify(destination.destinationCities ?? [])
-              ) || updateDestination.isPending
+              )
             }
           >
-            {updateDestination.isPending ? "Saving…" : "Save Changes"}
+            Save Changes
           </Button>
-          {saveSuccess && <span className="text-body-sm text-success">Saved successfully</span>}
-          {updateDestination.error && (
-            <span className="text-body-sm text-error">
-              {updateDestination.error instanceof Error
-                ? updateDestination.error.message
-                : "Failed to save"}
-            </span>
-          )}
         </div>
       </form>
 
@@ -221,7 +217,15 @@ export default function EditDestinationPage({
         isPending={deletePackage.isPending}
         onConfirm={() => {
           if (confirmDeleteKey)
-            deletePackage.mutate(confirmDeleteKey, { onSuccess: () => setConfirmDeleteKey(null) });
+            deletePackage.mutate(confirmDeleteKey, {
+              onSuccess: () => {
+                setConfirmDeleteKey(null);
+                addToast({ key: "delete-package", type: "success", message: "Package deleted" });
+              },
+              onError: (err) => {
+                addToast({ key: "delete-package", type: "error", message: err instanceof Error ? err.message : "Failed to delete package" });
+              },
+            });
         }}
         onCancel={() => setConfirmDeleteKey(null)}
       />

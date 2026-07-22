@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Logo from "@/public/logo.png";
@@ -15,12 +15,14 @@ import AuthCard from "@/components/AuthCard/AuthCard";
 import { useSendOtp } from "@/hooks/useSendOtp";
 import { useVerifyOtp } from "@/hooks/useVerifyOtp";
 import { useUpdateProfile } from "@/hooks/useUpdateProfile";
+import { useProfile } from "@/hooks/useProfile";
+import { useSendEmailVerification } from "@/hooks/useSendEmailVerification";
 import { isValidPhone } from "@/lib/utils";
 
 // ─── Progress indicator ────────────────────────────────────────────────────────
 
-const STEPS = ["phone", "otp", "profile"] as const;
-const STEP_LABELS = ["Phone", "Verify", "Profile"];
+const STEPS = ["phone", "otp", "email", "profile"] as const;
+const STEP_LABELS = ["Phone", "Verify", "Email", "Profile"];
 
 function ProgressDots({ current }: { current: (typeof STEPS)[number] }) {
   const currentIndex = STEPS.indexOf(current);
@@ -88,9 +90,10 @@ function PhoneStep() {
         variant="primary"
         size="md"
         onClick={handleSend}
-        disabled={!phone.trim() || isPending}
+        loading={isPending}
+        disabled={!phone.trim()}
       >
-        {isPending ? "Sending…" : "Send OTP"}
+        Send OTP
       </Button>
     </div>
   );
@@ -222,7 +225,76 @@ function OtpStep() {
   );
 }
 
-// ─── Step 3: Profile ───────────────────────────────────────────────────────────
+// ─── Step 3: Email ──────────────────────────────────────────────────────────────
+
+function EmailStep() {
+  const { nextStep } = useOnboardingStore();
+  const { data: profile, isLoading } = useProfile();
+  const { mutate: resend, isPending, error } = useSendEmailVerification();
+  const [cooldown, setCooldown] = useState(0);
+
+  // Auto-skip if email is already verified (e.g. Google OAuth users)
+  useEffect(() => {
+    if (profile && profile.emailVerified) {
+      nextStep();
+    }
+  }, [profile, nextStep]);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(id);
+  }, [cooldown]);
+
+  if (isLoading || (profile && profile.emailVerified)) {
+    return (
+      <div className="w-full flex justify-center py-8">
+        <p className="text-body-sm text-text-muted">Loading…</p>
+      </div>
+    );
+  }
+
+  const handleResend = () => {
+    resend(undefined, { onSuccess: () => setCooldown(30) });
+  };
+
+  return (
+    <div className="w-full flex flex-col gap-6">
+      <div className="text-center flex flex-col gap-1">
+        <h2 className="text-headline-sm text-text">Verify your email</h2>
+        <p className="text-body-sm text-text-muted">
+          We sent a verification link to{" "}
+          <span className="text-text font-semibold">{profile?.email}</span>
+        </p>
+      </div>
+
+      {error && (
+        <p className="text-body-sm text-error text-center">{error.message}</p>
+      )}
+
+      <button
+        onClick={handleResend}
+        disabled={isPending || cooldown > 0}
+        className="text-body-sm text-primary hover:underline cursor-pointer disabled:opacity-50 text-center"
+      >
+        {isPending
+          ? "Resending…"
+          : cooldown > 0
+            ? `Resend link in ${cooldown}s`
+            : "Resend verification link"}
+      </button>
+
+      <button
+        onClick={nextStep}
+        className="text-body-sm text-text-muted hover:text-primary transition-colors cursor-pointer text-center"
+      >
+        Skip for now
+      </button>
+    </div>
+  );
+}
+
+// ─── Step 4: Profile ───────────────────────────────────────────────────────────
 
 function ProfileStep() {
   const router = useRouter();
@@ -299,9 +371,9 @@ function ProfileStep() {
         variant="primary"
         size="md"
         onClick={handleComplete}
-        disabled={isPending}
+        loading={isPending}
       >
-        {isPending ? "Saving…" : "Complete setup"}
+        Complete setup
       </Button>
 
       <button
@@ -339,6 +411,7 @@ export default function OnboardingPage() {
 
         {step === "phone" && <PhoneStep />}
         {step === "otp" && <OtpStep />}
+        {step === "email" && <EmailStep />}
         {step === "profile" && <ProfileStep />}
       </AuthCard>
     </div>

@@ -25,14 +25,22 @@ export default function ChangeEmailDialog({
   const [newEmail, setNewEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [sameError, setSameError] = useState("");
+  const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => {
     if (!isOpen) {
       setNewEmail("");
       setSent(false);
       setSameError("");
+      setCooldown(0);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(id);
+  }, [cooldown]);
 
   const handleSend = () => {
     const trimmed = newEmail.trim().toLowerCase();
@@ -46,7 +54,10 @@ export default function ChangeEmailDialog({
       return;
     }
     setSameError("");
-    onSend(trimmed, () => setSent(true));
+    onSend(trimmed, () => {
+      setSent(true);
+      setCooldown(30);
+    });
   };
 
   return (
@@ -89,10 +100,14 @@ export default function ChangeEmailDialog({
           <>
             <button
               onClick={handleSend}
-              disabled={isSending}
+              disabled={isSending || cooldown > 0}
               className="text-body-sm text-primary hover:underline cursor-pointer disabled:opacity-50 text-center"
             >
-              {isSending ? "Resending…" : "Resend link"}
+              {isSending
+                ? "Resending…"
+                : cooldown > 0
+                  ? `Resend link in ${cooldown}s`
+                  : "Resend link"}
             </button>
             <Button variant="secondary" size="md" onClick={onClose} className="w-full">
               Close

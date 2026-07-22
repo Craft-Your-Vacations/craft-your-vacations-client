@@ -19,6 +19,7 @@ import BookingStatusBadge, { formatMonth } from "@/app/(admin)/components/Bookin
 import ItineraryEditor from "@/app/(admin)/components/ItineraryEditor/ItineraryEditor";
 import RequiredDocumentsSelector from "@/app/(admin)/components/RequiredDocumentsSelector/RequiredDocumentsSelector";
 import { BOOKING_STATUSES } from "@/lib/constants";
+import { useToastStore } from "@/stores/useToastStore";
 
 export default function AdminBookingDetailPage({
   params,
@@ -39,8 +40,8 @@ export default function AdminBookingDetailPage({
   const [editDate, setEditDate] = useState("");
   const [requiredDocs, setRequiredDocs] = useState<DocumentType[]>([]);
   const [itinerary, setItinerary] = useState<ItineraryDay[]>([]);
-  const [saveSuccess, setSaveSuccess] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const addToast = useToastStore((s) => s.addToast);
 
   // Pre-populate required docs once when booking loads
   useEffect(() => {
@@ -97,13 +98,15 @@ export default function AdminBookingDetailPage({
 
     updateBooking.mutate(body, {
       onSuccess: () => {
-        setSaveSuccess(true);
         setEditStatus("");
         setEditNotes("");
         setEditTravelers("");
         setEditDate("");
         setConfirmOpen(false);
-        setTimeout(() => setSaveSuccess(false), 3000);
+        addToast({ key: "update-booking", type: "success", message: "Booking updated successfully" });
+      },
+      onError: (err) => {
+        addToast({ key: "update-booking", type: "error", message: err instanceof Error ? err.message : "Failed to save" });
       },
     });
   }
@@ -273,20 +276,11 @@ export default function AdminBookingDetailPage({
             <Button
               variant="primary"
               onClick={handleSave}
-              disabled={!canSave || updateBooking.isPending}
+              loading={updateBooking.isPending}
+              disabled={!canSave}
             >
               Save Changes
             </Button>
-            {saveSuccess && (
-              <span className="text-body-sm text-success">Saved successfully</span>
-            )}
-            {updateBooking.error && (
-              <span className="text-body-sm text-error">
-                {updateBooking.error instanceof Error
-                  ? updateBooking.error.message
-                  : "Failed to save"}
-              </span>
-            )}
           </div>
 
           <ConfirmDialog

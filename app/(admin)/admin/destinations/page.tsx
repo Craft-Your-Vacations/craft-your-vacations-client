@@ -10,12 +10,14 @@ import Button from "@/components/Button/Button";
 import ConfirmDialog from "@/components/ConfirmDialog/ConfirmDialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import AdminPageHeader from "@/app/(admin)/components/AdminPageHeader";
+import { useToastStore } from "@/stores/useToastStore";
 
 export default function AdminDestinationsPage() {
   const { data: destinations, isLoading, isError, error, refetch } = useDestinations();
   const deleteDestination = useDeleteDestination();
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const pendingDestTitle = destinations?.find((d) => d.id === confirmDeleteId)?.title ?? "";
+  const addToast = useToastStore((s) => s.addToast);
 
   if (isLoading) return <LoadingSpinner message="Loading destinations…" fullScreen={false} />;
   if (isError)
@@ -86,7 +88,15 @@ export default function AdminDestinationsPage() {
         isPending={deleteDestination.isPending}
         onConfirm={() => {
           if (confirmDeleteId !== null)
-            deleteDestination.mutate(confirmDeleteId, { onSuccess: () => setConfirmDeleteId(null) });
+            deleteDestination.mutate(confirmDeleteId, {
+              onSuccess: () => {
+                setConfirmDeleteId(null);
+                addToast({ key: "delete-destination", type: "success", message: "Destination deleted" });
+              },
+              onError: (err) => {
+                addToast({ key: "delete-destination", type: "error", message: err instanceof Error ? err.message : "Failed to delete destination" });
+              },
+            });
         }}
         onCancel={() => setConfirmDeleteId(null)}
       />

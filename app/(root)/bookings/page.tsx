@@ -10,6 +10,7 @@ import Button from "@/components/Button/Button";
 import BookingCard from "@/components/BookingCard/BookingCard";
 import ReviewModal from "@/components/ReviewModal/ReviewModal";
 import ModalSuccess from "@/components/ModalSuccess/ModalSuccess";
+import ModalError from "@/components/ModalError/ModalError";
 import { CalendarDays } from "lucide-react";
 import type { Booking } from "@/app/types/api";
 import type { ReviewSubmitData } from "@/components/ReviewModal/ReviewModal";
@@ -19,8 +20,10 @@ export default function BookingsPage() {
 
   const [reviewingBooking, setReviewingBooking] = useState<Booking | null>(null);
   const [reviewSuccessOpen, setReviewSuccessOpen] = useState(false);
+  const [reviewErrorOpen, setReviewErrorOpen] = useState(false);
+  const [reviewErrorMsg, setReviewErrorMsg] = useState("");
 
-  const { mutate, isPending, error: reviewError } = useSubmitReview(
+  const { mutate, isPending, error: reviewError, reset: resetReview } = useSubmitReview(
     reviewingBooking?.package.destinationSlug ?? ""
   );
 
@@ -50,6 +53,11 @@ export default function BookingsPage() {
           }
           setReviewingBooking(null);
           setReviewSuccessOpen(true);
+        },
+        onError: (err) => {
+          setReviewingBooking(null);
+          setReviewErrorMsg(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+          setReviewErrorOpen(true);
         },
       }
     );
@@ -120,6 +128,13 @@ export default function BookingsPage() {
         title="Thank you for sharing!"
         message="Your review is pending approval and will appear shortly."
         onClose={() => setReviewSuccessOpen(false)}
+      />
+
+      <ModalError
+        isOpen={reviewErrorOpen}
+        title="Review Failed"
+        message={reviewErrorMsg}
+        onClose={() => { setReviewErrorOpen(false); resetReview(); }}
       />
     </div>
   );

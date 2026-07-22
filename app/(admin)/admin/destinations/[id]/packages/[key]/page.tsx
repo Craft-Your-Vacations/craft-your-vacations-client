@@ -13,6 +13,7 @@ import TextAreaField from "@/components/TextAreaField/TextAreaField";
 import type { ItineraryDay } from "@/app/types/api";
 import AdminBackLink from "@/app/(admin)/components/AdminBackLink";
 import ItineraryEditor from "@/app/(admin)/components/ItineraryEditor/ItineraryEditor";
+import { useToastStore } from "@/stores/useToastStore";
 
 export default function EditPackagePage({
   params,
@@ -29,8 +30,8 @@ export default function EditPackagePage({
   const [days, setDays] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [itinerary, setItinerary] = useState<ItineraryDay[]>([]);
-  const [saveSuccess, setSaveSuccess] = useState(false);
   const [confirmSaveOpen, setConfirmSaveOpen] = useState(false);
+  const addToast = useToastStore((s) => s.addToast);
 
   useEffect(() => {
     if (pkg) {
@@ -66,8 +67,10 @@ export default function EditPackagePage({
       {
         onSuccess: () => {
           setConfirmSaveOpen(false);
-          setSaveSuccess(true);
-          setTimeout(() => setSaveSuccess(false), 3000);
+          addToast({ key: "update-package", type: "success", message: "Package saved successfully" });
+        },
+        onError: (err) => {
+          addToast({ key: "update-package", type: "error", message: err instanceof Error ? err.message : "Failed to save" });
         },
       }
     );
@@ -128,6 +131,7 @@ export default function EditPackagePage({
           <Button
             variant="primary"
             type="submit"
+            loading={updatePackage.isPending}
             disabled={
               !(
                 title !== pkg.title ||
@@ -135,19 +139,11 @@ export default function EditPackagePage({
                 days !== String(pkg.days) ||
                 excerpt !== pkg.excerpt ||
                 JSON.stringify(itinerary) !== JSON.stringify(pkg.itinerary ?? [])
-              ) || updatePackage.isPending
+              )
             }
           >
             Save Changes
           </Button>
-          {saveSuccess && <span className="text-body-sm text-success">Saved successfully</span>}
-          {updatePackage.error && (
-            <span className="text-body-sm text-error">
-              {updatePackage.error instanceof Error
-                ? updatePackage.error.message
-                : "Failed to save"}
-            </span>
-          )}
         </div>
       </form>
 

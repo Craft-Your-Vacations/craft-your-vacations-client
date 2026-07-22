@@ -152,10 +152,11 @@ export default function ReviewModal({
         <Button
           type="submit"
           variant="primary"
-          disabled={isPending || rating === 0 || !quote.trim()}
+          loading={isPending}
+          disabled={rating === 0 || !quote.trim()}
           className="w-full justify-center mt-2"
         >
-          {isPending ? "Submitting…" : "Share My Experience"}
+          Share My Experience
         </Button>
       </form>
     </Dialog>

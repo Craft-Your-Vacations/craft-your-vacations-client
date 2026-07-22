@@ -14,6 +14,7 @@ function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
+  const purpose = searchParams.get("purpose");
   const [status, setStatus] = useState<Status>("loading");
 
   useEffect(() => {
@@ -22,15 +23,19 @@ function VerifyEmailContent() {
       return;
     }
 
-    emailApi
-      .verifyToken({ token })
-      .then((data) => {
-        setStatus(data.purpose === "change-email" ? "success-change" : "success-verify");
+    const verify =
+      purpose === "change-email"
+        ? emailApi.verifyChangeEmailToken({ token })
+        : emailApi.verifyToken({ token });
+
+    verify
+      .then(() => {
+        setStatus(purpose === "change-email" ? "success-change" : "success-verify");
         setTimeout(() => router.replace("/profile"), 3000);
       })
       .catch(() => setStatus("error"));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, purpose]);
 
   if (status === "loading") {
     return <LoadingSpinner message="Verifying your email…" />;

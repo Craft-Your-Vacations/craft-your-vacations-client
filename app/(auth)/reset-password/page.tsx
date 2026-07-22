@@ -81,9 +81,10 @@ function IdentifierStep({
         variant="primary"
         size="md"
         onClick={handleSend}
-        disabled={!username.trim() || isPending}
+        loading={isPending}
+        disabled={!username.trim()}
       >
-        {isPending ? "Sending OTP…" : "Send OTP"}
+        Send OTP
       </Button>
     </div>
   );
@@ -203,9 +204,10 @@ function ResetStep({ identifier }: { identifier: string }) {
         variant="primary"
         size="md"
         onClick={handleReset}
-        disabled={!canSubmit || isPending}
+        loading={isPending}
+        disabled={!canSubmit}
       >
-        {isPending ? "Resetting…" : "Reset password"}
+        Reset password
       </Button>
     </div>
   );

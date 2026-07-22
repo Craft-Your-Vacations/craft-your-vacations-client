@@ -117,10 +117,10 @@ export function BookingModal({
         <Button
           type="submit"
           variant="primary"
-          disabled={isPending}
+          loading={isPending}
           className="w-full justify-center mt-2"
         >
-          {isPending ? "Submitting…" : "Express Interest"}
+          Express Interest
         </Button>
       </form>
     </Dialog>

@@ -21,8 +21,9 @@ import PackageCard from "@/components/PackageCard/PackageCard";
 import ItineraryDay from "@/components/ItineraryDay/ItineraryDay";
 import BookingModal from "@/components/BookingModal/BookingModal";
 import type { BookingSubmitData } from "@/components/BookingModal/BookingModal";
-import ModalSuccess from "@/components/ModalSuccess/ModalSuccess";
 import CtaBanner from "@/components/CtaBanner/CtaBanner";
+import ModalSuccess from "@/components/ModalSuccess/ModalSuccess";
+import ModalError from "@/components/ModalError/ModalError";
 
 export default function PackageDetailPage({
   params,
@@ -34,7 +35,9 @@ export default function PackageDetailPage({
   const { data: session } = useSession();
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingSuccessOpen, setBookingSuccessOpen] = useState(false);
-  const { mutate: createBooking, isPending: bookingPending, error: bookingError } = useCreateBooking();
+  const [bookingErrorOpen, setBookingErrorOpen] = useState(false);
+  const [bookingErrorMsg, setBookingErrorMsg] = useState("");
+  const { mutate: createBooking, isPending: bookingPending, error: bookingError, reset: resetBooking } = useCreateBooking();
 
   function handleBookingSubmit(data: BookingSubmitData) {
     if (!pkg) return;
@@ -43,7 +46,17 @@ export default function PackageDetailPage({
         packageId: pkg.id,
         ...data,
       },
-      { onSuccess: () => { setBookingOpen(false); setBookingSuccessOpen(true); } }
+      {
+        onSuccess: () => {
+          setBookingOpen(false);
+          setBookingSuccessOpen(true);
+        },
+        onError: (err) => {
+          setBookingOpen(false);
+          setBookingErrorMsg(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+          setBookingErrorOpen(true);
+        },
+      }
     );
   }
 
@@ -315,6 +328,13 @@ export default function PackageDetailPage({
         title="Interest Received!"
         message="Our team will reach out soon to help plan your perfect trip."
         onClose={() => setBookingSuccessOpen(false)}
+      />
+
+      <ModalError
+        isOpen={bookingErrorOpen}
+        title="Booking Failed"
+        message={bookingErrorMsg}
+        onClose={() => { setBookingErrorOpen(false); resetBooking(); }}
       />
     </div>
   );

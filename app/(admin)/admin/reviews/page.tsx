@@ -11,6 +11,7 @@ import ConfirmDialog from "@/components/ConfirmDialog/ConfirmDialog";
 import Image from "next/image";
 import { Star, Check, Trash2 } from "lucide-react";
 import AdminPageHeader from "@/app/(admin)/components/AdminPageHeader";
+import { useToastStore } from "@/stores/useToastStore";
 import AdminFilterTabs from "@/app/(admin)/components/AdminFilterTabs";
 import Pagination from "@/components/Pagination/Pagination";
 import { REVIEW_TABS } from "@/lib/constants";
@@ -24,6 +25,7 @@ export default function AdminReviewsPage() {
   const deleteReview = useAdminDeleteReview();
   const [confirmApproveId, setConfirmApproveId] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const addToast = useToastStore((s) => s.addToast);
 
   if (isLoading) return <LoadingSpinner message="Loading reviews…" fullScreen={false} />;
   if (isError)
@@ -138,7 +140,16 @@ export default function AdminReviewsPage() {
         variant="warning"
         isPending={approveReview.isPending}
         onConfirm={() => {
-          if (confirmApproveId !== null) approveReview.mutate(confirmApproveId, { onSuccess: () => setConfirmApproveId(null) });
+          if (confirmApproveId !== null)
+            approveReview.mutate(confirmApproveId, {
+              onSuccess: () => {
+                setConfirmApproveId(null);
+                addToast({ key: "approve-review", type: "success", message: "Review approved" });
+              },
+              onError: (err) => {
+                addToast({ key: "approve-review", type: "error", message: err instanceof Error ? err.message : "Failed to approve review" });
+              },
+            });
         }}
         onCancel={() => setConfirmApproveId(null)}
       />
@@ -151,7 +162,16 @@ export default function AdminReviewsPage() {
         variant="danger"
         isPending={deleteReview.isPending}
         onConfirm={() => {
-          if (confirmDeleteId !== null) deleteReview.mutate(confirmDeleteId, { onSuccess: () => setConfirmDeleteId(null) });
+          if (confirmDeleteId !== null)
+            deleteReview.mutate(confirmDeleteId, {
+              onSuccess: () => {
+                setConfirmDeleteId(null);
+                addToast({ key: "delete-review", type: "success", message: "Review deleted" });
+              },
+              onError: (err) => {
+                addToast({ key: "delete-review", type: "error", message: err instanceof Error ? err.message : "Failed to delete review" });
+              },
+            });
         }}
         onCancel={() => setConfirmDeleteId(null)}
       />
