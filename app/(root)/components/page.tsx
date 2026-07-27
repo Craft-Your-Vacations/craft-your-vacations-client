@@ -180,7 +180,6 @@ const testimonials = [
       "Every detail was flawlessly arranged. CraftVacations turned our anniversary trip into something truly magical — we still talk about it every day.",
     authorName: "Sofia Reyes",
     authorTitle: "Product Designer, Barcelona",
-    authorAvatarUrl: "https://i.pravatar.cc/80?img=5",
     authorAvatarAlt: "Sofia Reyes",
   },
   {
@@ -188,7 +187,6 @@ const testimonials = [
       "I've travelled to 40+ countries but nothing compares to having a team that genuinely understands what you're looking for. Absolutely world-class.",
     authorName: "James Thornton",
     authorTitle: "Tech Entrepreneur, London",
-    authorAvatarUrl: "https://i.pravatar.cc/80?img=12",
     authorAvatarAlt: "James Thornton",
   },
   {
@@ -196,7 +194,6 @@ const testimonials = [
       "The Patagonia expedition was breathtaking. The local guides they connected us with had knowledge you simply can't find in any guidebook.",
     authorName: "Aiko Nakamura",
     authorTitle: "Photographer, Tokyo",
-    authorAvatarUrl: "https://i.pravatar.cc/80?img=47",
     authorAvatarAlt: "Aiko Nakamura",
   },
 ];

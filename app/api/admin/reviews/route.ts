@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   if (isApproved !== null) query.set("isApproved", isApproved);
   const qs = query.toString() ? `?${query.toString()}` : "";
 
-  const result = await bffFetch<PaginatedResponse<AdminReview>>(`/api/Reviews/all${qs}`, req, {
+  const result = await bffFetch<PaginatedResponse<AdminReview>>(`/api/reviews/all${qs}`, req, {
     isPublic: false,
     cache: "no-store",
   });

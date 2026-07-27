@@ -5,7 +5,7 @@ import type { Review, CreateReviewRequest } from "@/app/types/api";
 export async function POST(req: NextRequest) {
   const body: CreateReviewRequest = await req.json();
 
-  const result = await bffFetch<Review>("/api/Reviews", req, {
+  const result = await bffFetch<Review>("/api/reviews", req, {
     isPublic: false,
     method: "POST",
     cache: "no-store",

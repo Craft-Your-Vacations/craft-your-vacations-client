@@ -3,7 +3,7 @@ import { bffFetch } from "@/lib/bff";
 import type { User } from "@/app/types/api";
 
 export async function GET(req: NextRequest) {
-  const result = await bffFetch<User>("/api/Users/profile", req, {
+  const result = await bffFetch<User>("/api/users/profile", req, {
     isPublic: false,
     method: "GET",
     cache: "no-store",
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const body = await req.json();
 
-  const result = await bffFetch<User>("/api/Users/profile", req, {
+  const result = await bffFetch<User>("/api/users/profile", req, {
     isPublic: false,
     method: "PATCH",
     body: {

@@ -5,7 +5,7 @@ import type { OtpResponse } from "@/app/types/api";
 export async function POST(req: NextRequest) {
   const { identifier } = await req.json();
 
-  const result = await bffFetch<OtpResponse>("/api/Auth/start-reset", req, {
+  const result = await bffFetch<OtpResponse>("/api/auth/start-reset", req, {
     isPublic: true,
     method: "POST",
     body: { identifier: identifier },

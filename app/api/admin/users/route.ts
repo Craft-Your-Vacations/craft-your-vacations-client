@@ -10,13 +10,15 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const page = searchParams.get("page");
   const pageSize = searchParams.get("pageSize");
+  const search = searchParams.get("search");
 
   const query = new URLSearchParams();
   if (page) query.set("page", page);
   if (pageSize) query.set("pageSize", pageSize);
+  if (search) query.set("search", search);
   const qs = query.toString() ? `?${query.toString()}` : "";
 
-  const result = await bffFetch<PaginatedResponse<Customer>>(`/api/Users/all${qs}`, req, {
+  const result = await bffFetch<PaginatedResponse<Customer>>(`/api/users/all${qs}`, req, {
     isPublic: false,
     cache: "no-store",
   });

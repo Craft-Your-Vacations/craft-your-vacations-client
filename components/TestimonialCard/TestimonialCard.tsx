@@ -31,13 +31,19 @@ export function TestimonialCard({
 
       {/* Author */}
       <div className="flex items-center gap-3 mt-2">
-        <Image
-          src={authorAvatarUrl}
-          alt={authorAvatarAlt ?? authorName}
-          width={40}
-          height={40}
-          className="w-10 h-10 rounded-full object-cover border-2 border-primary/20"
-        />
+        {authorAvatarUrl ? (
+          <Image
+            src={authorAvatarUrl}
+            alt={authorAvatarAlt ?? authorName}
+            width={40}
+            height={40}
+            className="w-10 h-10 rounded-full object-cover border-2 border-primary/20"
+          />
+        ) : (
+          <span className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 border-2 border-primary/20 text-primary text-label-md font-semibold">
+            {authorName.charAt(0)}
+          </span>
+        )}
         <div>
           <p className="text-body-md text-text font-semibold">{authorName}</p>
           {authorTitle && (

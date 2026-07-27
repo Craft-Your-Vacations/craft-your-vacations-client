@@ -23,7 +23,7 @@ const defaultLinks: NavLink[] = [
   { label: "Home", href: "/", replace: true },
   { label: "Destinations", href: "/destinations" },
   { label: "My Bookings", href: "/bookings" },
-  { label: "Components", href: "/components" },
+  // { label: "Components", href: "/components" }, // internal design-system demo — hidden for now
 ];
 
 export function Navbar({ links = defaultLinks, className = "" }: NavbarProps) {

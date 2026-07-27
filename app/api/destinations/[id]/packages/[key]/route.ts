@@ -8,7 +8,7 @@ export async function GET(
 ): Promise<NextResponse> {
   const { id, key } = await params;
   const result = await bffFetch<PackageDetail>(
-    `/api/Destinations/${id}/Packages/${key}`,
+    `/api/destinations/${id}/packages/${key}`,
     req,
     { isPublic: true, cache: { revalidate: 300, tags: ["packages"] } } // matches 5-min staleTime in usePackageDetail
   );

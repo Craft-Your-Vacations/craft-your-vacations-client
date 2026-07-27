@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminCustomers } from "@/hooks/useAdminCustomers";
+import { useDebounce } from "@/hooks/useDebounce";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
 import Surface from "@/components/Surface/Surface";
@@ -15,8 +16,9 @@ import Pagination from "@/components/Pagination/Pagination";
 export default function AdminCustomersPage() {
   const router = useRouter();
   const [page, setPage] = useState(1);
-  const { data, isLoading, isError, error, refetch } = useAdminCustomers(page);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search);
+  const { data, isLoading, isError, error, refetch } = useAdminCustomers(page, debouncedSearch);
 
   if (isLoading) return <LoadingSpinner message="Loading customers…" fullScreen={false} />;
   if (isError)
@@ -25,33 +27,34 @@ export default function AdminCustomersPage() {
     );
 
   const customers = data?.data ?? [];
-  const filtered = customers.filter(
-    (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.email.toLowerCase().includes(search.toLowerCase()) ||
-      c.mobileNumber.includes(search)
-  );
 
   return (
     <div className="p-8 pb-24">
       <AdminPageHeader
         title="Customers"
-        subtitle={`${data?.total ?? 0} registered customers`}
+        subtitle={
+          debouncedSearch
+            ? `${data?.total ?? 0} matching`
+            : `${data?.total ?? 0} registered customers`
+        }
       />
 
       <FormField
         id="customer-search"
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => {
+          setSearch(e.target.value);
+          setPage(1);
+        }}
         placeholder="Search by name, email, phone…"
         icon={<Search className="w-4 h-4" />}
         className="mb-6 max-w-sm"
       />
 
-      {filtered.length === 0 ? (
+      {customers.length === 0 ? (
         <EmptyState
           icon={<Users className="w-10 h-10 text-primary/50" strokeWidth={1.5} />}
-          title="No customers found"
+          title={debouncedSearch ? "No customers match your search" : "No customers found"}
         />
       ) : (
       <Surface variant="table">
@@ -74,7 +77,7 @@ export default function AdminCustomersPage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((customer) => (
+            {customers.map((customer) => (
               <tr
                 key={customer.id}
                 onClick={() => router.push(`/admin/customers/${customer.id}`)}

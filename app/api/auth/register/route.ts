@@ -5,7 +5,7 @@ import type { User } from "@/app/types/api";
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
-  const result = await bffFetch<User>("/api/Auth/register", req, {
+  const result = await bffFetch<User>("/api/auth/register", req, {
     isPublic: true,
     method: "POST",
     body: {

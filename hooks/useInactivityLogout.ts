@@ -1,7 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { signOut } from "next-auth/react";
 
-const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
+// Idle timeout is configurable via env (NEXT_PUBLIC_ so the value reaches the
+// browser); falls back to 15 minutes when unset or invalid.
+// NOTE: NEXT_PUBLIC_ vars are inlined at build time — a rebuild is required to
+// change them; they cannot be swapped at runtime.
+function envNumber(value: string | undefined, fallback: number): number {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+const INACTIVITY_TIMEOUT_MS =
+  envNumber(process.env.NEXT_PUBLIC_INACTIVITY_TIMEOUT_MINUTES, 15) * 60 * 1000;
 const COUNTDOWN_SECONDS = 30;
 const COUNTDOWN_MS = COUNTDOWN_SECONDS * 1000;
 const LAST_ACTIVITY_KEY = "cyv_last_activity";

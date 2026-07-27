@@ -12,7 +12,7 @@ export async function GET(
 
   const { id } = await params;
 
-  const result = await bffFetch<AdminBooking[]>(`/api/Bookings/customer/${id}`, req, {
+  const result = await bffFetch<AdminBooking[]>(`/api/bookings/customer/${id}`, req, {
     isPublic: false,
     cache: "no-store",
   });

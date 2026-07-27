@@ -12,7 +12,7 @@ export async function DELETE(
 
   const { id } = await params;
 
-  const result = await bffFetch<void>(`/api/Reviews/${id}`, req, {
+  const result = await bffFetch<void>(`/api/reviews/${id}`, req, {
     isPublic: false,
     method: "DELETE",
     cache: "no-store",

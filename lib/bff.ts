@@ -71,7 +71,6 @@ export async function bffFetch<T>(
 
   // Forward client IP so .NET can rate-limit by real client IP, not the BFF's IP.
   const forwardedFor = req.headers.get("x-forwarded-for");
-  console.log("forwardedFor", forwardedFor);
   if (forwardedFor) fetchHeaders["X-Forwarded-For"] = forwardedFor;
   const realIp = req.headers.get("x-real-ip");
   if (realIp) fetchHeaders["X-Real-IP"] = realIp;

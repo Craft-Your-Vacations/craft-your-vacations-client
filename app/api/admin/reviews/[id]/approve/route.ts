@@ -13,7 +13,7 @@ export async function POST(
 
   const { id } = await params;
 
-  const result = await bffFetch<AdminReview>(`/api/Reviews/${id}/approve`, req, {
+  const result = await bffFetch<AdminReview>(`/api/reviews/${id}/approve`, req, {
     isPublic: false,
     method: "POST",
     cache: "no-store",

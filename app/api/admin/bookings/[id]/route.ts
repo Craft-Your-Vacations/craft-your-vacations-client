@@ -13,7 +13,7 @@ export async function GET(
   const { id } = await params;
 
   const result = await bffFetch<AdminBooking>(
-    `/api/Bookings/${id}/admin`,
+    `/api/bookings/${id}/admin`,
     req,
     {
       isPublic: false,
@@ -37,7 +37,7 @@ export async function PATCH(
   const body: AdminUpdateBookingRequest = await req.json();
 
   const result = await bffFetch<AdminBooking>(
-    `/api/Bookings/${id}/admin`,
+    `/api/bookings/${id}/admin`,
     req,
     {
       isPublic: false,

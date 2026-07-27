@@ -5,7 +5,7 @@ import type { OtpResponse } from "@/app/types/api";
 export async function POST(req: NextRequest) {
   const { mobileNumber, otp } = await req.json();
 
-  const result = await bffFetch<OtpResponse>("/api/Auth/verify-otp", req, {
+  const result = await bffFetch<OtpResponse>("/api/auth/verify-otp", req, {
     isPublic: false,
     method: "POST",
     body: {

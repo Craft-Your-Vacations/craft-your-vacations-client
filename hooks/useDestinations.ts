@@ -8,7 +8,6 @@ export function useDestinations() {
   return useQuery({
     queryKey: queryKeys.destinations.all(),
     queryFn: () => destinationsApi.getAll(),
-    retry: 3,
     staleTime: 1000 * 60 * 5, // cache for 5 minutes before marking stale
   });
 }

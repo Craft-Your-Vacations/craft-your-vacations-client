@@ -49,7 +49,7 @@ export interface TestimonialData {
   quote: string;
   authorName: string;
   authorTitle?: string;
-  authorAvatarUrl: string;
+  authorAvatarUrl?: string;
   authorAvatarAlt?: string;
 }
 

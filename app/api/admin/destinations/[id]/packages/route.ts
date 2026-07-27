@@ -15,7 +15,7 @@ export async function POST(
   const body: CreatePackageRequest = await req.json();
 
   const result = await bffFetch<PackageDetail>(
-    `/api/Destinations/${id}/Packages`,
+    `/api/destinations/${id}/packages`,
     req,
     {
       isPublic: false,

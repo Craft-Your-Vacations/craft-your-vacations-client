@@ -6,11 +6,18 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { SessionProvider } from "next-auth/react";
 import ToastContainer from "@/components/Toast/ToastContainer";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider refetchOnWindowFocus={true}>
+    <SessionProvider refetchOnWindowFocus={false}>
       <ThemeProvider
         attribute="data-theme"
         defaultTheme="dark"

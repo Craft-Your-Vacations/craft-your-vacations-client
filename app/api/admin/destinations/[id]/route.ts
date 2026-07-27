@@ -14,7 +14,7 @@ export async function PATCH(
   const { id } = await params;
   const body: Partial<CreateDestinationRequest> = await req.json();
 
-  const result = await bffFetch<DestinationDetail>(`/api/Destinations/${id}`, req, {
+  const result = await bffFetch<DestinationDetail>(`/api/destinations/${id}`, req, {
     isPublic: false,
     method: "PATCH",
     cache: "no-store",
@@ -35,7 +35,7 @@ export async function DELETE(
 
   const { id } = await params;
 
-  const result = await bffFetch<void>(`/api/Destinations/${id}`, req, {
+  const result = await bffFetch<void>(`/api/destinations/${id}`, req, {
     isPublic: false,
     method: "DELETE",
     cache: "no-store",

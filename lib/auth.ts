@@ -25,7 +25,7 @@ async function doRefreshBackendToken(token: JWT): Promise<JWT> {
   console.log("[auth] Refresh Token", token.backendRefreshToken);
 
   try {
-    const res = await fetch(`${BACKEND_URL}/api/Auth/refresh`, {
+    const res = await fetch(`${BACKEND_URL}/api/auth/refresh`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refreshToken: token.backendRefreshToken }),
@@ -128,7 +128,7 @@ export const authOptions: NextAuthOptions = {
 
         let res: Response;
         try {
-          res = await fetch(`${BACKEND_URL}/api/Auth/login`, {
+          res = await fetch(`${BACKEND_URL}/api/auth/login`, {
             method: "POST",
             headers: loginHeaders,
             body: JSON.stringify({
@@ -174,7 +174,7 @@ export const authOptions: NextAuthOptions = {
     async signOut({ token }) {
       if (!token?.backendRefreshToken) return;
       try {
-        await fetch(`${BACKEND_URL}/api/Auth/logout`, {
+        await fetch(`${BACKEND_URL}/api/auth/logout`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ refreshToken: token.backendRefreshToken }),
@@ -190,7 +190,7 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       if (account?.provider === "google") {
         try {
-          const res = await fetch(`${BACKEND_URL}/api/Auth/google-signin`, {
+          const res = await fetch(`${BACKEND_URL}/api/auth/google-signin`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

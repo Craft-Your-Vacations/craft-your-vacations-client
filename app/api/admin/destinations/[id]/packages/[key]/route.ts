@@ -15,7 +15,7 @@ export async function PUT(
   const body: UpdatePackageRequest = await req.json();
 
   const result = await bffFetch<PackageDetail>(
-    `/api/Destinations/${id}/Packages/${key}`,
+    `/api/destinations/${id}/packages/${key}`,
     req,
     {
       isPublic: false,
@@ -41,7 +41,7 @@ export async function DELETE(
   const { id, key } = await params;
 
   const result = await bffFetch<void>(
-    `/api/Destinations/${id}/Packages/${key}`,
+    `/api/destinations/${id}/packages/${key}`,
     req,
     {
       isPublic: false,

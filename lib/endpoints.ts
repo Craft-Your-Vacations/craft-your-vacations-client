@@ -128,10 +128,11 @@ export const adminApi = {
     api.post<AdminReview>(`admin/reviews/${id}/approve`, {}),
   deleteReview: (id: number) => api.delete<void>(`admin/reviews/${id}`),
   // Customers
-  getCustomers: (page = 1, pageSize = 20) =>
-    api.get<PaginatedResponse<Customer>>(
-      `admin/users?page=${page}&pageSize=${pageSize}`,
-    ),
+  getCustomers: (page = 1, pageSize = 20, search?: string) => {
+    const q = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+    if (search) q.set("search", search);
+    return api.get<PaginatedResponse<Customer>>(`admin/users?${q.toString()}`);
+  },
   getCustomer: (id: string) => api.get<Customer>(`admin/users/${id}`),
   getCustomerBookings: (id: string) => api.get<AdminBooking[]>(`admin/bookings/customer/${id}`),
   // Destinations

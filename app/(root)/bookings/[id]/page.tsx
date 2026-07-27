@@ -176,16 +176,18 @@ export default function BookingDetailPage({
           )}
         </Surface>
 
-        {/* Confirmed itinerary */}
-        {isConfirmed &&
-          booking.confirmedItinerary &&
+        {/* Itinerary — snapshotted from the package at booking time, customised by
+            the team once confirmed */}
+        {booking.confirmedItinerary &&
           booking.confirmedItinerary.length > 0 && (
             <Surface className="gap-4">
               <div>
                 <h2 className="text-headline-sm text-text">Your Itinerary</h2>
                 <p className="text-body-sm text-text-muted mt-1">
-                  {booking.confirmedItinerary.length} days · customised for your
-                  trip
+                  {booking.confirmedItinerary.length} days ·{" "}
+                  {isConfirmed
+                    ? "customised for your trip"
+                    : "as per the selected package"}
                 </p>
               </div>
               <ItineraryView itinerary={booking.confirmedItinerary} />

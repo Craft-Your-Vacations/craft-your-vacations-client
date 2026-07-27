@@ -8,7 +8,7 @@ export async function GET(
 ) {
   const { slug } = await params;
 
-  const result = await bffFetch<Review[]>(`/api/Reviews/destination/${slug}`, req, {
+  const result = await bffFetch<Review[]>(`/api/reviews/destination/${slug}`, req, {
     isPublic: true,
     cache: { revalidate: 60, tags: ["reviews"] }, // 1-min ISR; review list changes infrequently
   });

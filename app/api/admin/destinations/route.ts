@@ -10,7 +10,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const body: CreateDestinationRequest = await req.json();
 
-  const result = await bffFetch<Destination>("/api/Destinations", req, {
+  const result = await bffFetch<Destination>("/api/destinations", req, {
     isPublic: false,
     method: "POST",
     cache: "no-store",

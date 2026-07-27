@@ -3,7 +3,7 @@ import { bffFetch } from "@/lib/bff";
 import type { Booking, CreateBookingRequest } from "@/app/types/api";
 
 export async function GET(req: NextRequest) {
-  const result = await bffFetch<Booking[]>("/api/Bookings/my", req, {
+  const result = await bffFetch<Booking[]>("/api/bookings/my", req, {
     isPublic: false,
     method: "GET",
     cache: "no-store",
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const body: CreateBookingRequest = await req.json();
 
-  const result = await bffFetch<Booking>("/api/Bookings", req, {
+  const result = await bffFetch<Booking>("/api/bookings", req, {
     isPublic: false,
     method: "POST",
     cache: "no-store",

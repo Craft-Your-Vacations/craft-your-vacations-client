@@ -3,7 +3,7 @@ import { bffFetch } from "@/lib/bff";
 import type { OtpResponse } from "@/app/types/api";
 
 export async function POST(req: NextRequest) {
-  const result = await bffFetch<OtpResponse>("/api/Auth/send-email-verification", req, {
+  const result = await bffFetch<OtpResponse>("/api/auth/send-email-verification", req, {
     isPublic: false,
     method: "POST",
     body: {},

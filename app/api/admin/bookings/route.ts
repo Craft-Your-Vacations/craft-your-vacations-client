@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   if (pageSize) query.set("pageSize", pageSize);
   const qs = query.toString() ? `?${query.toString()}` : "";
 
-  const result = await bffFetch<PaginatedResponse<AdminBooking>>(`/api/Bookings/all${qs}`, req, {
+  const result = await bffFetch<PaginatedResponse<AdminBooking>>(`/api/bookings/all${qs}`, req, {
     isPublic: false,
     cache: "no-store",
   });

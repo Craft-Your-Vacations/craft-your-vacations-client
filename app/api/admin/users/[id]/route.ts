@@ -12,7 +12,7 @@ export async function GET(
 
   const { id } = await params;
 
-  const result = await bffFetch<Customer>(`/api/Users/${id}/admin`, req, {
+  const result = await bffFetch<Customer>(`/api/users/${id}/admin`, req, {
     isPublic: false,
     cache: "no-store",
   });
