@@ -48,13 +48,15 @@ export function AdminSidebar() {
           </span>
         </div>
         {/* X close button — mobile only */}
-        <button
+        <Button
+          variant="ghost"
+          size="xs"
           onClick={closeAdminSidebar}
           aria-label="Close sidebar"
-          className="md:hidden ml-auto p-1.5 rounded-lg text-text-muted hover:text-text hover:bg-surface-high transition-colors"
+          className="md:hidden ml-auto"
         >
           <X className="w-5 h-5" />
-        </button>
+        </Button>
       </div>
       <nav className="flex-1 py-4 flex flex-col gap-1 px-3">
         {NAV_LINKS.map(({ href, label }) => {

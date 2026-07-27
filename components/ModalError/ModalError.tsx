@@ -13,7 +13,7 @@ interface ModalErrorProps {
 
 export default function ModalError({ isOpen, title, message, onClose }: ModalErrorProps) {
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} ariaLabel={title} className="items-center gap-4 text-center">
+    <Dialog isOpen={isOpen} onClose={onClose} ariaLabel={title} className="items-center gap-5 text-center">
       <CircleX className="w-12 h-12 text-error" strokeWidth={1.5} />
       <div>
         <h2 className="text-headline-md text-text">{title}</h2>

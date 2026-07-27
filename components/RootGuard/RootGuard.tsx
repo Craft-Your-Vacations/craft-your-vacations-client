@@ -30,7 +30,6 @@ export function RootGuard({ children }: { children: React.ReactNode }) {
     }
 
     if (session?.user?.role === "Admin") {
-      console.log("Redirecting from Root Guard");
       router.replace("/admin");
       return;
     }

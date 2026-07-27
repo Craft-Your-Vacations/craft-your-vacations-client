@@ -3,7 +3,6 @@
 import React from "react";
 import type { DestinationCardData } from "@/app/types/component";
 import Image from "next/image";
-import { Destination } from "@/app/types/api";
 import Link from "next/link";
 
 interface DestinationCardProps extends DestinationCardData {
@@ -38,7 +37,7 @@ export function DestinationCard({
 
       {/* Content */}
       <div className="absolute bottom-0 inset-x-0 p-5 flex flex-col gap-2">
-        <span className="self-start px-2.5 py-1 rounded-full text-label-sm border border-primary-app/20 bg-primary-app/20 text-primary-app">
+        <span className="self-start px-3 py-1 rounded-full text-label-sm border border-primary-app/20 bg-primary-app/20 text-primary-app">
           {destinationCities.join(",")}
         </span>
         <h3 className="text-headline-md text-white">{title}</h3>
@@ -55,7 +54,7 @@ export function DestinationCard({
     );
   }
 
-  return content;
+  return cardContent;
 }
 
 export default DestinationCard;

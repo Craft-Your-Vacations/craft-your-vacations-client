@@ -23,10 +23,10 @@ const sizeClasses: Record<ButtonSize, string> = {
 };
 
 const iconSizeClasses: Record<ButtonSize, string> = {
-  xs: "w-7 h-7 text-[14px]",
-  sm: "w-9 h-9 text-[18px]",
-  md: "w-12 h-12 text-[20px]",
-  lg: "w-14 h-14 text-[24px]",
+  xs: "w-7 h-7 text-sm",
+  sm: "w-9 h-9 text-lg",
+  md: "w-12 h-12 text-xl",
+  lg: "w-14 h-14 text-2xl",
 };
 
 function Spinner() {
@@ -71,6 +71,11 @@ export function Button({
         "border-2 border-primary/30 hover:border-primary text-primary hover:bg-primary/5 rounded-2xl";
       sizeClass = sizeClasses[size];
       break;
+    case "ghost":
+      variantClass =
+        "rounded-xl bg-transparent text-text-muted hover:text-primary hover:bg-surface-high";
+      sizeClass = sizeClasses[size];
+      break;
     case "icon":
       variantClass =
         "rounded-full bg-surface-high text-text-muted hover:text-primary";
@@ -83,13 +88,13 @@ export function Button({
       break;
     case "text":
       variantClass =
-        "text-primary underline decoration-primary/40 hover:decoration-primary rounded-lg px-1";
+        "text-primary underline decoration-primary/40 hover:decoration-primary rounded-xl px-1";
       sizeClass = "";
       break;
 
     case "error":
       variantClass =
-        "bg-red-700 text-white shadow-ambient hover:opacity-90 rounded-2xl";
+        "bg-error text-white shadow-ambient hover:opacity-90 rounded-2xl";
       sizeClass = sizeClasses[size];
       break;
   }

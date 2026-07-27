@@ -4,9 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCreateDestination } from "@/hooks/useCreateDestination";
 import Button from "@/components/Button/Button";
+import Surface from "@/components/Surface/Surface";
+import Checkbox from "@/components/Checkbox/Checkbox";
 import FormField from "@/components/FormField/FormField";
 import TextAreaField from "@/components/TextAreaField/TextAreaField";
-import AdminBackLink from "@/app/(admin)/components/AdminBackLink";
+import BackButton from "@/components/BackButton/BackButton";
 import CityTagInput from "@/app/(admin)/components/CityTagInput";
 import { useToastStore } from "@/stores/useToastStore";
 
@@ -40,12 +42,12 @@ export default function NewDestinationPage() {
 
   return (
     <div className="p-8 max-w-2xl">
-      <AdminBackLink href="/admin/destinations" label="Back to destinations" />
+      <BackButton className="mb-6" />
 
       <h1 className="text-display-sm text-text mb-8">New Destination</h1>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-        <div className="glass rounded-2xl p-6 flex flex-col gap-5">
+        <Surface>
           <FormField
             id="dest-title"
             label="Title"
@@ -88,16 +90,12 @@ export default function NewDestinationPage() {
             <CityTagInput cities={cities} onChange={setCities} />
           </div>
 
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={isFeatured}
-              onChange={(e) => setIsFeatured(e.target.checked)}
-              className="w-4 h-4 accent-primary"
-            />
-            <span className="text-body-sm text-text">Featured destination</span>
-          </label>
-        </div>
+          <Checkbox
+            checked={isFeatured}
+            onChange={setIsFeatured}
+            label="Featured destination"
+          />
+        </Surface>
 
         <div className="flex items-center gap-4">
           <Button variant="primary" type="submit" loading={createDestination.isPending}>

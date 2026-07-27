@@ -6,10 +6,11 @@ import { useDestination } from "@/hooks/useDestination";
 import { useCreatePackage } from "@/hooks/useCreatePackage";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import Button from "@/components/Button/Button";
+import Surface from "@/components/Surface/Surface";
 import FormField from "@/components/FormField/FormField";
 import TextAreaField from "@/components/TextAreaField/TextAreaField";
 import type { ItineraryDay } from "@/app/types/api";
-import AdminBackLink from "@/app/(admin)/components/AdminBackLink";
+import BackButton from "@/components/BackButton/BackButton";
 import ItineraryEditor from "@/app/(admin)/components/ItineraryEditor/ItineraryEditor";
 import { useToastStore } from "@/stores/useToastStore";
 
@@ -55,19 +56,16 @@ export default function NewPackagePage({
 
   return (
     <div className="p-8 max-w-3xl">
-      <AdminBackLink
-        href={`/admin/destinations/${destSlug}`}
-        label={`Back to ${destination?.title ?? "destination"}`}
-      />
+      <BackButton className="mb-6" />
 
       <h1 className="text-display-sm text-text mb-8">New Package</h1>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         {/* Basic info */}
-        <div className="glass rounded-2xl p-6 flex flex-col gap-5">
+        <Surface>
           <h2 className="text-headline-sm text-text">Package Info</h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               id="pkg-title"
               label="Title"
@@ -116,7 +114,7 @@ export default function NewPackagePage({
             onChange={(e) => setExcerpt(e.target.value)}
             placeholder="Short description of this package…"
           />
-        </div>
+        </Surface>
 
         <ItineraryEditor itinerary={itinerary} onChange={setItinerary} />
 

@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import type { TestimonialData } from "@/app/types/component";
 
 interface TestimonialCardProps extends TestimonialData {
@@ -30,9 +31,11 @@ export function TestimonialCard({
 
       {/* Author */}
       <div className="flex items-center gap-3 mt-2">
-        <img
+        <Image
           src={authorAvatarUrl}
           alt={authorAvatarAlt ?? authorName}
+          width={40}
+          height={40}
           className="w-10 h-10 rounded-full object-cover border-2 border-primary/20"
         />
         <div>

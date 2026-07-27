@@ -62,25 +62,25 @@ export function ItineraryDay({
         className="w-full flex items-center gap-4 px-5 py-4 text-left group"
       >
         {/* Day pill */}
-        <span className="shrink-0 min-w-[4.5rem] text-center px-3 py-1.5 rounded-xl bg-primary/15 border border-primary/30 text-primary text-label-sm font-bold tracking-widest uppercase">
+        <span className="shrink-0 min-w-18 text-center px-3 py-1.5 rounded-xl bg-primary/15 border border-primary/30 text-primary text-label-sm font-bold tracking-widest uppercase">
           Day {String(dayNumber).padStart(2, "0")}
         </span>
 
         {/* Title */}
-        <span className="flex-1 min-w-0 text-body-md sm:text-headline-sm text-text group-hover:text-primary transition-colors">
+        <span className="flex-1 min-w-0 text-body-md md:text-headline-sm text-text group-hover:text-primary transition-colors">
           {title}
         </span>
 
         {/* Activity type icon previews (collapsed only) */}
         {!isOpen && (
-          <div className="hidden sm:flex items-center gap-1 shrink-0">
+          <div className="hidden md:flex items-center gap-1 shrink-0">
             {uniqueTypes.map((type) => {
               const cfg = activityConfig[type] ?? activityConfig.leisure;
               return (
                 <span
                   key={type}
                   title={cfg.label}
-                  className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center"
+                  className="w-6 h-6 rounded-xl bg-primary/10 text-primary flex items-center justify-center"
                 >
                   {cfg.icon}
                 </span>
@@ -90,7 +90,7 @@ export function ItineraryDay({
         )}
 
         {/* Activity count — hidden on mobile, shown in expanded body instead */}
-        <span className="hidden sm:inline-flex shrink-0 px-2.5 py-1 rounded-full bg-surface-high text-text-muted text-label-sm">
+        <span className="hidden md:inline-flex shrink-0 px-2.5 py-1 rounded-full bg-surface-high text-text-muted text-label-sm">
           {activities.length}{" "}
           {activities.length === 1 ? "activity" : "activities"}
         </span>
@@ -113,7 +113,7 @@ export function ItineraryDay({
           <div className="h-px bg-outline mb-4" />
 
           {/* Activity count — mobile only */}
-          <span className="sm:hidden inline-flex mb-3 px-2.5 py-1 rounded-full bg-surface-high text-text-muted text-label-sm">
+          <span className="md:hidden inline-flex mb-3 px-2.5 py-1 rounded-full bg-surface-high text-text-muted text-label-sm">
             {activities.length}{" "}
             {activities.length === 1 ? "activity" : "activities"}
           </span>
@@ -137,12 +137,12 @@ export function ItineraryDay({
                   {/* Content */}
                   <div className="flex items-start gap-3 px-4 py-3 flex-1">
                     {/* Icon badge */}
-                    <div className="shrink-0 w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center mt-0.5">
+                    <div className="shrink-0 w-7 h-7 rounded-xl bg-primary/10 text-primary flex items-center justify-center mt-0.5">
                       {cfg.icon}
                     </div>
 
                     <div className="flex flex-col gap-1 flex-1">
-                      <span className="self-start px-2 py-0.5 rounded-md bg-primary/10 text-primary text-label-sm font-semibold">
+                      <span className="self-start px-2 py-0.5 rounded-full bg-primary/10 text-primary text-label-sm font-semibold">
                         {cfg.label}
                       </span>
                       <p className="text-body-sm text-text leading-relaxed">

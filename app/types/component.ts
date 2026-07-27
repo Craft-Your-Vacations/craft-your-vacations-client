@@ -1,6 +1,6 @@
 import React from "react";
 
-export type ButtonVariant = "primary" | "secondary" | "error" | "icon" | "overlay" | "text";
+export type ButtonVariant = "primary" | "secondary" | "error" | "icon" | "overlay" | "text" | "ghost";
 export type ButtonSize = "xs" | "sm" | "md" | "lg";
 
 export interface NavLink {
@@ -61,7 +61,8 @@ export interface FooterAction {
 
 export interface FieldBaseProps {
   id: string;
-  label: string;
+  /** Optional — omit for compact/inline fields (e.g. search boxes, table-row editors). */
+  label?: string;
   helperText?: string;
   errorMessage?: string;
   required?: boolean;

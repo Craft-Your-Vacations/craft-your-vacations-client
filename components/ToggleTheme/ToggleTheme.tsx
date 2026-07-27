@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 function ToggleTheme() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState();
+  const [mounted, setMounted] = useState<boolean>(false);
 
   useEffect(() => {
     setMounted(true);
@@ -27,7 +27,7 @@ function ToggleTheme() {
       }}
     >
       {theme == "dark" ? (
-        <Moon className="h-4 w-5" />
+        <Moon className="h-5 w-5" />
       ) : (
         <Sun className="h-5 w-5" />
       )}

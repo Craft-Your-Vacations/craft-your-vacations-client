@@ -7,6 +7,8 @@ import { useAdminDeleteReview } from "@/hooks/useAdminDeleteReview";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
 import Button from "@/components/Button/Button";
+import Surface from "@/components/Surface/Surface";
+import EmptyState from "@/components/EmptyState/EmptyState";
 import ConfirmDialog from "@/components/ConfirmDialog/ConfirmDialog";
 import Image from "next/image";
 import { Star, Check, Trash2 } from "lucide-react";
@@ -49,14 +51,15 @@ export default function AdminReviewsPage() {
       />
 
       {reviews.length === 0 && (
-        <div className="glass rounded-2xl p-12 text-center">
-          <p className="text-body-md text-text-muted">No reviews in this category</p>
-        </div>
+        <EmptyState
+          icon={<Star className="w-10 h-10 text-primary/50" strokeWidth={1.5} />}
+          title="No reviews in this category"
+        />
       )}
 
       <div className="flex flex-col gap-4">
         {reviews.map((review) => (
-          <div key={review.id} className="glass rounded-2xl p-6 flex flex-col gap-4">
+          <Surface key={review.id} className="gap-4">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
@@ -111,15 +114,16 @@ export default function AdminReviewsPage() {
                   Approve
                 </Button>
               )}
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => setConfirmDeleteId(review.id)}
-                className="flex items-center gap-1.5 text-body-sm text-text-muted hover:text-error transition-colors"
+                className="hover:text-error hover:bg-error/10"
               >
                 <Trash2 className="w-4 h-4" />
                 Delete
-              </button>
+              </Button>
             </div>
-          </div>
+          </Surface>
         ))}
       </div>
 

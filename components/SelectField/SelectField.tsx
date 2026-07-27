@@ -1,6 +1,6 @@
 import React from "react";
 import type { FieldBaseProps, SelectOption } from "@/app/types/component";
-import { ArrowDown, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 interface SelectFieldProps extends FieldBaseProps {
   options: SelectOption[];
@@ -28,13 +28,16 @@ export function SelectField({
 
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
-      <label htmlFor={id} className="text-label-md text-text-muted">
-        {label}
-        {required && <span className="text-primary ml-1">*</span>}
-      </label>
+      {label && (
+        <label htmlFor={id} className="text-label-md text-text-muted">
+          {label}
+          {required && <span className="text-primary ml-1">*</span>}
+        </label>
+      )}
       <div className="relative">
         <select
           id={id}
+          aria-label={label ? undefined : placeholder}
           value={value}
           defaultValue={defaultValue}
           onChange={onChange}
@@ -57,13 +60,10 @@ export function SelectField({
             </option>
           ))}
         </select>
-        <span
-          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[20px] text-text-subtle"
+        <ChevronDown
+          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-subtle"
           aria-hidden="true"
-        >
-          
-          <ChevronDown/>
-        </span>
+        />
       </div>
       {hasError && <p className="text-body-sm text-error">{errorMessage}</p>}
       {!hasError && helperText && (

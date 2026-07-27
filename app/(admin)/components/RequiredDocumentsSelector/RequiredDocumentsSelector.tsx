@@ -2,6 +2,7 @@
 
 import type { DocumentType } from "@/app/types/api";
 import { DOCUMENT_OPTIONS } from "@/lib/constants";
+import Checkbox from "@/components/Checkbox/Checkbox";
 
 interface RequiredDocumentsSelectorProps {
   value: DocumentType[];
@@ -28,18 +29,12 @@ export default function RequiredDocumentsSelector({
       </div>
       <div className="flex flex-wrap gap-4">
         {DOCUMENT_OPTIONS.map((opt) => (
-          <label
+          <Checkbox
             key={opt.value}
-            className="flex items-center gap-2 cursor-pointer select-none"
-          >
-            <input
-              type="checkbox"
-              checked={value.includes(opt.value)}
-              onChange={() => toggle(opt.value)}
-              className="w-4 h-4 accent-primary rounded"
-            />
-            <span className="text-body-sm text-text">{opt.label}</span>
-          </label>
+            checked={value.includes(opt.value)}
+            onChange={() => toggle(opt.value)}
+            label={opt.label}
+          />
         ))}
       </div>
     </div>

@@ -7,6 +7,7 @@ import { reviewsApi } from "@/lib/endpoints";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
 import Button from "@/components/Button/Button";
+import EmptyState from "@/components/EmptyState/EmptyState";
 import BookingCard from "@/components/BookingCard/BookingCard";
 import ReviewModal from "@/components/ReviewModal/ReviewModal";
 import ModalSuccess from "@/components/ModalSuccess/ModalSuccess";
@@ -89,18 +90,16 @@ export default function BookingsPage() {
 
       {/* Empty state */}
       {bookings?.length === 0 && (
-        <div className="glass ghost-border rounded-3xl p-12 flex flex-col items-center gap-5 text-center">
-          <CalendarDays className="w-10 h-10 text-primary/50" strokeWidth={1.5} />
-          <div>
-            <p className="text-headline-sm text-text">No booking interests yet</p>
-            <p className="text-body-md text-text-muted mt-1">
-              Browse packages and express your interest to get started.
-            </p>
-          </div>
-          <Button variant="primary" href="/destinations">
-            Explore Destinations
-          </Button>
-        </div>
+        <EmptyState
+          icon={<CalendarDays className="w-10 h-10 text-primary/50" strokeWidth={1.5} />}
+          title="No booking interests yet"
+          description="Browse packages and express your interest to get started."
+          action={
+            <Button variant="primary" href="/destinations">
+              Explore Destinations
+            </Button>
+          }
+        />
       )}
 
       {/* Booking list */}

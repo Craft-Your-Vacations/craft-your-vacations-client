@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Plus, X } from "lucide-react";
+import Button from "@/components/Button/Button";
+import FormField from "@/components/FormField/FormField";
 
 interface Props {
   cities: string[];
@@ -22,20 +24,23 @@ export default function CityTagInput({ cities, onChange }: Props) {
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex gap-2">
-        <input
+        <FormField
+          id="city-tag-input"
           value={cityInput}
           onChange={(e) => setCityInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCity())}
           placeholder="Add a city and press Enter"
-          className="flex-1 bg-surface-highest border border-outline rounded-xl px-3 py-2 text-body-sm text-text focus:outline-none focus:ring-1 focus:ring-primary"
+          className="flex-1"
         />
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={addCity}
-          className="px-3 py-2 rounded-xl bg-surface hover:bg-surface-high text-text-muted transition-colors"
+          aria-label="Add city"
         >
           <Plus className="w-4 h-4" />
-        </button>
+        </Button>
       </div>
       {cities.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-2">

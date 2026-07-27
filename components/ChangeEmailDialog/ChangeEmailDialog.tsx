@@ -91,24 +91,26 @@ export default function ChangeEmailDialog({
               size="md"
               onClick={handleSend}
               disabled={!newEmail.trim() || isSending}
+              loading={isSending}
               className="w-full"
             >
-              {isSending ? "Sending…" : "Send verification link"}
+              Send verification link
             </Button>
           </>
         ) : (
           <>
-            <button
+            <Button
+              variant="text"
               onClick={handleSend}
               disabled={isSending || cooldown > 0}
-              className="text-body-sm text-primary hover:underline cursor-pointer disabled:opacity-50 text-center"
+              className="self-center"
             >
               {isSending
                 ? "Resending…"
                 : cooldown > 0
                   ? `Resend link in ${cooldown}s`
                   : "Resend link"}
-            </button>
+            </Button>
             <Button variant="secondary" size="md" onClick={onClose} className="w-full">
               Close
             </Button>

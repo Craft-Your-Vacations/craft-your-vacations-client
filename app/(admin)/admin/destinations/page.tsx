@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Surface from "@/components/Surface/Surface";
 import { useDestinations } from "@/hooks/useDestinations";
 import { useDeleteDestination } from "@/hooks/useDeleteDestination";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
@@ -40,7 +40,7 @@ export default function AdminDestinationsPage() {
 
       <div className="flex flex-col gap-4">
         {destinations?.map((dest) => (
-          <div key={dest.id} className="glass rounded-2xl p-6 flex items-center gap-6">
+          <Surface key={dest.id} className="flex-row items-center gap-6">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-1">
                 <h2 className="text-headline-sm text-text">{dest.title}</h2>
@@ -59,23 +59,26 @@ export default function AdminDestinationsPage() {
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              <Link
+              <Button
+                variant="ghost"
+                size="sm"
                 href={`/admin/destinations/${dest.slug}`}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-body-sm text-text-muted bg-surface hover:bg-surface-high transition-colors"
               >
                 <Pencil className="w-3.5 h-3.5" />
                 Edit
-              </Link>
+              </Button>
 
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setConfirmDeleteId(dest.id)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-body-sm text-text-muted bg-surface hover:bg-error/10 hover:text-error transition-colors"
+                className="hover:text-error hover:bg-error/10"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 Delete
-              </button>
+              </Button>
             </div>
-          </div>
+          </Surface>
         ))}
       </div>
 

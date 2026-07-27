@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { ChevronLeft, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
+import BackButton from "@/components/BackButton/BackButton";
 
 export interface HeroChip {
   icon: React.ReactNode;
@@ -17,7 +18,6 @@ interface PageHeroProps {
   tags?: string[];
   /** Stat chips shown below the title (e.g. "12 Packages", "5–10 Days"). */
   chips?: HeroChip[];
-  onBack: () => void;
   className?: string;
 }
 
@@ -28,7 +28,6 @@ export default function PageHero({
   subtitle,
   tags,
   chips,
-  onBack,
   className = "",
 }: PageHeroProps) {
   return (
@@ -53,16 +52,9 @@ export default function PageHero({
       <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/35 to-black/20" />
       <div className="absolute inset-0 bg-linear-to-r from-black/60 via-black/15 to-transparent" />
 
-      {/* Back button — glass pill */}
+      {/* Back button */}
       <div className="absolute top-6 left-0 right-0 max-w-(--container-max-w) mx-auto px-6 md:px-10">
-        <button
-          type="button"
-          onClick={onBack}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/30 backdrop-blur-md border border-white/15 text-white/80 hover:text-white hover:bg-black/45 transition-all text-label-sm font-medium cursor-pointer"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          Back
-        </button>
+        <BackButton variant="overlay" />
       </div>
 
       {/* Content — sits in the lower portion with generous spacing */}

@@ -58,14 +58,15 @@ export default function ReviewModal({
   return (
     <Dialog isOpen={isOpen} onClose={onClose} ariaLabel={`Review ${packageTitle}`} size="lg" className="gap-6">
       {/* Close button */}
-      <button
-        type="button"
+      <Button
+        variant="icon"
+        size="sm"
         onClick={onClose}
-        className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full bg-surface-high text-text-muted hover:text-text transition-colors"
+        className="absolute top-5 right-5"
         aria-label="Close"
       >
         <X className="w-4 h-4" />
-      </button>
+      </Button>
 
       <div>
         <h2 className="text-headline-md text-text">Share your experience</h2>

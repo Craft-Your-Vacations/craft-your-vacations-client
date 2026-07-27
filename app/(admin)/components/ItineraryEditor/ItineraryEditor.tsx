@@ -2,7 +2,9 @@
 
 import { Trash2 } from "lucide-react";
 import FormField from "@/components/FormField/FormField";
+import SelectField from "@/components/SelectField/SelectField";
 import Button from "@/components/Button/Button";
+import Surface from "@/components/Surface/Surface";
 import type { ItineraryDay, Activity, ActivityType } from "@/app/types/api";
 import { ACTIVITY_TYPES } from "@/lib/constants";
 
@@ -84,19 +86,22 @@ export default function ItineraryEditor({ itinerary, onChange }: ItineraryEditor
       </div>
 
       {itinerary.map((day, dayIndex) => (
-        <div key={dayIndex} className="glass rounded-2xl p-6 flex flex-col gap-4">
+        <Surface key={dayIndex} className="gap-4">
           <div className="flex items-center justify-between">
             <span className="text-label-sm text-primary font-semibold uppercase tracking-widest">
               Day {day.dayNumber}
             </span>
             {itinerary.length > 1 && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="xs"
                 onClick={() => removeDay(dayIndex)}
-                className="text-text-muted hover:text-error transition-colors"
+                className="hover:text-error hover:bg-error/10"
+                aria-label="Remove day"
               >
                 <Trash2 className="w-4 h-4" />
-              </button>
+              </Button>
             )}
           </div>
 
@@ -113,48 +118,52 @@ export default function ItineraryEditor({ itinerary, onChange }: ItineraryEditor
             {day.activities.map((act, actIndex) => (
               <div
                 key={actIndex}
-                className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-start"
+                className="flex flex-col md:flex-row gap-2 items-stretch md:items-start"
               >
                 <div className="flex gap-2 flex-1">
-                  <input
+                  <FormField
+                    id={`day-${dayIndex}-act-${actIndex}-time`}
                     value={act.time}
                     onChange={(e) =>
                       updateActivity(dayIndex, actIndex, "time", e.target.value)
                     }
                     placeholder="Time (e.g. 09:00)"
-                    className="w-24 shrink-0 bg-surface-highest border border-outline rounded-xl px-3 py-2 text-body-sm text-text focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-24 shrink-0"
                   />
-                  <input
+                  <FormField
+                    id={`day-${dayIndex}-act-${actIndex}-desc`}
                     value={act.description}
                     onChange={(e) =>
                       updateActivity(dayIndex, actIndex, "description", e.target.value)
                     }
                     placeholder="Activity description"
-                    className="flex-1 bg-surface-highest border border-outline rounded-xl px-3 py-2 text-body-sm text-text focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="flex-1"
                   />
                 </div>
                 <div className="flex gap-2">
-                  <select
+                  <SelectField
+                    id={`day-${dayIndex}-act-${actIndex}-type`}
                     value={act.type}
                     onChange={(e) =>
                       updateActivity(dayIndex, actIndex, "type", e.target.value as ActivityType)
                     }
-                    className="flex-1 sm:w-32 sm:flex-none bg-surface-highest border border-outline rounded-xl px-3 py-2 text-body-sm text-text focus:outline-none focus:ring-1 focus:ring-primary"
-                  >
-                    {ACTIVITY_TYPES.map((t) => (
-                      <option key={t} value={t}>
-                        {t.charAt(0).toUpperCase() + t.slice(1)}
-                      </option>
-                    ))}
-                  </select>
+                    className="flex-1 md:w-32 md:flex-none"
+                    options={ACTIVITY_TYPES.map((t) => ({
+                      value: t,
+                      label: t.charAt(0).toUpperCase() + t.slice(1),
+                    }))}
+                  />
                   {day.activities.length > 1 && (
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="xs"
                       onClick={() => removeActivity(dayIndex, actIndex)}
-                      className="p-2 text-text-muted hover:text-error transition-colors shrink-0"
+                      className="shrink-0 hover:text-error hover:bg-error/10"
+                      aria-label="Remove activity"
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
@@ -168,7 +177,7 @@ export default function ItineraryEditor({ itinerary, onChange }: ItineraryEditor
               + Add activity
             </Button>
           </div>
-        </div>
+        </Surface>
       ))}
     </div>
   );

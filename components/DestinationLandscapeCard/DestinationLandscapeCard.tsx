@@ -19,7 +19,7 @@ export function DestinationLandscapeCard({
 }: DestinationLandscapeCardProps) {
   const card = (
     <div
-      className="group relative overflow-hidden rounded-3xl h-96
+      className="group relative overflow-hidden rounded-2xl h-96
         shadow-xl shadow-primary/10 hover:shadow-2xl hover:shadow-primary/20
         transition-shadow duration-500 cursor-pointer"
     >

@@ -1,13 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Logo from "@/public/logo.png";
 import LogoText from "@/public/logo_text.png";
 import Button from "@/components/Button/Button";
 import FormField from "@/components/FormField/FormField";
+import OtpInput from "@/components/OtpInput/OtpInput";
 import { useOnboardingStore } from "@/stores/useOnboardingStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
@@ -115,48 +116,12 @@ function OtpStep() {
     isPending: resending,
     error: resendError,
   } = useSendOtp();
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  const handleChange = (value: string, index: number) => {
-    if (!/^\d*$/.test(value)) return;
-    const newOtp = [...otp];
-    newOtp[index] = value.slice(-1);
-    setOtp(newOtp);
-    if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-    index: number,
-  ) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pasted = e.clipboardData
-      .getData("text")
-      .replace(/\D/g, "")
-      .slice(0, 6);
-    const newOtp = [...otp];
-    pasted.split("").forEach((char, i) => {
-      newOtp[i] = char;
-    });
-    setOtp(newOtp);
-    const nextEmpty = pasted.length < 6 ? pasted.length : 5;
-    inputRefs.current[nextEmpty]?.focus();
-  };
+  const [otp, setOtp] = useState("");
 
   const handleVerify = () => {
-    const code = otp.join("");
-    if (code.length < 6) return;
+    if (otp.length < 6) return;
     verifyOtp(
-      { mobileNumber: phone, otp: code },
+      { mobileNumber: phone, otp },
       {
         onSuccess: async () => {
           await update({ phoneVerified: true });
@@ -181,23 +146,7 @@ function OtpStep() {
       </div>
 
       {/* 6-box OTP input */}
-      <div className="flex justify-center gap-2" onPaste={handlePaste}>
-        {otp.map((digit, i) => (
-          <input
-            key={i}
-            ref={(el) => {
-              inputRefs.current[i] = el;
-            }}
-            type="text"
-            inputMode="numeric"
-            maxLength={1}
-            value={digit}
-            onChange={(e) => handleChange(e.target.value, i)}
-            onKeyDown={(e) => handleKeyDown(e, i)}
-            className="w-11 h-13 text-center text-headline-sm bg-surface-highest rounded-xl border border-outline focus:ring-2 focus:ring-primary/50 focus:border-primary/40 outline-none text-text transition-all"
-          />
-        ))}
-      </div>
+      <OtpInput value={otp} onChange={setOtp} disabled={verifying} />
 
       {(verifyError || resendError) && (
         <p className="text-body-sm text-error text-center">
@@ -209,18 +158,20 @@ function OtpStep() {
         variant="primary"
         size="md"
         onClick={handleVerify}
-        disabled={otp.join("").length < 6 || verifying}
+        disabled={otp.length < 6 || verifying}
+        loading={verifying}
       >
-        {verifying ? "Verifying…" : "Verify"}
+        Verify
       </Button>
 
-      <button
+      <Button
+        variant="text"
         onClick={handleResend}
         disabled={resending}
-        className="text-body-sm text-text-muted hover:text-primary transition-colors cursor-pointer disabled:opacity-50 text-center"
+        className="self-center"
       >
         {resending ? "Resending…" : "Didn't receive it? Resend"}
-      </button>
+      </Button>
     </div>
   );
 }

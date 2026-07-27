@@ -12,6 +12,7 @@ import LogoText from "@/public/logo_text.png";
 import Button from "@/components/Button/Button";
 import FormField from "@/components/FormField/FormField";
 import AuthCard from "@/components/AuthCard/AuthCard";
+import SegmentedControl from "@/components/SegmentedControl/SegmentedControl";
 
 type Tab = "email" | "google";
 
@@ -119,21 +120,14 @@ export default function LoginPage() {
         </div>
 
         {/* Tab switcher */}
-        <div className="flex w-full bg-surface-highest rounded-2xl p-1 gap-1">
-          {(["email", "google"] as Tab[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => switchTab(tab)}
-              className={`flex-1 py-2 rounded-xl text-body-sm-bold transition-all cursor-pointer ${
-                activeTab === tab
-                  ? "bg-surface text-text shadow-ambient"
-                  : "text-text-muted hover:text-text"
-              }`}
-            >
-              {tab === "email" ? "Email" : "Google"}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl<Tab>
+          options={[
+            { label: "Email", value: "email" },
+            { label: "Google", value: "google" },
+          ]}
+          value={activeTab}
+          onChange={switchTab}
+        />
 
         {/* Email / Password */}
         {activeTab === "email" && (

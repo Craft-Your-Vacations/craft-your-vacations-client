@@ -110,11 +110,12 @@
 
 /* --------------------------------------------------------------------------
    2. TAILWIND v4 THEME — Maps CSS variables → Tailwind utility classes
-   Usage in components:
-     bg-bg           → background: #0b1326
-     bg-surface       → background: #171f33
-     text-primary     → color: #75d2f7
-     text-muted       → color: #8a99c2
+   Values are theme-driven (see the :root / [data-theme="dark"] blocks above);
+   these utilities resolve to whichever token value is active. Examples:
+     bg-bg            → page background
+     bg-surface       → card / navbar surface
+     text-primary     → brand/CTA color
+     text-text-muted  → secondary text
    -------------------------------------------------------------------------- */
 @theme inline {
   /* Backgrounds */
@@ -193,7 +194,7 @@
 }
 
 @utility text-display-lg {
-  font-size: 3rem; /* 56px */
+  font-size: 3rem; /* 48px */
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.02em;

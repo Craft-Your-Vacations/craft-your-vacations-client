@@ -1,18 +1,19 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import Link from "next/link";
 import { useDestination } from "@/hooks/useDestination";
 import { useUpdateDestination } from "@/hooks/useUpdateDestination";
 import { useDeletePackage } from "@/hooks/useDeletePackage";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
 import Button from "@/components/Button/Button";
+import Surface from "@/components/Surface/Surface";
+import Checkbox from "@/components/Checkbox/Checkbox";
 import ConfirmDialog from "@/components/ConfirmDialog/ConfirmDialog";
 import FormField from "@/components/FormField/FormField";
 import TextAreaField from "@/components/TextAreaField/TextAreaField";
 import { Plus, Trash2 } from "lucide-react";
-import AdminBackLink from "@/app/(admin)/components/AdminBackLink";
+import BackButton from "@/components/BackButton/BackButton";
 import CityTagInput from "@/app/(admin)/components/CityTagInput";
 import { useToastStore } from "@/stores/useToastStore";
 
@@ -82,12 +83,12 @@ export default function EditDestinationPage({
 
   return (
     <div className="p-8 max-w-3xl">
-      <AdminBackLink href="/admin/destinations" label="Back to destinations" />
+      <BackButton className="mb-6" />
 
       <h1 className="text-display-sm text-text mb-8">{destination.title}</h1>
 
       <form onSubmit={handleSave} className="flex flex-col gap-5 mb-10">
-        <div className="glass rounded-2xl p-6 flex flex-col gap-5">
+        <Surface>
           <h2 className="text-headline-sm text-text">Destination Info</h2>
 
           <FormField
@@ -117,16 +118,12 @@ export default function EditDestinationPage({
             <CityTagInput cities={cities} onChange={setCities} />
           </div>
 
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={isFeatured}
-              onChange={(e) => setIsFeatured(e.target.checked)}
-              className="w-4 h-4 accent-primary"
-            />
-            <span className="text-body-sm text-text">Featured destination</span>
-          </label>
-        </div>
+          <Checkbox
+            checked={isFeatured}
+            onChange={setIsFeatured}
+            label="Featured destination"
+          />
+        </Surface>
 
         <div className="flex items-center gap-4">
           <Button
@@ -149,7 +146,7 @@ export default function EditDestinationPage({
       </form>
 
       {/* Packages */}
-      <div className="glass rounded-2xl overflow-hidden">
+      <Surface variant="table">
         <div className="px-6 py-4 border-b border-outline flex items-center justify-between">
           <h2 className="text-headline-sm text-text">Packages</h2>
           <Button
@@ -178,24 +175,28 @@ export default function EditDestinationPage({
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <Link
+                <Button
+                  variant="ghost"
+                  size="sm"
                   href={`/admin/destinations/${slug}/packages/${pkg.key}`}
-                  className="px-3 py-1.5 rounded-xl text-body-sm text-text-muted bg-surface hover:bg-surface-high transition-colors"
                 >
                   Edit
-                </Link>
+                </Button>
 
-                <button
+                <Button
+                  variant="ghost"
+                  size="xs"
                   onClick={() => setConfirmDeleteKey(pkg.key)}
-                  className="p-1.5 rounded-lg text-text-muted hover:text-error hover:bg-error/10 transition-colors"
+                  className="hover:text-error hover:bg-error/10"
+                  aria-label="Delete package"
                 >
                   <Trash2 className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             </div>
           ))}
         </div>
-      </div>
+      </Surface>
 
       <ConfirmDialog
         isOpen={confirmSaveOpen}

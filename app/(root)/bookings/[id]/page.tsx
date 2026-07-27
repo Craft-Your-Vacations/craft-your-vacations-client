@@ -18,6 +18,7 @@ import { useUserDocuments } from "@/hooks/useUserDocuments";
 import { useUploadDocument } from "@/hooks/useUploadDocument";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
+import Surface from "@/components/Surface/Surface";
 import ItineraryView from "@/components/ItineraryView/ItineraryView";
 import DocumentUpload from "@/components/DocumentUpload/DocumentUpload";
 import Dialog from "@/components/Dialog/Dialog";
@@ -31,7 +32,7 @@ import type { DocumentType, UserDocument } from "@/app/types/api";
 
 const DOCUMENT_LABELS: Record<DocumentType, string> = {
   passport: "Passport",
-  pan: "PAN Card",
+  pan: "PAN Surface",
 };
 
 export default function BookingDetailPage({
@@ -112,7 +113,7 @@ export default function BookingDetailPage({
 
       <div className="flex flex-col gap-6">
         {/* Package overview */}
-        <div className="glass rounded-2xl p-6 flex flex-col gap-4">
+        <Surface className="gap-4">
           <h2 className="text-headline-sm text-text">Package Details</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div className="flex items-center gap-2">
@@ -173,13 +174,13 @@ export default function BookingDetailPage({
               </p>
             </div>
           )}
-        </div>
+        </Surface>
 
         {/* Confirmed itinerary */}
         {isConfirmed &&
           booking.confirmedItinerary &&
           booking.confirmedItinerary.length > 0 && (
-            <div className="glass rounded-2xl p-6 flex flex-col gap-4">
+            <Surface className="gap-4">
               <div>
                 <h2 className="text-headline-sm text-text">Your Itinerary</h2>
                 <p className="text-body-sm text-text-muted mt-1">
@@ -188,14 +189,14 @@ export default function BookingDetailPage({
                 </p>
               </div>
               <ItineraryView itinerary={booking.confirmedItinerary} />
-            </div>
+            </Surface>
           )}
 
         {/* Required documents */}
         {isConfirmed &&
           booking.requiredDocuments &&
           booking.requiredDocuments.length > 0 && (
-            <div className="glass rounded-2xl p-6 flex flex-col gap-4">
+            <Surface className="gap-4">
               <div className="flex items-start gap-3">
                 <ShieldCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                 <div>
@@ -221,7 +222,7 @@ export default function BookingDetailPage({
                   />
                 ))}
               </div>
-            </div>
+            </Surface>
           )}
       </div>
 

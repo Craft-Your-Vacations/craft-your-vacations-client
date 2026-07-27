@@ -8,13 +8,14 @@ import { usePackageDetail } from "@/hooks/usePackageDetail";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
 import Button from "@/components/Button/Button";
+import Surface from "@/components/Surface/Surface";
 import ConfirmDialog from "@/components/ConfirmDialog/ConfirmDialog";
 import FormField from "@/components/FormField/FormField";
 import TextAreaField from "@/components/TextAreaField/TextAreaField";
 import SelectField from "@/components/SelectField/SelectField";
 import { CalendarDays, Users, FileText, Phone, Mail, Globe } from "lucide-react";
 import type { BookingStatus, ItineraryDay, DocumentType } from "@/app/types/api";
-import AdminBackLink from "@/app/(admin)/components/AdminBackLink";
+import BackButton from "@/components/BackButton/BackButton";
 import BookingStatusBadge, { formatMonth } from "@/app/(admin)/components/BookingStatusBadge";
 import ItineraryEditor from "@/app/(admin)/components/ItineraryEditor/ItineraryEditor";
 import RequiredDocumentsSelector from "@/app/(admin)/components/RequiredDocumentsSelector/RequiredDocumentsSelector";
@@ -120,7 +121,7 @@ export default function AdminBookingDetailPage({
 
   return (
     <div className="p-8 max-w-4xl">
-      <AdminBackLink href="/admin/bookings" label="Back to bookings" />
+      <BackButton className="mb-6" />
 
       <div className="mb-6">
         <h1 className="text-display-sm text-text">{booking.package.title}</h1>
@@ -129,7 +130,7 @@ export default function AdminBookingDetailPage({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Booking details */}
-        <div className="glass rounded-2xl p-6 flex flex-col gap-5">
+        <Surface>
           <h2 className="text-headline-sm text-text">Booking Details</h2>
 
           <div className="flex flex-col gap-4">
@@ -173,10 +174,10 @@ export default function AdminBookingDetailPage({
               </div>
             )}
           </div>
-        </div>
+        </Surface>
 
         {/* Customer details */}
-        <div className="glass rounded-2xl p-6 flex flex-col gap-5">
+        <Surface>
           <div className="flex items-center justify-between">
             <h2 className="text-headline-sm text-text">Customer</h2>
             <Link
@@ -211,10 +212,10 @@ export default function AdminBookingDetailPage({
               <p className="text-body-sm text-text-muted">{booking.customer.profession}</p>
             )}
           </div>
-        </div>
+        </Surface>
 
         {/* Update booking */}
-        <div className="glass rounded-2xl p-6 flex flex-col gap-5 md:col-span-2">
+        <Surface className="md:col-span-2">
           <h2 className="text-headline-sm text-text">Update Booking</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -293,7 +294,7 @@ export default function AdminBookingDetailPage({
             onConfirm={handleConfirmSave}
             onCancel={() => setConfirmOpen(false)}
           />
-        </div>
+        </Surface>
       </div>
     </div>
   );

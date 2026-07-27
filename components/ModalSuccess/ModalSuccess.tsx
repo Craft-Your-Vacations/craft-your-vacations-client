@@ -13,7 +13,7 @@ interface ModalSuccessProps {
 
 export default function ModalSuccess({ isOpen, title, message, onClose }: ModalSuccessProps) {
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} ariaLabel={title} className="items-center gap-4 text-center">
+    <Dialog isOpen={isOpen} onClose={onClose} ariaLabel={title} className="items-center gap-5 text-center">
       <CheckCircle2 className="w-12 h-12 text-primary" strokeWidth={1.5} />
       <div>
         <h2 className="text-headline-md text-text">{title}</h2>

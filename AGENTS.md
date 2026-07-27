@@ -24,6 +24,43 @@ This version has breaking changes — APIs, conventions, and file structure may 
   - Success: `text-success`, `bg-success/10`, `bg-success/15`
   - These tokens are defined in `globals.css` and automatically adapt to light/dark theme. Never use `text-red-*`, `text-amber-*`, `text-green-*`, `bg-red-*`, etc. for semantic status.
 
+## Design System
+
+The system name is "The Nocturnal Voyager" (tokens live in `globals.css`). Keep these rules — they exist because the component layer had drifted from the tokens.
+
+### Corner radius — role-based, proportional (control < card < modal)
+| Role | Class | Applies to |
+|---|---|---|
+| Solid button | `rounded-2xl` | `Button` primary / secondary / error variants |
+| Input / small control | `rounded-xl` | inputs, selects, textareas, icon tiles, nav/pagination items, `Button` `ghost`/`text` |
+| Card / panel | `rounded-2xl` | `Surface` (both variants), content cards (`p-5`/`p-6`), dropzones |
+| Large panel | `rounded-3xl` | high-padding hero/auth panels + `EmptyState` (`p-8`+) — intentionally larger |
+| Modal | `rounded-3xl` | `Dialog` panel |
+| Pill / avatar | `rounded-full` | status/city chips, avatars, icon buttons, FABs |
+
+### Spacing
+- Card padding: `p-6` default, `p-5` compact; large hero/auth panels may keep `p-8`/`p-10`.
+- Pill: one recipe — `rounded-full px-3 py-1 text-label-sm`.
+- Page gutter: `px-6 md:px-10` (never `px-4`/`px-8`), width capped with `max-w-(--container-max-w)`.
+- Dialog content gap: status/confirm dialogs `gap-5`; form dialogs `gap-6`.
+
+### Icon glyph sizing
+Size material/lucide icons with the nearest standard step — `text-sm`(14) / `text-lg`(18) / `text-xl`(20) / `text-2xl`(24), or explicit `w-*/h-*` on lucide. **Never** `text-[Npx]`. Body/label text always uses the named `text-body-*` / `text-label-*` scale — never raw `text-sm`/`text-lg` for copy.
+
+### Reach for these shared components — do NOT re-invent their markup
+| Need | Use |
+|---|---|
+| Any button / icon button / link-styled action | `Button` (`variant`: primary, secondary, error, ghost, icon, overlay, text) |
+| Glass panel / table container | `Surface` (`variant`: default, table) |
+| "No items" empty state | `EmptyState` (`title`, optional `description` / `icon` / `action`) — a standalone glass panel rendered *instead of* the list (`list.length === 0 ? <EmptyState/> : <content>`); never nest it inside a `Surface`/table |
+| Text input (labeled OR compact/inline, optional leading `icon`) | `FormField` |
+| Dropdown | `SelectField` · Multiline | `TextAreaField` · Checkbox | `Checkbox` |
+| 6-digit OTP entry | `OtpInput` · Pill tab switcher | `SegmentedControl` |
+| Brand icon badge beside a label | `IconBadge` · Bordered key/value chip | `InfoChip` |
+| Any modal | `Dialog` base → a dedicated `<Name>Dialog` (never inline overlay markup) |
+
+`FormField`/`SelectField`/`TextAreaField` take an **optional** `label` — omit it for compact/inline fields (search boxes, table-row editors) instead of hand-rolling a raw `<input>`/`<select>`.
+
 ## Mobile-first & Responsive Design
 - **Always design for mobile first.** Base styles for mobile, `md:` overrides for desktop.
 - Use only the `md:` breakpoint (768px) for the mobile/desktop split — no `sm:`, `lg:`, `xl:` unless clearly needed.

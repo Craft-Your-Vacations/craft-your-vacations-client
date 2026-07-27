@@ -13,9 +13,17 @@ import { PackageCard } from "@/components/PackageCard/PackageCard";
 import { TestimonialCard } from "@/components/TestimonialCard/TestimonialCard";
 import { Footer } from "@/components/Footer/Footer";
 import { FAB } from "@/components/FAB/FAB";
-import { ArrowUp, ExternalLink, Heart, MapPin, Rocket } from "lucide-react";
+import { ArrowUp, Clock, ExternalLink, Heart, MapPin, Rocket, Trash2 } from "lucide-react";
 import { Search } from "lucide-react";
+import { useState } from "react";
 import Section from "@/components/Section/Sections";
+import Surface from "@/components/Surface/Surface";
+import EmptyState from "@/components/EmptyState/EmptyState";
+import Checkbox from "@/components/Checkbox/Checkbox";
+import IconBadge from "@/components/IconBadge/IconBadge";
+import InfoChip from "@/components/InfoChip/InfoChip";
+import OtpInput from "@/components/OtpInput/OtpInput";
+import SegmentedControl from "@/components/SegmentedControl/SegmentedControl";
 
 /* ─── demo data ──────────────────────────────────────────────────────────── */
 
@@ -195,6 +203,12 @@ const testimonials = [
 
 /* ─── page ───────────────────────────────────────────────────────────────── */
 export default function DemoPage() {
+  const [subscribed, setSubscribed] = useState(true);
+  const [segment, setSegment] = useState<"overview" | "itinerary" | "reviews">(
+    "overview"
+  );
+  const [otp, setOtp] = useState("");
+
   return (
     <div className="bg-bg min-h-screen">
       {/* Navbar */}
@@ -209,7 +223,7 @@ export default function DemoPage() {
 
       {/* Hero */}
       <div className="pt-16">
-        <div className="mx-auto max-w-7xl px-6 section-gap">
+        <div className="mx-auto max-w-(--container-max-w) px-6 md:px-10 section-gap">
           <PageHeader
             eyebrow="Component Library"
             title="Nocturnal Voyager"
@@ -363,6 +377,118 @@ export default function DemoPage() {
             helperText="Anything that will make your trip perfect."
             className="md:col-span-2"
           />
+        </div>
+      </Section>
+
+      {/* Cards & chips */}
+      <Section id="cards" title="Cards, Badges & Chips">
+        <div className="flex flex-col gap-8">
+          <div>
+            <p className="text-body-sm text-text-subtle mb-4">
+              Surface variants &amp; EmptyState
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Surface>
+                <h3 className="text-headline-sm text-text">default</h3>
+                <p className="text-body-sm text-text-muted">
+                  The standard panel — <code>glass rounded-2xl p-6</code> with a
+                  vertical <code>gap-5</code> stack.
+                </p>
+              </Surface>
+              <Surface variant="table">
+                <div className="px-6 py-4 border-b border-outline">
+                  <p className="text-body-sm text-text">table</p>
+                </div>
+                <div className="px-6 py-4">
+                  <p className="text-body-sm text-text-muted">
+                    Flush container (<code>overflow-hidden</code>, no padding) —
+                    wrap a table or edge-to-edge list; children own their
+                    spacing.
+                  </p>
+                </div>
+              </Surface>
+              <EmptyState
+                className="md:col-span-2"
+                title="EmptyState"
+                description="Rendered instead of a list or table when it has no items."
+              />
+            </div>
+          </div>
+
+          <div>
+            <p className="text-body-sm text-text-subtle mb-4">
+              IconBadge &amp; InfoChip
+            </p>
+            <div className="flex flex-wrap items-center gap-4">
+              <IconBadge>
+                <MapPin className="w-4 h-4 text-primary" />
+              </IconBadge>
+              <IconBadge>
+                <Clock className="w-4 h-4 text-primary" />
+              </IconBadge>
+              <InfoChip>
+                <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center">
+                  <Clock className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-label-sm text-text-muted uppercase tracking-widest">
+                    Duration
+                  </p>
+                  <p className="text-body-md text-text font-medium">7 Days</p>
+                </div>
+              </InfoChip>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* Controls */}
+      <Section id="controls" title="Controls">
+        <div className="flex flex-col gap-8 max-w-md">
+          <div>
+            <p className="text-body-sm text-text-subtle mb-4">Ghost buttons</p>
+            <div className="flex flex-wrap items-center gap-4">
+              <Button variant="ghost" size="sm">
+                <MapPin className="w-4 h-4" />
+                Edit
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="hover:text-error hover:bg-error/10"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete
+              </Button>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-body-sm text-text-subtle mb-4">Checkbox</p>
+            <Checkbox
+              checked={subscribed}
+              onChange={setSubscribed}
+              label="Email me trip inspiration"
+            />
+          </div>
+
+          <div>
+            <p className="text-body-sm text-text-subtle mb-4">SegmentedControl</p>
+            <SegmentedControl
+              options={[
+                { label: "Overview", value: "overview" },
+                { label: "Itinerary", value: "itinerary" },
+                { label: "Reviews", value: "reviews" },
+              ]}
+              value={segment}
+              onChange={setSegment}
+            />
+          </div>
+
+          <div>
+            <p className="text-body-sm text-text-subtle mb-4">OtpInput</p>
+            <OtpInput value={otp} onChange={setOtp} />
+          </div>
         </div>
       </Section>
 

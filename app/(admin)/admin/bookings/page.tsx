@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAdminBookings } from "@/hooks/useAdminBookings";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
+import Surface from "@/components/Surface/Surface";
+import EmptyState from "@/components/EmptyState/EmptyState";
 import { CalendarDays, Users, ChevronRight } from "lucide-react";
 import AdminPageHeader from "@/app/(admin)/components/AdminPageHeader";
 import AdminFilterTabs from "@/app/(admin)/components/AdminFilterTabs";
@@ -18,6 +20,7 @@ const STATUSES = [
 ];
 
 export default function AdminBookingsPage() {
+  const router = useRouter();
   const [activeStatus, setActiveStatus] = useState("");
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, error, refetch } = useAdminBookings(
@@ -49,7 +52,13 @@ export default function AdminBookingsPage() {
         onChange={(s) => { setActiveStatus(s); setPage(1); }}
       />
 
-      <div className="glass rounded-2xl overflow-hidden">
+      {bookings.length === 0 ? (
+        <EmptyState
+          icon={<CalendarDays className="w-10 h-10 text-primary/50" strokeWidth={1.5} />}
+          title="No bookings found"
+        />
+      ) : (
+      <Surface variant="table">
         <table className="w-full">
           <thead>
             <tr className="border-b border-outline">
@@ -59,10 +68,10 @@ export default function AdminBookingsPage() {
               <th className="text-left px-6 py-4 text-label-sm text-text-muted uppercase tracking-widest hidden md:table-cell">
                 Customer
               </th>
-              <th className="text-left px-6 py-4 text-label-sm text-text-muted uppercase tracking-widest hidden lg:table-cell">
+              <th className="text-left px-6 py-4 text-label-sm text-text-muted uppercase tracking-widest hidden md:table-cell">
                 Travel Month
               </th>
-              <th className="text-left px-6 py-4 text-label-sm text-text-muted uppercase tracking-widest hidden sm:table-cell">
+              <th className="text-left px-6 py-4 text-label-sm text-text-muted uppercase tracking-widest hidden md:table-cell">
                 Travelers
               </th>
               <th className="text-left px-6 py-4 text-label-sm text-text-muted uppercase tracking-widest">
@@ -72,17 +81,11 @@ export default function AdminBookingsPage() {
             </tr>
           </thead>
           <tbody>
-            {bookings.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-body-md text-text-muted">
-                  No bookings found
-                </td>
-              </tr>
-            )}
             {bookings.map((booking) => (
               <tr
                 key={booking.id}
-                className="border-b border-outline last:border-0 hover:bg-surface-high/50 transition-colors"
+                onClick={() => router.push(`/admin/bookings/${booking.id}`)}
+                className="border-b border-outline last:border-0 hover:bg-surface-high/50 transition-colors cursor-pointer"
               >
                 <td className="px-6 py-4">
                   <p className="text-body-sm text-text font-medium">{booking.package.title}</p>
@@ -92,13 +95,13 @@ export default function AdminBookingsPage() {
                   <p className="text-body-sm text-text">{booking.customer.name}</p>
                   <p className="text-label-sm text-text-muted">{booking.customer.email}</p>
                 </td>
-                <td className="px-6 py-4 hidden lg:table-cell">
+                <td className="px-6 py-4 hidden md:table-cell">
                   <div className="flex items-center gap-1.5 text-body-sm text-text">
                     <CalendarDays className="w-3.5 h-3.5 text-primary/60 shrink-0" />
                     {formatMonth(booking.travelDate)}
                   </div>
                 </td>
-                <td className="px-6 py-4 hidden sm:table-cell">
+                <td className="px-6 py-4 hidden md:table-cell">
                   <div className="flex items-center gap-1.5 text-body-sm text-text">
                     <Users className="w-3.5 h-3.5 text-primary/60 shrink-0" />
                     {booking.travelersCount}
@@ -108,18 +111,14 @@ export default function AdminBookingsPage() {
                   <BookingStatusBadge status={booking.status} />
                 </td>
                 <td className="px-6 py-4">
-                  <Link
-                    href={`/admin/bookings/${booking.id}`}
-                    className="text-text-muted hover:text-primary transition-colors"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </Link>
+                  <ChevronRight className="w-4 h-4 text-text-muted" />
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      </Surface>
+      )}
 
       {data && (
         <Pagination

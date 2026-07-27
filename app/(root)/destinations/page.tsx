@@ -2,6 +2,7 @@
 import DestinationCard from "@/components/DestinationCard/DestinationCard";
 import DestinationLandscapeCard from "@/components/DestinationLandscapeCard/DestinationLandscapeCard";
 import ErrorState from "@/components/ErrorState/ErrorState";
+import EmptyState from "@/components/EmptyState/EmptyState";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import CtaBanner from "@/components/CtaBanner/CtaBanner";
 import { useDestinations } from "@/hooks/useDestinations";
@@ -26,7 +27,16 @@ export function DestinationsScreen() {
   }
 
   if (!data || data.length === 0) {
-    return <ErrorState title="No destinations found" />;
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-6">
+        <EmptyState
+          icon={<MapPin className="w-10 h-10 text-primary/50" strokeWidth={1.5} />}
+          title="No destinations yet"
+          description="New journeys are added regularly — check back soon."
+          className="w-full max-w-sm"
+        />
+      </div>
+    );
   }
 
   return (

@@ -9,6 +9,10 @@ import {
   MapPin,
 } from "lucide-react";
 import PageHero from "@/components/PageHero/PageHero";
+import Button from "@/components/Button/Button";
+import Surface from "@/components/Surface/Surface";
+import IconBadge from "@/components/IconBadge/IconBadge";
+import InfoChip from "@/components/InfoChip/InfoChip";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { usePackageDetail } from "@/hooks/usePackageDetail";
@@ -112,7 +116,6 @@ export default function PackageDetailPage({
           { icon: <Clock className="w-4 h-4" />, label: `${pkg.days} Days` },
           { icon: <Zap className="w-4 h-4" />, label: `${totalActivities} Activities` },
         ]}
-        onBack={() => router.back()}
       />
 
       {/* ─── Overview ─── */}
@@ -131,7 +134,7 @@ export default function PackageDetailPage({
 
             {/* Stat chips row */}
             <div className="flex flex-wrap gap-3">
-              <div className="flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-surface-high border border-outline">
+              <InfoChip>
                 <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center">
                   <Calendar className="w-4 h-4 text-primary" />
                 </div>
@@ -143,9 +146,9 @@ export default function PackageDetailPage({
                     {pkg.days} Days
                   </p>
                 </div>
-              </div>
+              </InfoChip>
 
-              <div className="flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-surface-high border border-outline">
+              <InfoChip>
                 <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center">
                   <Zap className="w-4 h-4 text-primary" />
                 </div>
@@ -157,9 +160,9 @@ export default function PackageDetailPage({
                     {totalActivities} total
                   </p>
                 </div>
-              </div>
+              </InfoChip>
 
-              <div className="flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-surface-high border border-outline">
+              <InfoChip>
                 <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center">
                   <ScrollText className="w-4 h-4 text-primary" />
                 </div>
@@ -171,19 +174,19 @@ export default function PackageDetailPage({
                     {pkg.itinerary.length} days planned
                   </p>
                 </div>
-              </div>
+              </InfoChip>
             </div>
           </div>
 
           {/* Right: Trip summary glass card */}
-          <div className="glass rounded-2xl p-6 flex flex-col gap-5 h-fit">
+          <Surface className="h-fit">
             <h3 className="text-headline-sm text-text">Trip Summary</h3>
 
             <div className="flex flex-col gap-4">
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">
+                <IconBadge>
                   <Clock className="w-4 h-4 text-primary" />
-                </div>
+                </IconBadge>
                 <div>
                   <p className="text-label-sm text-text-muted uppercase tracking-widest mb-0.5">
                     Duration
@@ -198,9 +201,9 @@ export default function PackageDetailPage({
                 <>
                   <div className="h-px bg-outline" />
                   <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">
+                    <IconBadge>
                       <MapPin className="w-4 h-4 text-primary" />
-                    </div>
+                    </IconBadge>
                     <div>
                       <p className="text-label-sm text-text-muted uppercase tracking-widest mb-0.5">
                         Destination
@@ -217,14 +220,14 @@ export default function PackageDetailPage({
               )}
             </div>
 
-            <button
-              type="button"
+            <Button
+              variant="primary"
               onClick={() => session ? setBookingOpen(true) : router.replace("/login")}
-              className="w-full btn-gradient font-semibold py-3 rounded-2xl transition-opacity hover:opacity-90 mt-2"
+              className="w-full justify-center mt-2"
             >
               Book This Package
-            </button>
-          </div>
+            </Button>
+          </Surface>
         </div>
       </Section>
 

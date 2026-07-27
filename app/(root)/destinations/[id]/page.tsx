@@ -10,13 +10,14 @@ import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
 import Section from "@/components/Section/Sections";
 import PackageCard from "@/components/PackageCard/PackageCard";
+import Surface from "@/components/Surface/Surface";
+import IconBadge from "@/components/IconBadge/IconBadge";
 import DestinationCard from "@/components/DestinationCard/DestinationCard";
 import DestinationLandscapeCard from "@/components/DestinationLandscapeCard/DestinationLandscapeCard";
 import ReviewCard from "@/components/ReviewCard/ReviewCard";
 import AutoSlider from "@/components/AutoSlider/AutoSlider";
 import PageHero from "@/components/PageHero/PageHero";
 import CtaBanner from "@/components/CtaBanner/CtaBanner";
-import { useRouter } from "next/navigation";
 import UnsplashPhotoSlider from "@/components/UnsplashPhotoSlider/UnsplashPhotoSlider";
 import { useUnsplashPhotos } from "@/hooks/useUnsplashPhotos";
 
@@ -29,7 +30,6 @@ export default function DestinationDetailPage({
   const { data, isLoading, isError, error, refetch } = useDestination(id);
   const { data: allDestinations } = useDestinations();
   const { data: reviews = [] } = useDestinationReviews(id);
-  const router = useRouter();
 
   const { data: unsplashPhotos = [] } = useUnsplashPhotos(id);
 
@@ -91,7 +91,6 @@ export default function DestinationDetailPage({
             label: `${Math.min(...packages.map((p) => p.days))}–${Math.max(...packages.map((p) => p.days))} Days`,
           },
         ]}
-        onBack={() => router.back()}
       />
 
       {/* Info */}
@@ -109,13 +108,13 @@ export default function DestinationDetailPage({
 
           {/* Quick stats */}
           <div className="flex flex-col gap-4">
-            <div className="glass rounded-2xl p-6 flex flex-col gap-5">
+            <Surface>
               <h3 className="text-headline-sm text-text">At a glance</h3>
 
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">
+                <IconBadge>
                   <MapPin className="w-4 h-4 text-primary" />
-                </div>
+                </IconBadge>
                 <div>
                   <p className="text-label-sm text-text-muted uppercase tracking-widest mb-0.5">
                     Cities
@@ -127,9 +126,9 @@ export default function DestinationDetailPage({
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">
+                <IconBadge>
                   <Package className="w-4 h-4 text-primary" />
-                </div>
+                </IconBadge>
                 <div>
                   <p className="text-label-sm text-text-muted uppercase tracking-widest mb-0.5">
                     Packages
@@ -139,7 +138,7 @@ export default function DestinationDetailPage({
                   </p>
                 </div>
               </div>
-            </div>
+            </Surface>
           </div>
         </div>
       </Section>

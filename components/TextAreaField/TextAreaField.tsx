@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { FieldBaseProps } from "@/app/types/component";
 
 interface TextAreaFieldProps extends FieldBaseProps {
@@ -25,36 +25,39 @@ export function TextAreaField({
   rows = 4,
   maxLength,
 }: TextAreaFieldProps) {
-  const [charCount, setCharCount] = useState(() => {
-    return (value ?? defaultValue ?? "").length;
-  });
-
-  useEffect(() => {
-    if (value !== undefined) {
-      setCharCount(value.length);
-    }
-  }, [value]);
+  // Controlled: derive the count straight from `value`. Uncontrolled: track it
+  // internally. No effect needed either way.
+  const [internalCount, setInternalCount] = useState(
+    () => (defaultValue ?? "").length
+  );
+  const charCount = value !== undefined ? value.length : internalCount;
 
   const hasError = Boolean(errorMessage);
 
   function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    setCharCount(e.target.value.length);
+    if (value === undefined) setInternalCount(e.target.value.length);
     onChange?.(e);
   }
 
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
-      <div className="flex items-baseline justify-between">
-        <label htmlFor={id} className="text-label-md text-text-muted">
-          {label}
-          {required && <span className="text-primary ml-1">*</span>}
-        </label>
-        {maxLength && (
-          <span className="text-label-sm text-text-subtle">
-            {charCount}/{maxLength}
-          </span>
-        )}
-      </div>
+      {(label || maxLength) && (
+        <div className="flex items-baseline justify-between">
+          {label ? (
+            <label htmlFor={id} className="text-label-md text-text-muted">
+              {label}
+              {required && <span className="text-primary ml-1">*</span>}
+            </label>
+          ) : (
+            <span />
+          )}
+          {maxLength && (
+            <span className="text-label-sm text-text-subtle">
+              {charCount}/{maxLength}
+            </span>
+          )}
+        </div>
+      )}
       <textarea
         id={id}
         placeholder={placeholder}

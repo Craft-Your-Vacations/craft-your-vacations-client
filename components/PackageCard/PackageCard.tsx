@@ -20,7 +20,7 @@ export function PackageCard({
 }: PackageCardProps) {
   return (
     <div
-      className={`relative flex flex-col rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
+      className={`relative flex flex-col rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
         highlighted
           ? "bg-surface-high border border-primary/50 shadow-ambient hover:shadow-primary/20 hover:shadow-xl"
           : "bg-surface border border-outline hover:border-primary/30 hover:shadow-lg"

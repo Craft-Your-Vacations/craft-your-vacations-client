@@ -2,12 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Logo from "@/public/logo.png";
 import LogoText from "@/public/logo_text.png";
 import Button from "@/components/Button/Button";
 import FormField from "@/components/FormField/FormField";
+import OtpInput from "@/components/OtpInput/OtpInput";
 import AuthCard from "@/components/AuthCard/AuthCard";
 import { useStartReset } from "@/hooks/useStartReset";
 import { useResetPassword } from "@/hooks/useResetPassword";
@@ -95,53 +96,20 @@ function IdentifierStep({
 function ResetStep({ identifier }: { identifier: string }) {
   const router = useRouter();
   const { mutate: resetPassword, isPending, error } = useResetPassword();
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const passwordMismatch =
     confirmPassword.length > 0 && newPassword !== confirmPassword;
   const canSubmit =
-    otp.join("").length === 6 &&
+    otp.length === 6 &&
     newPassword.length > 0 &&
     newPassword === confirmPassword;
 
-  const handleChange = (value: string, index: number) => {
-    if (!/^\d*$/.test(value)) return;
-    const newOtp = [...otp];
-    newOtp[index] = value.slice(-1);
-    setOtp(newOtp);
-    if (value && index < 5) inputRefs.current[index + 1]?.focus();
-  };
-
-  const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-    index: number,
-  ) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pasted = e.clipboardData
-      .getData("text")
-      .replace(/\D/g, "")
-      .slice(0, 6);
-    const newOtp = [...otp];
-    pasted.split("").forEach((char, i) => {
-      newOtp[i] = char;
-    });
-    setOtp(newOtp);
-    const nextEmpty = pasted.length < 6 ? pasted.length : 5;
-    inputRefs.current[nextEmpty]?.focus();
-  };
-
   const handleReset = () => {
     resetPassword(
-      { identifier: identifier, otp: otp.join(""), newPassword },
+      { identifier: identifier, otp, newPassword },
       { onSuccess: () => router.replace("/login?reset=success") },
     );
   };
@@ -156,23 +124,7 @@ function ResetStep({ identifier }: { identifier: string }) {
       </div>
 
       {/* 6-box OTP input */}
-      <div className="flex justify-center gap-2" onPaste={handlePaste}>
-        {otp.map((digit, i) => (
-          <input
-            key={i}
-            ref={(el) => {
-              inputRefs.current[i] = el;
-            }}
-            type="text"
-            inputMode="numeric"
-            maxLength={1}
-            value={digit}
-            onChange={(e) => handleChange(e.target.value, i)}
-            onKeyDown={(e) => handleKeyDown(e, i)}
-            className="w-11 h-13 text-center text-headline-sm bg-surface-highest rounded-xl border border-outline focus:ring-2 focus:ring-primary/50 focus:border-primary/40 outline-none text-text transition-all"
-          />
-        ))}
-      </div>
+      <OtpInput value={otp} onChange={setOtp} disabled={isPending} />
 
       <FormField
         id="new-password"

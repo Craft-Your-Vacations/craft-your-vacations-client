@@ -63,7 +63,7 @@ export default function AdminDashboard() {
         subtitle="Overview of CraftYourVacations operations"
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
         {stats.map(({ label, value, icon: Icon, href, sub }) => (
           <Link
             key={label}

@@ -7,11 +7,12 @@ import { useUpdatePackage } from "@/hooks/useUpdatePackage";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
 import Button from "@/components/Button/Button";
+import Surface from "@/components/Surface/Surface";
 import ConfirmDialog from "@/components/ConfirmDialog/ConfirmDialog";
 import FormField from "@/components/FormField/FormField";
 import TextAreaField from "@/components/TextAreaField/TextAreaField";
 import type { ItineraryDay } from "@/app/types/api";
-import AdminBackLink from "@/app/(admin)/components/AdminBackLink";
+import BackButton from "@/components/BackButton/BackButton";
 import ItineraryEditor from "@/app/(admin)/components/ItineraryEditor/ItineraryEditor";
 import { useToastStore } from "@/stores/useToastStore";
 
@@ -78,20 +79,17 @@ export default function EditPackagePage({
 
   return (
     <div className="p-8 max-w-3xl">
-      <AdminBackLink
-        href={`/admin/destinations/${destSlug}`}
-        label={`Back to ${destination?.title ?? "destination"}`}
-      />
+      <BackButton className="mb-6" />
 
       <h1 className="text-display-sm text-text mb-2">{pkg.title}</h1>
       <p className="text-body-md text-text-muted mb-8">{destSlug} · {pkg.key}</p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         {/* Basic info */}
-        <div className="glass rounded-2xl p-6 flex flex-col gap-5">
+        <Surface>
           <h2 className="text-headline-sm text-text">Package Info</h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               id="pkg-title"
               label="Title"
@@ -123,7 +121,7 @@ export default function EditPackagePage({
             value={excerpt}
             onChange={(e) => setExcerpt(e.target.value)}
           />
-        </div>
+        </Surface>
 
         <ItineraryEditor itinerary={itinerary} onChange={setItinerary} />
 

@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Dialog from "@/components/Dialog/Dialog";
 import FormField from "@/components/FormField/FormField";
 import Button from "@/components/Button/Button";
+import OtpInput from "@/components/OtpInput/OtpInput";
 import { isValidPhone } from "@/lib/utils";
 
 interface ChangePhoneDialogProps {
@@ -29,15 +30,14 @@ export default function ChangePhoneDialog({
 }: ChangePhoneDialogProps) {
   const [newPhone, setNewPhone] = useState("");
   const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState("");
   const [sameError, setSameError] = useState("");
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     if (!isOpen) {
       setNewPhone("");
       setOtpSent(false);
-      setOtp(["", "", "", "", "", ""]);
+      setOtp("");
       setSameError("");
     }
   }, [isOpen]);
@@ -59,33 +59,8 @@ export default function ChangePhoneDialog({
   };
 
   const handleVerify = () => {
-    const code = otp.join("");
-    if (code.length < 6) return;
-    onVerifyOtp(newPhone.trim(), code, () => onClose());
-  };
-
-  const handleChange = (value: string, index: number) => {
-    if (!/^\d*$/.test(value)) return;
-    const next = [...otp];
-    next[index] = value.slice(-1);
-    setOtp(next);
-    if (value && index < 5) inputRefs.current[index + 1]?.focus();
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-    const next = [...otp];
-    pasted.split("").forEach((char, i) => { next[i] = char; });
-    setOtp(next);
-    const nextEmpty = pasted.length < 6 ? pasted.length : 5;
-    inputRefs.current[nextEmpty]?.focus();
+    if (otp.length < 6) return;
+    onVerifyOtp(newPhone.trim(), otp, () => onClose());
   };
 
   return (
@@ -119,28 +94,15 @@ export default function ChangePhoneDialog({
               size="md"
               onClick={handleSendOtp}
               disabled={!newPhone.trim() || isSendingOtp}
+              loading={isSendingOtp}
               className="w-full"
             >
-              {isSendingOtp ? "Sending…" : "Send OTP"}
+              Send OTP
             </Button>
           </>
         ) : (
           <>
-            <div className="flex justify-center gap-2" onPaste={handlePaste}>
-              {otp.map((digit, i) => (
-                <input
-                  key={i}
-                  ref={(el) => { inputRefs.current[i] = el; }}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleChange(e.target.value, i)}
-                  onKeyDown={(e) => handleKeyDown(e, i)}
-                  className="w-11 h-13 text-center text-headline-sm bg-surface-highest rounded-xl border border-outline focus:ring-2 focus:ring-primary/50 focus:border-primary/40 outline-none text-text transition-all"
-                />
-              ))}
-            </div>
+            <OtpInput value={otp} onChange={setOtp} disabled={isVerifying} />
             {verifyError && (
               <p className="text-body-sm text-error text-center">{verifyError.message}</p>
             )}
@@ -148,18 +110,20 @@ export default function ChangePhoneDialog({
               variant="primary"
               size="md"
               onClick={handleVerify}
-              disabled={otp.join("").length < 6 || isVerifying}
+              disabled={otp.length < 6 || isVerifying}
+              loading={isVerifying}
               className="w-full"
             >
-              {isVerifying ? "Verifying…" : "Verify"}
+              Verify
             </Button>
-            <button
+            <Button
+              variant="text"
               onClick={handleSendOtp}
               disabled={isSendingOtp}
-              className="text-body-sm text-text-muted hover:text-primary transition-colors cursor-pointer disabled:opacity-50 text-center"
+              className="self-center"
             >
               {isSendingOtp ? "Resending…" : "Resend code"}
-            </button>
+            </Button>
           </>
         )}
       </div>
