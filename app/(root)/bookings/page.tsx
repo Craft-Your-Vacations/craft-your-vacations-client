@@ -9,6 +9,7 @@ import ErrorState from "@/components/ErrorState/ErrorState";
 import Button from "@/components/Button/Button";
 import EmptyState from "@/components/EmptyState/EmptyState";
 import BookingCard from "@/components/BookingCard/BookingCard";
+import BookingsHeader from "./_sections/BookingsHeader/BookingsHeader";
 import ReviewModal from "@/components/ReviewModal/ReviewModal";
 import ModalSuccess from "@/components/ModalSuccess/ModalSuccess";
 import ModalError from "@/components/ModalError/ModalError";
@@ -80,13 +81,7 @@ export default function BookingsPage() {
   return (
     <div className="pt-24 pb-16 px-6 md:px-10 max-w-(--container-max-w) mx-auto">
       {/* Page header */}
-      <div className="mb-10">
-        <h1 className="text-display-sm text-text">My Bookings</h1>
-        <p className="text-body-lg text-text-muted mt-2">
-          Packages you&apos;ve expressed interest in. Our team will reach out
-          to tailor each trip to your preferences.
-        </p>
-      </div>
+      <BookingsHeader />
 
       {/* Empty state */}
       {bookings?.length === 0 && (
