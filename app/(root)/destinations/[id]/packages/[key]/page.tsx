@@ -1,18 +1,6 @@
 "use client";
 
 import { use, useState } from "react";
-import {
-  Clock,
-  ScrollText,
-  Calendar,
-  Zap,
-  MapPin,
-} from "lucide-react";
-import PageHero from "@/components/PageHero/PageHero";
-import Button from "@/components/Button/Button";
-import Surface from "@/components/Surface/Surface";
-import IconBadge from "@/components/IconBadge/IconBadge";
-import InfoChip from "@/components/InfoChip/InfoChip";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { usePackageDetail } from "@/hooks/usePackageDetail";
@@ -20,14 +8,15 @@ import { useDestination } from "@/hooks/useDestination";
 import { useCreateBooking } from "@/hooks/useCreateBooking";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
-import Section from "@/components/Section/Sections";
-import PackageCard from "@/components/PackageCard/PackageCard";
-import ItineraryDay from "@/components/ItineraryDay/ItineraryDay";
 import BookingModal from "@/components/BookingModal/BookingModal";
 import type { BookingSubmitData } from "@/components/BookingModal/BookingModal";
 import CtaBanner from "@/components/CtaBanner/CtaBanner";
 import ModalSuccess from "@/components/ModalSuccess/ModalSuccess";
 import ModalError from "@/components/ModalError/ModalError";
+import PackageHero from "./_sections/PackageHero/PackageHero";
+import PackageOverview from "./_sections/PackageOverview/PackageOverview";
+import PackageItinerary from "./_sections/PackageItinerary/PackageItinerary";
+import OtherPackages from "./_sections/OtherPackages/OtherPackages";
 
 export default function PackageDetailPage({
   params,
@@ -68,6 +57,14 @@ export default function PackageDetailPage({
     setBookingOpen(false);
   }
 
+  function handleBook() {
+    if (session) {
+      setBookingOpen(true);
+    } else {
+      router.replace("/login");
+    }
+  }
+
   const {
     data: pkg,
     isLoading: pkgLoading,
@@ -105,212 +102,23 @@ export default function PackageDetailPage({
 
   return (
     <div className="pt-(--section-gap)">
-      {/* ─── Hero ─── */}
-      <PageHero
-        imagePath={destination?.imagePath}
-        imageAlt={destination?.title}
-        title={pkg.title}
-        subtitle={pkg.excerpt}
-        tags={destination?.destinationCities.slice(0, 2)}
-        chips={[
-          { icon: <Clock className="w-4 h-4" />, label: `${pkg.days} Days` },
-          { icon: <Zap className="w-4 h-4" />, label: `${totalActivities} Activities` },
-        ]}
+      <PackageHero
+        pkg={pkg}
+        destination={destination}
+        totalActivities={totalActivities}
       />
-
-      {/* ─── Overview ─── */}
-      <Section id="overview" title="">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* Left: description */}
-          <div className="lg:col-span-2 flex flex-col gap-6">
-            <div>
-              <h2 className="text-headline-lg text-text mb-3">
-                About this package
-              </h2>
-              <p className="text-body-lg text-text-muted leading-relaxed">
-                {pkg.excerpt}
-              </p>
-            </div>
-
-            {/* Stat chips row */}
-            <div className="flex flex-wrap gap-3">
-              <InfoChip>
-                <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center">
-                  <Calendar className="w-4 h-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-label-sm text-text-muted uppercase tracking-widest">
-                    Duration
-                  </p>
-                  <p className="text-body-md text-text font-medium">
-                    {pkg.days} Days
-                  </p>
-                </div>
-              </InfoChip>
-
-              <InfoChip>
-                <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center">
-                  <Zap className="w-4 h-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-label-sm text-text-muted uppercase tracking-widest">
-                    Activities
-                  </p>
-                  <p className="text-body-md text-text font-medium">
-                    {totalActivities} total
-                  </p>
-                </div>
-              </InfoChip>
-
-              <InfoChip>
-                <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center">
-                  <ScrollText className="w-4 h-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-label-sm text-text-muted uppercase tracking-widest">
-                    Itinerary
-                  </p>
-                  <p className="text-body-md text-text font-medium">
-                    {pkg.itinerary.length} days planned
-                  </p>
-                </div>
-              </InfoChip>
-            </div>
-          </div>
-
-          {/* Right: Trip summary glass card */}
-          <Surface className="h-fit">
-            <h3 className="text-headline-sm text-text">Trip Summary</h3>
-
-            <div className="flex flex-col gap-4">
-              <div className="flex items-start gap-3">
-                <IconBadge>
-                  <Clock className="w-4 h-4 text-primary" />
-                </IconBadge>
-                <div>
-                  <p className="text-label-sm text-text-muted uppercase tracking-widest mb-0.5">
-                    Duration
-                  </p>
-                  <p className="text-body-md text-text font-medium">
-                    {pkg.days} days / {pkg.days - 1} nights
-                  </p>
-                </div>
-              </div>
-
-              {destination && (
-                <>
-                  <div className="h-px bg-outline" />
-                  <div className="flex items-start gap-3">
-                    <IconBadge>
-                      <MapPin className="w-4 h-4 text-primary" />
-                    </IconBadge>
-                    <div>
-                      <p className="text-label-sm text-text-muted uppercase tracking-widest mb-0.5">
-                        Destination
-                      </p>
-                      <p className="text-body-md text-text font-medium">
-                        {destination.title}
-                      </p>
-                      <p className="text-body-sm text-text-muted">
-                        {destination.destinationCities.join(", ")}
-                      </p>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-
-            <Button
-              variant="primary"
-              onClick={() => session ? setBookingOpen(true) : router.replace("/login")}
-              className="w-full justify-center mt-2"
-            >
-              Book This Package
-            </Button>
-          </Surface>
-        </div>
-      </Section>
-
-      {/* ─── Itinerary ─── */}
-      <Section id="itinerary" title="">
-        <div className="mb-8">
-          <h2 className="text-headline-lg text-text">Day-by-Day Itinerary</h2>
-          <p className="text-body-md text-text-muted mt-1">
-            {pkg.days} days · {totalActivities} activities
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Sticky progress rail (desktop) */}
-          <div className="hidden lg:flex lg:col-span-1 flex-col items-center pt-5 gap-0">
-            <div className="relative flex flex-col items-center h-full">
-              <div className="absolute top-3 bottom-3 w-px bg-outline" />
-              {pkg.itinerary.map((day, i) => (
-                <div
-                  key={day.dayNumber}
-                  className="relative z-10 flex flex-col items-center"
-                  style={{
-                    marginTop: i === 0 ? 0 : `${100 / pkg.itinerary.length}%`,
-                  }}
-                >
-                  <div className="w-8 h-8 rounded-full bg-primary/15 border-2 border-primary/50 flex items-center justify-center text-primary text-label-sm font-bold">
-                    {day.dayNumber}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Day accordion list */}
-          <div className="lg:col-span-11 flex flex-col gap-3">
-            {pkg.itinerary.map((day, index) => (
-              <ItineraryDay
-                key={day.dayNumber}
-                dayNumber={day.dayNumber}
-                title={day.title}
-                activities={day.activities}
-                defaultOpen={index === 0}
-              />
-            ))}
-          </div>
-        </div>
-      </Section>
-
-      {/* ─── Other Packages ─── */}
-      {otherPackages.length > 0 && (
-        <Section id="other-packages" title="">
-          <div className="mb-8">
-            <h2 className="text-headline-lg text-text">
-              More packages
-              {destination ? ` for ${destination.title}` : ""}
-            </h2>
-            <p className="text-body-md text-text-muted mt-1">
-              Explore other ways to experience this destination
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {otherPackages.map((p, index) => (
-              <PackageCard
-                key={p.key}
-                title={p.title}
-                duration={`${p.days} Days`}
-                href={`/destinations/${id}/packages/${p.key}`}
-                features={[
-                  {
-                    icon: <Clock className="w-4 h-4" />,
-                    text: `${p.days}-day itinerary`,
-                  },
-                  {
-                    icon: <ScrollText className="w-4 h-4" />,
-                    text: p.excerpt,
-                  },
-                ]}
-                highlighted={index === Math.floor(otherPackages.length / 2)}
-              />
-            ))}
-          </div>
-        </Section>
-      )}
+      <PackageOverview
+        pkg={pkg}
+        destination={destination}
+        totalActivities={totalActivities}
+        onBook={handleBook}
+      />
+      <PackageItinerary pkg={pkg} totalActivities={totalActivities} />
+      <OtherPackages
+        packages={otherPackages}
+        destinationId={id}
+        destinationTitle={destination?.title}
+      />
 
       <CtaBanner
         heading={`Ready to Book ${pkg.title}?`}
