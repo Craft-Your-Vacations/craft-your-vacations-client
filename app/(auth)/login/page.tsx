@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { signIn, getSession } from "next-auth/react";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { decodeClaims } from "@/lib/supabase/claims";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Home } from "lucide-react";
 import { useToastStore } from "@/stores/useToastStore";
@@ -51,6 +52,9 @@ export default function LoginPage() {
     if (err === "ServiceUnavailable") {
       addToast({ key: "login", type: "error", message: "Our servers are temporarily unavailable. Please try again later." });
     }
+    if (err === "auth") {
+      addToast({ key: "login", type: "error", message: "Sign-in failed. Please try again." });
+    }
     if (searchParams.get("reset") === "success") {
       addToast({ key: "reset-success", type: "success", message: "Password reset successfully. You can now sign in." });
     }
@@ -60,29 +64,35 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
-    const result = await signIn("credentials", {
+    const supabase = getSupabaseBrowserClient();
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
-      redirect: false,
     });
 
     setLoading(false);
 
-    if (result?.error) {
-      addToast({ key: "login", type: "error", message: result.error });
+    if (error) {
+      addToast({
+        key: "login",
+        type: "error",
+        message: "Invalid email or password.",
+      });
       return;
     }
 
-    const freshSession = await getSession();
-    router.replace(freshSession?.user?.role === "Admin" ? "/admin" : "/");
+    const role = decodeClaims(data.session?.access_token).user_role;
+    // No router.refresh() after replace — it re-renders the current (/login) route before
+    // the navigation commits, cancelling it and leaving a blank AuthGuard-null screen.
+    router.replace(role === "Admin" ? "/admin" : "/");
   };
 
   const handleGoogleSignIn = async () => {
-    const result = await signIn("google", {
-      redirect: false,
-      callbackUrl: "/login",
+    const supabase = getSupabaseBrowserClient();
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
-    if (result?.url) window.location.replace(result.url);
   };
 
   const switchTab = (tab: Tab) => {

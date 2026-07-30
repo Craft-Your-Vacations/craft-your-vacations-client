@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import Logo from "@/public/logo.png";
 import LogoText from "@/public/logo_text.png";
 import Button from "@/components/Button/Button";
@@ -105,7 +105,7 @@ function PhoneStep() {
 function OtpStep() {
   const router = useRouter();
   const { phone, nextStep } = useOnboardingStore();
-  const { update } = useSession();
+  const supabase = getSupabaseBrowserClient();
   const {
     mutate: verifyOtp,
     isPending: verifying,
@@ -124,7 +124,9 @@ function OtpStep() {
       { mobileNumber: phone, otp },
       {
         onSuccess: async () => {
-          await update({ phoneVerified: true });
+          // Re-mint the token so the phone_verified claim flips to true
+          // (verify-otp just set the user's mobile_number in the DB).
+          await supabase.auth.refreshSession();
           router.refresh();
           nextStep();
         },

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession, signOut } from "next-auth/react";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { useSignOut } from "@/hooks/useSignOut";
 import { useQueryClient } from "@tanstack/react-query";
 import { CircleUser, BadgeCheck } from "lucide-react";
 import AuthCard from "@/components/AuthCard/AuthCard";
@@ -31,7 +32,8 @@ const DOCUMENT_LABELS: Record<DocumentType, string> = {
 };
 
 export default function ProfilePage() {
-  const { update } = useSession();
+  const supabase = getSupabaseBrowserClient();
+  const signOut = useSignOut();
   const { data: profile, isLoading } = useProfile();
   const { mutate: updateProfile, isPending } = useUpdateProfile();
   const queryClient = useQueryClient();
@@ -107,7 +109,6 @@ export default function ProfilePage() {
       { name, dateOfBirth, nationality, countryOfResidence, profession },
       {
         onSuccess: async (updatedUser) => {
-          if (name !== initial.name) await update({ name });
           queryClient.setQueryData(queryKeys.profile.me(), updatedUser);
           addToast({ key: "update-profile", type: "success", message: "Profile updated successfully" });
         },
@@ -128,7 +129,7 @@ export default function ProfilePage() {
       { mobileNumber: phone, otp },
       {
         onSuccess: async () => {
-          await update({ phoneVerified: true });
+          await supabase.auth.refreshSession();
           queryClient.invalidateQueries({ queryKey: queryKeys.profile.me() });
           onSuccess();
         },
@@ -336,7 +337,9 @@ export default function ProfilePage() {
         <Button
           variant="error"
           size="md"
-          onClick={() => signOut()}
+          onClick={() =>
+            signOut()
+          }
           className="w-full"
         >
           Logout

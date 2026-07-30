@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { signOut } from "next-auth/react";
+import { useSignOut } from "@/hooks/useSignOut";
 
 // Idle timeout is configurable via env (NEXT_PUBLIC_ so the value reaches the
 // browser); falls back to 15 minutes when unset or invalid.
@@ -34,6 +34,7 @@ function recordActivity() {
 }
 
 export function useInactivityLogout(active: boolean) {
+  const signOut = useSignOut();
   const [showWarning, setShowWarning] = useState(false);
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
 
@@ -52,15 +53,13 @@ export function useInactivityLogout(active: boolean) {
           clearInterval(countdownIntervalRef.current!);
           countdownIntervalRef.current = null;
           localStorage.removeItem(LAST_ACTIVITY_KEY);
-          signOut({ redirect: false }).then(() => {
-            window.location.replace("/login");
-          });
+          signOut("/login");
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
-  }, []);
+  }, [signOut]);
 
   const resetInactivityTimer = useCallback(() => {
     if (warningActiveRef.current) return;
@@ -88,9 +87,7 @@ export function useInactivityLogout(active: boolean) {
     if (elapsed >= INACTIVITY_TIMEOUT_MS) {
       // Gone for the full timeout — sign out immediately
       localStorage.removeItem(LAST_ACTIVITY_KEY);
-      signOut({ redirect: false }).then(() => {
-        window.location.replace("/");
-      });
+      signOut("/");
       return;
     }
 
@@ -109,7 +106,7 @@ export function useInactivityLogout(active: boolean) {
         window.removeEventListener(event, handleActivity),
       );
     };
-  }, [active, resetInactivityTimer]);
+  }, [active, resetInactivityTimer, signOut]);
 
   return { showWarning, countdown, keepSignedIn };
 }

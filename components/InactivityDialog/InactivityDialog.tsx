@@ -3,7 +3,7 @@
 import { Clock } from "lucide-react";
 import Button from "@/components/Button/Button";
 import Dialog from "@/components/Dialog/Dialog";
-import { signOut } from "next-auth/react";
+import { useSignOut } from "@/hooks/useSignOut";
 
 interface InactivityDialogProps {
   isOpen: boolean;
@@ -16,6 +16,7 @@ export default function InactivityDialog({
   countdown,
   onKeepSignedIn,
 }: InactivityDialogProps) {
+  const signOut = useSignOut();
   // No onClose — backdrop click and Escape are intentionally disabled
   return (
     <Dialog isOpen={isOpen} ariaLabel="Session timeout warning" className="items-center gap-5 text-center">
@@ -43,11 +44,7 @@ export default function InactivityDialog({
         <Button
           variant="secondary"
           className="flex-1"
-          onClick={() => {
-            signOut({ redirect: false }).then(() => {
-              window.location.replace("/login");
-            });
-          }}
+          onClick={() => signOut()}
         >
           Sign Out
         </Button>

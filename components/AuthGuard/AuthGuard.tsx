@@ -1,14 +1,17 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { data: session, status } = useSession();
+  const status = useAuthStore((s) => s.status);
+  const role = useAuthStore((s) => s.role);
+  const phoneVerified = useAuthStore((s) => s.phoneVerified);
   const router = useRouter();
   const pathname = usePathname();
+  const isAuthenticated = status === "authenticated";
   const isAuthPage = pathname === "/login" || pathname === "/register";
 
   useEffect(() => {
@@ -16,25 +19,25 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
     const isOnboarding = pathname === "/onboarding";
 
-    if (!session && isOnboarding) {
+    if (!isAuthenticated && isOnboarding) {
       router.replace("/login");
     }
 
-    if (session?.user?.role === "Admin") {
+    if (role === "Admin") {
       router.replace("/admin");
       return;
     }
 
-    if (isAuthPage && session) {
-      router.replace(session.user?.phoneVerified ? "/" : "/onboarding");
+    if (isAuthPage && isAuthenticated) {
+      router.replace(phoneVerified ? "/" : "/onboarding");
     }
-  }, [session, status, pathname, router]);
+  }, [status, role, phoneVerified, isAuthenticated, pathname, router]);
 
   if (status === "loading") return <LoadingSpinner />;
 
-  if (session?.user?.role === "Admin") return null;
+  if (role === "Admin") return null;
 
-  if (isAuthPage && session) return null;
+  if (isAuthPage && isAuthenticated) return null;
 
   return <main className="min-h-screen bg-bg">{children}</main>;
 }

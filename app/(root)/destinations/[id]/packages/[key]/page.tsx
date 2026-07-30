@@ -2,7 +2,7 @@
 
 import { use, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { usePackageDetail } from "@/hooks/usePackageDetail";
 import { useDestination } from "@/hooks/useDestination";
 import { useCreateBooking } from "@/hooks/useCreateBooking";
@@ -25,7 +25,8 @@ export default function PackageDetailPage({
 }) {
   const { id, key } = use(params);
   const router = useRouter();
-  const { data: session } = useSession();
+  const status = useAuthStore((s) => s.status);
+  const isAuthenticated = status === "authenticated";
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingSuccessOpen, setBookingSuccessOpen] = useState(false);
   const [bookingErrorOpen, setBookingErrorOpen] = useState(false);
@@ -58,7 +59,7 @@ export default function PackageDetailPage({
   }
 
   function handleBook() {
-    if (session) {
+    if (isAuthenticated) {
       setBookingOpen(true);
     } else {
       router.replace("/login");
