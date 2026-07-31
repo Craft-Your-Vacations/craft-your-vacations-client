@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import Logo from "@/public/logo.png";
 import LogoText from "@/public/logo_text.png";
 import Button from "@/components/Button/Button";
@@ -13,11 +13,13 @@ import { useOnboardingStore } from "@/stores/useOnboardingStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
 import AuthCard from "@/components/AuthCard/AuthCard";
+import ChangeEmailDialog from "@/components/ChangeEmailDialog/ChangeEmailDialog";
 import { useSendOtp } from "@/hooks/useSendOtp";
 import { useVerifyOtp } from "@/hooks/useVerifyOtp";
 import { useUpdateProfile } from "@/hooks/useUpdateProfile";
 import { useProfile } from "@/hooks/useProfile";
 import { useSendEmailVerification } from "@/hooks/useSendEmailVerification";
+import { useSendChangeEmail } from "@/hooks/useSendChangeEmail";
 import { isValidPhone } from "@/lib/utils";
 
 // ─── Progress indicator ────────────────────────────────────────────────────────
@@ -104,8 +106,8 @@ function PhoneStep() {
 
 function OtpStep() {
   const router = useRouter();
-  const { phone, nextStep } = useOnboardingStore();
-  const { update } = useSession();
+  const { phone, nextStep, editPhone } = useOnboardingStore();
+  const supabase = getSupabaseBrowserClient();
   const {
     mutate: verifyOtp,
     isPending: verifying,
@@ -124,7 +126,9 @@ function OtpStep() {
       { mobileNumber: phone, otp },
       {
         onSuccess: async () => {
-          await update({ phoneVerified: true });
+          // Re-mint the token so the phone_verified claim flips to true
+          // (verify-otp just set the user's mobile_number in the DB).
+          await supabase.auth.refreshSession();
           router.refresh();
           nextStep();
         },
@@ -143,6 +147,12 @@ function OtpStep() {
         <p className="text-body-sm text-text-muted">
           Sent to <span className="text-text font-semibold">{phone}</span>
         </p>
+        <button
+          onClick={editPhone}
+          className="text-label-sm text-primary hover:underline cursor-pointer"
+        >
+          Not your number? Change it
+        </button>
       </div>
 
       {/* 6-box OTP input */}
@@ -183,6 +193,13 @@ function EmailStep() {
   const { data: profile, isLoading } = useProfile();
   const { mutate: resend, isPending, error } = useSendEmailVerification();
   const [cooldown, setCooldown] = useState(0);
+  const [changeEmailOpen, setChangeEmailOpen] = useState(false);
+  const {
+    mutate: sendChangeEmail,
+    isPending: isSendingChangeEmail,
+    error: changeEmailError,
+    reset: resetChangeEmail,
+  } = useSendChangeEmail();
 
   // Auto-skip if email is already verified (e.g. Google OAuth users)
   useEffect(() => {
@@ -209,6 +226,15 @@ function EmailStep() {
     resend(undefined, { onSuccess: () => setCooldown(30) });
   };
 
+  const handleSendChangeEmail = (email: string, onSuccess: () => void) => {
+    sendChangeEmail({ newEmail: email }, { onSuccess });
+  };
+
+  const closeChangeEmail = () => {
+    setChangeEmailOpen(false);
+    resetChangeEmail();
+  };
+
   return (
     <div className="w-full flex flex-col gap-6">
       <div className="text-center flex flex-col gap-1">
@@ -217,6 +243,12 @@ function EmailStep() {
           We sent a verification link to{" "}
           <span className="text-text font-semibold">{profile?.email}</span>
         </p>
+        <button
+          onClick={() => setChangeEmailOpen(true)}
+          className="text-label-sm text-primary hover:underline cursor-pointer"
+        >
+          Not your email? Change it
+        </button>
       </div>
 
       {error && (
@@ -241,6 +273,15 @@ function EmailStep() {
       >
         Skip for now
       </button>
+
+      <ChangeEmailDialog
+        isOpen={changeEmailOpen}
+        onClose={closeChangeEmail}
+        currentEmail={profile?.email ?? ""}
+        onSend={handleSendChangeEmail}
+        isSending={isSendingChangeEmail}
+        error={changeEmailError}
+      />
     </div>
   );
 }

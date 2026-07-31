@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
   const { mobileNumber } = await req.json();
 
   const result = await bffFetch<OtpResponse>("/api/auth/send-otp", req, {
-    isPublic: true,
+    isPublic: false,
     method: "POST",
     body: { mobileNumber: mobileNumber },
     cache: "no-store",

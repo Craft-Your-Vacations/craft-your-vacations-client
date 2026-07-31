@@ -136,9 +136,9 @@ Pass mutations down as `onAction(value: string, onSuccess: () => void)` — the 
 ## Stack
 - **Next.js 16.2.2** — App Router. Middleware file is `proxy.ts` (not `middleware.ts`), exported function is `proxy` (not `middleware`).
 - **React 19**, **TypeScript**, **Tailwind CSS v4**
-- **NextAuth** (`next-auth` v4) — Credentials + Google OAuth providers
+- **Supabase Auth** (`@supabase/ssr` + `@supabase/supabase-js`) — email/password + Google OAuth; session stored in cookies. .NET validates the Supabase JWT (asymmetric ES256) against Supabase's JWKS.
 - **TanStack React Query v5** for server state
-- **Zustand v5** for client UI state
+- **Zustand v5** for client UI state + auth snapshot (`stores/useAuthStore.ts`)
 - **Axios** for browser-side HTTP (`lib/api.ts`)
 - **Native fetch** (Next.js extended) for server-side HTTP (`lib/bff.ts`)
 
@@ -165,8 +165,7 @@ Next.js API Route (app/api/...)
 ### Layer 2 — Next.js → .NET: `lib/bff.ts`
 - Used only inside route handlers (`app/api/**/route.ts`) — never from components
 - `isPublic: true` — skips auth check
-- `isPublic: false` (default) — calls `getServerSession(authOptions)` first, triggering the `jwt` callback which transparently refreshes the backend token if near expiry. Returns 401 if no valid session. Attaches `Authorization: Bearer <token>` automatically.
-- **Never replace `getServerSession` with `getToken` in `bffFetch`** — `getToken` bypasses the jwt callback and the token will never be refreshed inline.
+- `isPublic: false` (default) — reads the Supabase session via `createSupabaseServerClient()` (`lib/supabase/server.ts`); returns 401 if none; attaches the Supabase `access_token` as `Authorization: Bearer <token>`. `.NET` re-validates the JWT against Supabase's JWKS. Token refresh is handled by `proxy.ts` middleware, not here.
 - `cache` defaults to `{ revalidate: 300 }` (5-min ISR). Override:
   - `{ revalidate: N }` — cache N seconds
   - `"no-store"` — always fresh (user-specific data)
@@ -203,57 +202,58 @@ Every `useQuery`/`useMutation` call lives in a dedicated hook file. Hooks import
 | Data | Where it lives |
 |------|---------------|
 | Anything from .NET backend | TanStack React Query |
-| Auth session / user profile | NextAuth (`useSession()`) |
+| Auth session (status / role / phoneVerified) | Zustand `stores/useAuthStore.ts` (read via selectors, e.g. `useAuthStore((s) => s.role)`) |
 | Theme (dark/light) | `next-themes` (`useTheme()`) |
 | UI state shared across 2+ components | Zustand store (`stores/`) |
 | UI state local to one component | `useState` |
 
 **Never duplicate API data into Zustand or `useState`.**
 
-Zustand — one store per concern, not per screen. Keep stores minimal: state + actions only. Current store: `stores/useUIStore.ts` (mobile menu).
+Zustand — one store per concern, not per screen. Keep stores minimal: state + actions only. Current stores: `stores/useUIStore.ts` (mobile menu), `stores/useAuthStore.ts` (Supabase auth snapshot, kept in sync by `hooks/useAuthListener.ts` mounted once in `Providers`).
 
 ---
 
 ## Authentication
 
-- NextAuth config: `lib/auth.ts` — providers, JWT callbacks, refresh deduplication, sign-out revocation
-- Client session: `useSession()` from `next-auth/react`
-- `proxy.ts` is a passthrough — no redirect logic lives there
+Auth is owned by **Supabase**. `.NET` is a resource server that validates Supabase JWTs (asymmetric ES256) against Supabase's JWKS — there are no app-issued tokens.
 
-### Token flow
-The .NET backend owns authentication. On login it returns `accessToken`, `refreshToken`, `accessTokenExpiry`. NextAuth stores these in its encrypted session cookie — it does **not** issue its own tokens.
+- **Browser client:** `lib/supabase/client.ts` (`getSupabaseBrowserClient()`) — sign-in/out, session reads.
+- **Server client:** `lib/supabase/server.ts` (`createSupabaseServerClient()`) — used in `bffFetch` and the OAuth callback.
+- **Session refresh:** `proxy.ts` (Next 16 middleware) calls `supabase.auth.getClaims()` on every request to refresh the token cookie. `proxy.ts` does **not** redirect — session-refresh only.
+- **Client auth state:** Zustand `stores/useAuthStore.ts`, kept in sync by `hooks/useAuthListener.ts` (mounted once in `Providers` via `onAuthStateChange`). Read with selectors: `useAuthStore((s) => s.role)`. Fields: `status`, `userId`, `email`, `role`, `phoneVerified`. **Never** re-introduce a React context provider for this.
 
-- `token.userId` is stored separately in the NextAuth JWT (not inside the .NET access token) and exposed as `session.user.userId`
-- `session.user.phoneVerified` — controls onboarding redirect
-- `session.user.role` — set by the backend on login; **cannot be overridden by client-side `update()` calls** (the `jwt` callback strips `role` from client-provided session updates)
-- Auto-refresh: `jwt` callback calls `POST /api/Auth/refresh` when the token is within 60 seconds of expiry. On failure: `token.error = "RefreshAccessTokenError"`
-- When `session?.error === "RefreshAccessTokenError"`, the refresh token is invalid — force sign-out. Guards check for this and redirect to `/login`
-- **`backendAccessToken` is server-only** — used inside `bffFetch` to attach the `Authorization` header. Never exposed to the browser
-- **Never replace `getServerSession` with `getToken` in `bffFetch`** — the jwt callback (and inline refresh) only fires via `getServerSession`
+### Custom JWT claims
+A Supabase access-token hook (DB function `custom_access_token_hook`, in `CYV-API/.../Data/Supabase/supabase_auth_glue.sql`) injects two claims:
+- `user_role` → drives `AdminGuard` (client) and `[Authorize(Roles="Admin")]` (.NET)
+- `phone_verified` → drives the onboarding gate
 
-### Concurrent refresh deduplication
-`lib/auth.ts` holds a module-level `pendingRefreshes: Map<string, Promise<JWT>>`. If multiple parallel requests trigger a refresh for the same user, only one actual `/refresh` call is made — the rest wait on the same promise. This prevents token rotation failures from concurrent 401s.
+They live in the JWT **payload**, not on `session.user` — decode them with `decodeClaims()` (`lib/supabase/claims.ts`). Claims re-mint on every refresh, so after OTP verification call `supabase.auth.refreshSession()` to pick up the updated `phone_verified` (see `onboarding` and `profile` pages).
 
-### Session updates
-After OTP verification, call `update({ phoneVerified: true })` to update the session without a full re-login. The `jwt` callback applies it to the token. Do not pass `role` in updates — it is silently stripped.
+### Sign in / up / out
+- **Login:** `supabase.auth.signInWithPassword()` / `signInWithOAuth({ provider: "google", options: { redirectTo: ".../auth/callback" } })`.
+- **OAuth callback:** `app/auth/callback/route.ts` exchanges the `code` for a session (PKCE).
+- **Register:** `POST /api/auth/register` → `.NET` creates the Supabase user via the Admin API with email **pre-confirmed** (sign-in stays non-blocking), then the client `signInWithPassword`. A DB trigger creates the `users_master` row.
+- **Sign-out:** `signOutBrowser()` (`lib/supabase/signOut.ts`) → `supabase.auth.signOut()`; callers handle the post-sign-out redirect.
 
-### Sign-out
-`events.signOut` in `lib/auth.ts` calls `POST /api/Auth/logout` with the refresh token to revoke it server-side before NextAuth clears the session.
+### User data model
+`auth.users` (Supabase) holds identity (email, password, provider). `users_master` (Postgres, PK = the Supabase `uuid`) holds profile/role/phone. Signup + identity-link + email-change triggers keep them in sync (`supabase_auth_glue.sql`). Email verification is **non-blocking** — a custom banner flow drives `users_master.email_verified` (Google sign-ins are auto-verified).
 
 ### Rate limiting
-Lives on the **.NET backend**. The BFF forwards client IP via `X-Forwarded-For` / `X-Real-IP` headers (set automatically in `lib/bff.ts` and `lib/auth.ts`). See `docs/rate-limiting.md` for the full endpoint table and limits.
+Lives on the **.NET backend**. The BFF forwards client IP via `X-Forwarded-For` / `X-Real-IP` (set in `lib/bff.ts`). See `docs/rate-limiting.md` for the full endpoint table and limits.
 
 ### Inactivity logout
-`hooks/useInactivityLogout.ts`, consumed in `RootGuard`:
-- 15 minutes idle → `InactivityDialog` with 30-second countdown
+`hooks/useInactivityLogout.ts`, consumed in `RootGuard` / `AdminGuard`:
+- 15 minutes idle → `InactivityDialog` with 30-second countdown (configurable via `NEXT_PUBLIC_INACTIVITY_TIMEOUT_MINUTES`)
 - Activity events reset the timer; once the dialog shows, only "Keep Signed In" dismisses it
-- On expiry or sign-out: `signOut({ redirect: false })` then `window.location.replace("/login")` — `replace` prevents Back button returning to protected page
+- On expiry or sign-out: `signOutBrowser()` then `window.location.replace(...)` — `replace` prevents Back returning to a protected page
+- (A server-side inactivity timeout is available on Supabase Pro to make this tamper-proof later.)
 
 ### Route guards
-Auth redirect logic lives in **client-side layouts**, not `proxy.ts`:
-- `app/(root)/layout.tsx` — protects main app; redirects unverified users to `/onboarding`; forces sign-out on `RefreshAccessTokenError`
-- `app/(auth)/layout.tsx` — redirects verified users away from `/login`, `/register`; redirects unauthenticated from `/onboarding`
-- Guards return `null` while session loads or redirect is imminent (prevents flash of protected content)
+Auth redirect logic lives in **client-side guard components** (all read `useAuthStore`), not `proxy.ts`:
+- `RootGuard` — protects the main app; redirects unverified users to `/onboarding`; redirects Admins to `/admin`
+- `AuthGuard` — redirects logged-in users away from `/login`,`/register`; unauthenticated away from `/onboarding`
+- `AdminGuard` — requires `role === "Admin"`, else redirects
+- Guards return `null` while `status === "loading"` or a redirect is imminent (prevents flash of protected content). On sign-out `status` becomes `unauthenticated` and guards redirect to `/login`.
 
 ---
 
@@ -268,16 +268,17 @@ components/         — Reusable UI components
 hooks/              — React Query hooks (one per resource)
 lib/
   api.ts            — Axios client (browser → Next.js)
-  bff.ts            — BFF fetcher (Next.js → .NET)
-  auth.ts           — NextAuth config (providers, JWT callbacks, refresh, sign-out)
-
+  bff.ts            — BFF fetcher (Next.js → .NET); attaches Supabase access token
+  supabase/         — client.ts (browser), server.ts (SSR), claims.ts (decode JWT claims), signOut.ts
   endpoints.ts      — All API call functions grouped by domain
   queryKeys.ts      — TanStack Query key factory
   utils.ts          — Shared utilities (cn, etc.)
-stores/             — Zustand stores (one per concern)
+stores/             — Zustand stores (useUIStore, useAuthStore)
+hooks/              — React Query hooks + useAuthListener (Supabase → auth store)
+app/auth/callback/  — Google OAuth code exchange (PKCE)
 docs/
   rate-limiting.md  — Rate limit endpoints, keys, limits (enforced by .NET backend)
-proxy.ts            — Next.js middleware (passthrough; required by framework)
+proxy.ts            — Next.js middleware — Supabase session refresh (getClaims); no redirect logic
 ```
 
 ## Keeping Docs in Sync

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Logo from "@/public/logo.png";
 import LogoText from "@/public/logo_text.png";
@@ -11,14 +11,11 @@ import Button from "@/components/Button/Button";
 import FormField from "@/components/FormField/FormField";
 import AuthCard from "@/components/AuthCard/AuthCard";
 import { useRegister } from "@/hooks/useRegister";
-import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
 import { isValidEmail } from "@/lib/utils";
 
 export default function RegisterPage() {
   const router = useRouter();
   const { mutate: register, isPending, error } = useRegister();
-  const queryClient = useQueryClient();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -41,24 +38,24 @@ export default function RegisterPage() {
     register(
       { firstName, lastName, email, password },
       {
-        onSuccess: async (registeredUser) => {
-          queryClient.setQueryData(queryKeys.profile.me(), registeredUser);
-          const result = await signIn("credentials", {
+        onSuccess: async () => {
+          const supabase = getSupabaseBrowserClient();
+          const { error: signInErr } = await supabase.auth.signInWithPassword({
             email,
             password,
-            redirect: false,
           });
 
-          if (result?.error) {
+          if (signInErr) {
             setSignInError(
               "Account created but sign-in failed. Please log in.",
             );
-            router.push("/login");
-            router.refresh();
+            router.replace("/login");
             return;
           }
 
-          router.push("/");
+          // RootGuard sends the new (phone-less) user on to /onboarding. No
+          // router.refresh() — it cancels the navigation (see login page note).
+          router.replace("/");
         },
       },
     );
@@ -163,7 +160,12 @@ export default function RegisterPage() {
         {/* Google sign-up */}
         <Button
           variant="secondary"
-          onClick={() => signIn("google", { callbackUrl: "/" })}
+          onClick={() =>
+            getSupabaseBrowserClient().auth.signInWithOAuth({
+              provider: "google",
+              options: { redirectTo: `${window.location.origin}/auth/callback` },
+            })
+          }
         >
           <svg
             viewBox="0 0 24 24"

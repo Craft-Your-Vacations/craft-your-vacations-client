@@ -1,10 +1,11 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { CircleCheck, CircleX } from "lucide-react";
 import { emailApi } from "@/lib/endpoints";
+import { broadcastEmailVerified } from "@/hooks/useEmailVerifiedSync";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import Button from "@/components/Button/Button";
 
@@ -16,12 +17,19 @@ function VerifyEmailContent() {
   const token = searchParams.get("token");
   const purpose = searchParams.get("purpose");
   const [status, setStatus] = useState<Status>("loading");
+  const hasRedeemed = useRef(false);
 
   useEffect(() => {
     if (!token) {
       setStatus("error");
       return;
     }
+
+    // The token is single-use. React Strict Mode (dev) double-invokes effects, and
+    // an accidental remount would too — without this guard the second call redeems
+    // an already-used token, fails, and flashes the error state over the success.
+    if (hasRedeemed.current) return;
+    hasRedeemed.current = true;
 
     const verify =
       purpose === "change-email"
@@ -31,6 +39,8 @@ function VerifyEmailContent() {
     verify
       .then(() => {
         setStatus(purpose === "change-email" ? "success-change" : "success-verify");
+        // Tell other open tabs (e.g. a blocked booking gate) to refresh the profile.
+        broadcastEmailVerified();
         setTimeout(() => router.replace("/profile"), 3000);
       })
       .catch(() => setStatus("error"));

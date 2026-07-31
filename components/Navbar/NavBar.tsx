@@ -11,7 +11,7 @@ import ToggleTheme from "@/components/ToggleTheme/ToggleTheme";
 import Link from "next/link";
 import Button from "../Button/Button";
 import { useUIStore } from "@/stores/useUIStore";
-import { useSession } from "next-auth/react";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 interface NavbarProps {
   logo?: React.ReactNode;
@@ -30,9 +30,9 @@ export function Navbar({ links = defaultLinks, className = "" }: NavbarProps) {
   const pathname = usePathname();
   const { mobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useUIStore();
 
-  const { data: session, status } = useSession();
+  const status = useAuthStore((s) => s.status);
   const isSessionLoading = status === "loading";
-  const isUserLogged = !!session;
+  const isUserLogged = status === "authenticated";
 
   useEffect(() => {
     closeMobileMenu();

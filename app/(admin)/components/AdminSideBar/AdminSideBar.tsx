@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 import Logo from "@/public/logo.png";
 import LogoText from "@/public/logo_text.png";
 import Button from "../../../../components/Button/Button";
-import { signOut } from "next-auth/react";
+import { useSignOut } from "@/hooks/useSignOut";
 import { useUIStore } from "@/stores/useUIStore";
 
 const NAV_LINKS = [
@@ -20,6 +20,7 @@ const NAV_LINKS = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const signOut = useSignOut();
   const { adminSidebarOpen, closeAdminSidebar } = useUIStore();
 
   useEffect(() => {
@@ -82,7 +83,7 @@ export function AdminSidebar() {
       <div className="px-3 py-4 border-t border-outline shrink-0">
         <Button
           variant="error"
-          onClick={() => signOut({ callbackUrl: "/login" })}
+          onClick={() => signOut()}
         >
           Sign out
         </Button>

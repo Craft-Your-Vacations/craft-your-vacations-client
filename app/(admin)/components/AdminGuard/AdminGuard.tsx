@@ -1,6 +1,6 @@
 "use client";
 
-import { signOut, useSession } from "next-auth/react";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { redirect } from "next/navigation";
 import { useEffect } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
@@ -8,33 +8,28 @@ import { useInactivityLogout } from "@/hooks/useInactivityLogout";
 import InactivityDialog from "@/components/InactivityDialog/InactivityDialog";
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
-  const { data: session, status } = useSession();
-  const { showWarning, countdown, keepSignedIn } = useInactivityLogout(
-    !!session && status === "authenticated" && session.user.role === "Admin",
-  );
+  const status = useAuthStore((s) => s.status);
+  const role = useAuthStore((s) => s.role);
+  const isAuthenticated = status === "authenticated";
+  const { showWarning, countdown, keepSignedIn, signOutNow } =
+    useInactivityLogout(isAuthenticated && role === "Admin");
 
   useEffect(() => {
     if (status === "loading") return;
 
-    if (session?.error === "RefreshAccessTokenError") {
-      signOut({ callbackUrl: "/login" });
-      return;
-    }
-
-    if (!session) {
+    if (!isAuthenticated) {
       redirect("/login");
       return;
     }
 
-    if (session.user.role !== "Admin") {
+    if (role !== "Admin") {
       redirect("/");
     }
-  }, [session, status]);
+  }, [status, role, isAuthenticated]);
 
   if (status === "loading") return <LoadingSpinner />;
-  if (session?.error === "RefreshAccessTokenError") return null;
-  if (!session) return null;
-  if (session.user.role !== "Admin") return null;
+  if (!isAuthenticated) return null;
+  if (role !== "Admin") return null;
 
   return (
     <>
@@ -42,6 +37,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         isOpen={showWarning}
         countdown={countdown}
         onKeepSignedIn={keepSignedIn}
+        onSignOut={signOutNow}
       />
       {children}
     </>
