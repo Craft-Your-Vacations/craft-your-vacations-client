@@ -191,6 +191,7 @@ export default function ProfilePage() {
             isSending={isSendingVerif}
             error={sendVerifError}
             sent={emailVerifSent}
+            onEditEmail={() => setChangeEmailOpen(true)}
           />
         )}
 

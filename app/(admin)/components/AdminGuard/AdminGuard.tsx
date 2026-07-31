@@ -11,9 +11,8 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   const status = useAuthStore((s) => s.status);
   const role = useAuthStore((s) => s.role);
   const isAuthenticated = status === "authenticated";
-  const { showWarning, countdown, keepSignedIn } = useInactivityLogout(
-    isAuthenticated && role === "Admin",
-  );
+  const { showWarning, countdown, keepSignedIn, signOutNow } =
+    useInactivityLogout(isAuthenticated && role === "Admin");
 
   useEffect(() => {
     if (status === "loading") return;
@@ -38,6 +37,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         isOpen={showWarning}
         countdown={countdown}
         onKeepSignedIn={keepSignedIn}
+        onSignOut={signOutNow}
       />
       {children}
     </>

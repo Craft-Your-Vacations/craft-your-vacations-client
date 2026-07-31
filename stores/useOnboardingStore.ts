@@ -9,6 +9,7 @@ interface OnboardingStore {
   phone: string;
   setPhone: (phone: string) => void;
   nextStep: () => void;
+  editPhone: () => void;
   reset: () => void;
 }
 
@@ -21,5 +22,8 @@ export const useOnboardingStore = create<OnboardingStore>((set, get) => ({
     const next = STEP_ORDER[currentIndex + 1];
     if (next) set({ step: next });
   },
+  // Return to the phone step so a mistyped number can be corrected (the number
+  // stays in `phone`, so PhoneStep pre-fills it for editing).
+  editPhone: () => set({ step: "phone" }),
   reset: () => set({ step: "phone", phone: "" }),
 }));

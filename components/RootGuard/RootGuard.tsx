@@ -17,7 +17,7 @@ export function RootGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthenticated = status === "authenticated";
 
-  const { showWarning, countdown, keepSignedIn } =
+  const { showWarning, countdown, keepSignedIn, signOutNow } =
     useInactivityLogout(isAuthenticated);
 
   const isProtected = PROTECTED_PATHS.some(
@@ -62,6 +62,7 @@ export function RootGuard({ children }: { children: React.ReactNode }) {
         isOpen={showWarning}
         countdown={countdown}
         onKeepSignedIn={keepSignedIn}
+        onSignOut={signOutNow}
       />
       {children}
     </>
