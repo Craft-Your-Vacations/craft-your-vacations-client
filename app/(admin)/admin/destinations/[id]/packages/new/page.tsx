@@ -12,6 +12,9 @@ import TextAreaField from "@/components/TextAreaField/TextAreaField";
 import type { ItineraryDay } from "@/app/types/api";
 import BackButton from "@/components/BackButton/BackButton";
 import ItineraryEditor from "@/app/(admin)/components/ItineraryEditor/ItineraryEditor";
+import { packageSchema } from "@/lib/validation/schemas";
+import { getFieldErrors } from "@/lib/validation/getFieldErrors";
+import { LIMITS } from "@/lib/validation/limits";
 import { useToastStore } from "@/stores/useToastStore";
 
 function emptyDay(dayNumber: number): ItineraryDay {
@@ -35,11 +38,27 @@ export default function NewPackagePage({
   const [days, setDays] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [itinerary, setItinerary] = useState<ItineraryDay[]>([emptyDay(1)]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   if (isLoading) return <LoadingSpinner message="Loading…" fullScreen={false} />;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const fieldErrors = getFieldErrors(packageSchema, {
+      key,
+      title,
+      price,
+      days,
+      excerpt,
+      itinerary,
+    });
+    setErrors(fieldErrors);
+    if (Object.keys(fieldErrors).length > 0) {
+      if (fieldErrors.itinerary) {
+        addToast({ key: "create-package", type: "error", message: fieldErrors.itinerary });
+      }
+      return;
+    }
     createPackage.mutate(
       { key, title, price: Number(price), days: Number(days), excerpt, itinerary },
       {
@@ -73,6 +92,8 @@ export default function NewPackagePage({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. 7 Days Luxury"
+              maxLength={LIMITS.titleMax}
+              errorMessage={errors.title}
             />
 
             <FormField
@@ -82,6 +103,8 @@ export default function NewPackagePage({
               value={key}
               onChange={(e) => setKey(e.target.value.toLowerCase().replace(/\s+/g, "-"))}
               placeholder="e.g. luxury-7d"
+              maxLength={LIMITS.slugMax}
+              errorMessage={errors.key}
             />
 
             <FormField
@@ -89,9 +112,11 @@ export default function NewPackagePage({
               label="Price (₹)"
               required
               type="number"
+              min={LIMITS.priceMin}
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               placeholder="e.g. 75000"
+              errorMessage={errors.price}
             />
 
             <FormField
@@ -99,9 +124,12 @@ export default function NewPackagePage({
               label="Days"
               required
               type="number"
+              min={LIMITS.daysMin}
+              max={LIMITS.daysMax}
               value={days}
               onChange={(e) => setDays(e.target.value)}
               placeholder="e.g. 7"
+              errorMessage={errors.days}
             />
           </div>
 
@@ -110,9 +138,11 @@ export default function NewPackagePage({
             label="Excerpt"
             required
             rows={3}
+            maxLength={LIMITS.excerptMax}
             value={excerpt}
             onChange={(e) => setExcerpt(e.target.value)}
             placeholder="Short description of this package…"
+            errorMessage={errors.excerpt}
           />
         </Surface>
 

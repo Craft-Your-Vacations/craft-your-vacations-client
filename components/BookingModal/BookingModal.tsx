@@ -6,6 +6,9 @@ import FormField from "@/components/FormField/FormField";
 import TextAreaField from "@/components/TextAreaField/TextAreaField";
 import Button from "@/components/Button/Button";
 import Dialog from "@/components/Dialog/Dialog";
+import { bookingSchema } from "@/lib/validation/schemas";
+import { getFieldErrors } from "@/lib/validation/getFieldErrors";
+import { LIMITS } from "@/lib/validation/limits";
 
 export interface BookingSubmitData {
   travelersCount: number;
@@ -33,6 +36,7 @@ export function BookingModal({
   const [travelersCount, setTravelersCount] = useState("");
   const [travelDate, setTravelDate] = useState("");
   const [notes, setNotes] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Reset form when modal closes
   useEffect(() => {
@@ -41,6 +45,7 @@ export function BookingModal({
         setTravelersCount("");
         setTravelDate("");
         setNotes("");
+        setErrors({});
       }, 200);
       return () => clearTimeout(t);
     }
@@ -48,10 +53,15 @@ export function BookingModal({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const count = parseInt(travelersCount, 10);
-    if (isNaN(count) || count < 1 || count > 50) return;
+    const fieldErrors = getFieldErrors(bookingSchema, {
+      travelersCount,
+      travelDate,
+      notes,
+    });
+    setErrors(fieldErrors);
+    if (Object.keys(fieldErrors).length > 0) return;
     onSubmit({
-      travelersCount: count,
+      travelersCount: parseInt(travelersCount, 10),
       travelDate,
       notes: notes.trim() || undefined,
     });
@@ -85,10 +95,11 @@ export function BookingModal({
           type="number"
           required
           placeholder="e.g. 2"
-          min={1}
-          max={50}
+          min={LIMITS.travelersMin}
+          max={LIMITS.travelersMax}
           value={travelersCount}
           onChange={(e) => setTravelersCount(e.target.value)}
+          errorMessage={errors.travelersCount}
         />
         <FormField
           id="preferredDate"
@@ -98,15 +109,17 @@ export function BookingModal({
           value={travelDate}
           onChange={(e) => setTravelDate(e.target.value)}
           min={new Date().toISOString().split("T")[0]}
+          errorMessage={errors.travelDate}
         />
         <TextAreaField
           id="notes"
           label="Additional notes"
           placeholder="Any special requests, dietary needs, anniversary celebrations…"
           rows={3}
-          maxLength={500}
+          maxLength={LIMITS.notesMax}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
+          errorMessage={errors.notes}
         />
 
         {error && (

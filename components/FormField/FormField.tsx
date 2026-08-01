@@ -11,6 +11,11 @@ interface FormFieldProps extends FieldBaseProps {
   autoComplete?: string;
   min?: string | number;
   max?: string | number;
+  maxLength?: number;
+  minLength?: number;
+  pattern?: string;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   /** Optional leading icon (e.g. a search glyph). */
   icon?: React.ReactNode;
 }
@@ -32,6 +37,11 @@ export function FormField({
   autoComplete,
   min,
   max,
+  maxLength,
+  minLength,
+  pattern,
+  inputMode,
+  onBlur,
   icon,
 }: FormFieldProps) {
   const hasError = Boolean(errorMessage);
@@ -59,11 +69,16 @@ export function FormField({
           defaultValue={defaultValue}
           onChange={onChange}
           onKeyDown={onKeyDown}
+          onBlur={onBlur}
           disabled={disabled}
           autoComplete={autoComplete}
           required={required}
           min={min}
           max={max}
+          maxLength={maxLength}
+          minLength={minLength}
+          pattern={pattern}
+          inputMode={inputMode}
           className={`w-full ${icon ? "pl-10 pr-4" : "px-4"} py-3 rounded-xl text-body-md text-text placeholder:text-text-subtle bg-surface-highest border border-outline outline-none transition-all
            focus:border-transparent focus:ring-2 focus:ring-primary/50
            disabled:opacity-50 disabled:cursor-not-allowed

@@ -14,6 +14,9 @@ import TextAreaField from "@/components/TextAreaField/TextAreaField";
 import type { ItineraryDay } from "@/app/types/api";
 import BackButton from "@/components/BackButton/BackButton";
 import ItineraryEditor from "@/app/(admin)/components/ItineraryEditor/ItineraryEditor";
+import { packageEditSchema } from "@/lib/validation/schemas";
+import { getFieldErrors } from "@/lib/validation/getFieldErrors";
+import { LIMITS } from "@/lib/validation/limits";
 import { useToastStore } from "@/stores/useToastStore";
 
 export default function EditPackagePage({
@@ -33,6 +36,7 @@ export default function EditPackagePage({
   const [itinerary, setItinerary] = useState<ItineraryDay[]>([]);
   const [confirmSaveOpen, setConfirmSaveOpen] = useState(false);
   const addToast = useToastStore((s) => s.addToast);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (pkg) {
@@ -59,6 +63,20 @@ export default function EditPackagePage({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const fieldErrors = getFieldErrors(packageEditSchema, {
+      title,
+      price,
+      days,
+      excerpt,
+      itinerary,
+    });
+    setErrors(fieldErrors);
+    if (Object.keys(fieldErrors).length > 0) {
+      if (fieldErrors.itinerary) {
+        addToast({ key: "update-package", type: "error", message: fieldErrors.itinerary });
+      }
+      return;
+    }
     setConfirmSaveOpen(true);
   }
 
@@ -95,22 +113,29 @@ export default function EditPackagePage({
               label="Title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              maxLength={LIMITS.titleMax}
+              errorMessage={errors.title}
             />
 
             <FormField
               id="pkg-price"
               label="Price (₹)"
               type="number"
+              min={LIMITS.priceMin}
               value={price}
               onChange={(e) => setPrice(e.target.value)}
+              errorMessage={errors.price}
             />
 
             <FormField
               id="pkg-days"
               label="Days"
               type="number"
+              min={LIMITS.daysMin}
+              max={LIMITS.daysMax}
               value={days}
               onChange={(e) => setDays(e.target.value)}
+              errorMessage={errors.days}
             />
           </div>
 
@@ -118,8 +143,10 @@ export default function EditPackagePage({
             id="pkg-excerpt"
             label="Excerpt"
             rows={3}
+            maxLength={LIMITS.excerptMax}
             value={excerpt}
             onChange={(e) => setExcerpt(e.target.value)}
+            errorMessage={errors.excerpt}
           />
         </Surface>
 

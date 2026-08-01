@@ -15,6 +15,9 @@ import TextAreaField from "@/components/TextAreaField/TextAreaField";
 import { Plus, Trash2 } from "lucide-react";
 import BackButton from "@/components/BackButton/BackButton";
 import CityTagInput from "@/app/(admin)/components/CityTagInput";
+import { destinationEditSchema } from "@/lib/validation/schemas";
+import { getFieldErrors } from "@/lib/validation/getFieldErrors";
+import { LIMITS } from "@/lib/validation/limits";
 import { useToastStore } from "@/stores/useToastStore";
 
 export default function EditDestinationPage({
@@ -38,6 +41,7 @@ export default function EditDestinationPage({
   const [confirmSaveOpen, setConfirmSaveOpen] = useState(false);
   const addToast = useToastStore((s) => s.addToast);
   const [confirmDeleteKey, setConfirmDeleteKey] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (destination) {
@@ -63,6 +67,15 @@ export default function EditDestinationPage({
 
   function handleSave(e: React.SubmitEvent) {
     e.preventDefault();
+    const fieldErrors = getFieldErrors(destinationEditSchema, {
+      title,
+      imagePath,
+      content,
+      isFeatured,
+      destinationCities: cities,
+    });
+    setErrors(fieldErrors);
+    if (Object.keys(fieldErrors).length > 0) return;
     setConfirmSaveOpen(true);
   }
 
@@ -96,6 +109,8 @@ export default function EditDestinationPage({
             label="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            maxLength={LIMITS.titleMax}
+            errorMessage={errors.title}
           />
 
           <FormField
@@ -103,19 +118,26 @@ export default function EditDestinationPage({
             label="Image Path"
             value={imagePath}
             onChange={(e) => setImagePath(e.target.value)}
+            maxLength={LIMITS.imagePathMax}
+            errorMessage={errors.imagePath}
           />
 
           <TextAreaField
             id="dest-content"
             label="Content"
             rows={4}
+            maxLength={LIMITS.contentMax}
             value={content}
             onChange={(e) => setContent(e.target.value)}
+            errorMessage={errors.content}
           />
 
           <div className="flex flex-col gap-1.5">
             <label className="text-label-md text-text-muted">Cities</label>
             <CityTagInput cities={cities} onChange={setCities} />
+            {errors.destinationCities && (
+              <p className="text-body-sm text-error">{errors.destinationCities}</p>
+            )}
           </div>
 
           <Checkbox

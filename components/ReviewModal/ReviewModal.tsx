@@ -5,6 +5,9 @@ import { X, Star, ImagePlus } from "lucide-react";
 import TextAreaField from "@/components/TextAreaField/TextAreaField";
 import Button from "@/components/Button/Button";
 import Dialog from "@/components/Dialog/Dialog";
+import { reviewSchema } from "@/lib/validation/schemas";
+import { getFieldErrors } from "@/lib/validation/getFieldErrors";
+import { LIMITS, FILES } from "@/lib/validation/limits";
 
 export interface ReviewSubmitData {
   rating: number;
@@ -33,6 +36,8 @@ export default function ReviewModal({
   const [hoverRating, setHoverRating] = useState(0);
   const [quote, setQuote] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [fileError, setFileError] = useState("");
 
   // Reset form when modal closes
   useEffect(() => {
@@ -42,14 +47,42 @@ export default function ReviewModal({
         setHoverRating(0);
         setQuote("");
         setFiles([]);
+        setErrors({});
+        setFileError("");
       }, 200);
       return () => clearTimeout(t);
     }
   }, [isOpen]);
 
+  function handleFiles(list: FileList | null) {
+    const picked = Array.from(list ?? []);
+    const allowed = FILES.reviewImageExtensions as readonly string[];
+    const valid: File[] = [];
+    let err = "";
+    for (const f of picked) {
+      const ext = "." + (f.name.split(".").pop() ?? "").toLowerCase();
+      if (!allowed.includes(ext)) {
+        err = "Only JPG, PNG or WEBP images are allowed.";
+        continue;
+      }
+      if (f.size > FILES.maxSizeBytes) {
+        err = `Each image must be under ${FILES.maxSizeLabel}.`;
+        continue;
+      }
+      valid.push(f);
+    }
+    if (picked.length > FILES.reviewImagesMax) {
+      err = `You can upload up to ${FILES.reviewImagesMax} photos.`;
+    }
+    setFiles(valid.slice(0, FILES.reviewImagesMax));
+    setFileError(err);
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (rating === 0 || !quote.trim()) return;
+    const fieldErrors = getFieldErrors(reviewSchema, { rating, quote });
+    setErrors(fieldErrors);
+    if (Object.keys(fieldErrors).length > 0) return;
     onSubmit({ rating, quote: quote.trim(), files });
   }
 
@@ -102,6 +135,9 @@ export default function ReviewModal({
               );
             })}
           </div>
+          {errors.rating && (
+            <p className="text-body-sm text-error">{errors.rating}</p>
+          )}
         </div>
 
         {/* Review text */}
@@ -110,10 +146,11 @@ export default function ReviewModal({
           label="Your review"
           placeholder="Tell others about your experience — what made it special, what you loved, any highlights…"
           rows={4}
-          maxLength={600}
+          maxLength={LIMITS.quoteMax}
           required
           value={quote}
           onChange={(e) => setQuote(e.target.value)}
+          errorMessage={errors.quote}
         />
 
         {/* Image upload */}
@@ -136,12 +173,11 @@ export default function ReviewModal({
             id="review-images"
             type="file"
             multiple
-            accept="image/*"
+            accept=".jpg,.jpeg,.png,.webp"
             className="sr-only"
-            onChange={(e) => {
-              setFiles(Array.from(e.target.files ?? []).slice(0, 5));
-            }}
+            onChange={(e) => handleFiles(e.target.files)}
           />
+          {fileError && <p className="text-body-sm text-error">{fileError}</p>}
         </div>
 
         {error && (

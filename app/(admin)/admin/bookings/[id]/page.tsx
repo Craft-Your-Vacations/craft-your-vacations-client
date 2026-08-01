@@ -20,6 +20,7 @@ import BookingStatusBadge, { formatMonth } from "@/app/(admin)/components/Bookin
 import ItineraryEditor from "@/app/(admin)/components/ItineraryEditor/ItineraryEditor";
 import RequiredDocumentsSelector from "@/app/(admin)/components/RequiredDocumentsSelector/RequiredDocumentsSelector";
 import { BOOKING_STATUSES } from "@/lib/constants";
+import { LIMITS } from "@/lib/validation/limits";
 import { useToastStore } from "@/stores/useToastStore";
 
 export default function AdminBookingDetailPage({
@@ -42,6 +43,7 @@ export default function AdminBookingDetailPage({
   const [requiredDocs, setRequiredDocs] = useState<DocumentType[]>([]);
   const [itinerary, setItinerary] = useState<ItineraryDay[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const addToast = useToastStore((s) => s.addToast);
 
   // Pre-populate required docs once when booking loads
@@ -80,6 +82,21 @@ export default function AdminBookingDetailPage({
     const hasBasicChange =
       editStatus !== "" || editNotes !== "" || editTravelers !== "" || editDate !== "";
     if (!hasBasicChange && !showConfirmFields) return;
+
+    // Validate only the fields being changed (this is a partial patch).
+    const fieldErrors: Record<string, string> = {};
+    if (editTravelers) {
+      const n = Number(editTravelers);
+      if (!Number.isInteger(n) || n < LIMITS.travelersMin || n > LIMITS.travelersMax)
+        fieldErrors.travelers = `Travelers must be between ${LIMITS.travelersMin} and ${LIMITS.travelersMax}.`;
+    }
+    if (editNotes && editNotes.length > LIMITS.notesMax)
+      fieldErrors.notes = `Notes must be at most ${LIMITS.notesMax} characters.`;
+    if (editDate && Number.isNaN(Date.parse(editDate)))
+      fieldErrors.date = "Please select a valid date.";
+    setErrors(fieldErrors);
+    if (Object.keys(fieldErrors).length > 0) return;
+
     setConfirmOpen(true);
   }
 
@@ -87,10 +104,8 @@ export default function AdminBookingDetailPage({
     const body: Parameters<typeof updateBooking.mutate>[0] = {};
     if (editStatus) body.status = editStatus;
     if (editNotes) body.notes = editNotes;
-    if (editTravelers) {
-      const count = Number(editTravelers);
-      if (count >= 1 && count <= 50) body.travelersCount = count;
-    }
+    // Travelers already validated in handleSave before opening the confirm dialog.
+    if (editTravelers) body.travelersCount = Number(editTravelers);
     if (editDate) body.travelDate = editDate;
     if (showConfirmFields) {
       body.requiredDocuments = requiredDocs;
@@ -237,8 +252,9 @@ export default function AdminBookingDetailPage({
               placeholder={String(booking.travelersCount)}
               value={editTravelers}
               onChange={(e) => setEditTravelers(e.target.value)}
-              min={1}
-              max={50}
+              min={LIMITS.travelersMin}
+              max={LIMITS.travelersMax}
+              errorMessage={errors.travelers}
             />
 
             <FormField
@@ -247,6 +263,7 @@ export default function AdminBookingDetailPage({
               type="date"
               value={editDate}
               onChange={(e) => setEditDate(e.target.value)}
+              errorMessage={errors.date}
             />
 
             <TextAreaField
@@ -256,7 +273,9 @@ export default function AdminBookingDetailPage({
               value={editNotes}
               onChange={(e) => setEditNotes(e.target.value)}
               rows={3}
+              maxLength={LIMITS.notesMax}
               className="md:col-span-2"
+              errorMessage={errors.notes}
             />
           </div>
 

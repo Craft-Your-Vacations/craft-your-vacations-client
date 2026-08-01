@@ -10,6 +10,9 @@ import FormField from "@/components/FormField/FormField";
 import TextAreaField from "@/components/TextAreaField/TextAreaField";
 import BackButton from "@/components/BackButton/BackButton";
 import CityTagInput from "@/app/(admin)/components/CityTagInput";
+import { destinationSchema } from "@/lib/validation/schemas";
+import { getFieldErrors } from "@/lib/validation/getFieldErrors";
+import { LIMITS } from "@/lib/validation/limits";
 import { useToastStore } from "@/stores/useToastStore";
 
 export default function NewDestinationPage() {
@@ -23,9 +26,20 @@ export default function NewDestinationPage() {
   const [content, setContent] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const fieldErrors = getFieldErrors(destinationSchema, {
+      slug,
+      title,
+      imagePath,
+      content,
+      isFeatured,
+      destinationCities: cities,
+    });
+    setErrors(fieldErrors);
+    if (Object.keys(fieldErrors).length > 0) return;
     createDestination.mutate(
       { slug, title, imagePath, content, isFeatured, destinationCities: cities },
       {
@@ -55,6 +69,8 @@ export default function NewDestinationPage() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Maldives"
+            maxLength={LIMITS.titleMax}
+            errorMessage={errors.title}
           />
 
           <FormField
@@ -64,6 +80,8 @@ export default function NewDestinationPage() {
             value={slug}
             onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"))}
             placeholder="e.g. maldives"
+            maxLength={LIMITS.slugMax}
+            errorMessage={errors.slug}
           />
 
           <FormField
@@ -73,6 +91,8 @@ export default function NewDestinationPage() {
             value={imagePath}
             onChange={(e) => setImagePath(e.target.value)}
             placeholder="e.g. /images/maldives.jpg"
+            maxLength={LIMITS.imagePathMax}
+            errorMessage={errors.imagePath}
           />
 
           <TextAreaField
@@ -80,14 +100,19 @@ export default function NewDestinationPage() {
             label="Content"
             required
             rows={4}
+            maxLength={LIMITS.contentMax}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Describe this destination…"
+            errorMessage={errors.content}
           />
 
           <div className="flex flex-col gap-1.5">
             <label className="text-label-md text-text-muted">Cities</label>
             <CityTagInput cities={cities} onChange={setCities} />
+            {errors.destinationCities && (
+              <p className="text-body-sm text-error">{errors.destinationCities}</p>
+            )}
           </div>
 
           <Checkbox

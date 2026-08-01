@@ -22,6 +22,9 @@ import { useVerifyOtp } from "@/hooks/useVerifyOtp";
 import { useSendEmailVerification } from "@/hooks/useSendEmailVerification";
 import { useSendChangeEmail } from "@/hooks/useSendChangeEmail";
 import { queryKeys } from "@/lib/queryKeys";
+import { profileSchema } from "@/lib/validation/schemas";
+import { getFieldErrors } from "@/lib/validation/getFieldErrors";
+import { LIMITS } from "@/lib/validation/limits";
 import { useToastStore } from "@/stores/useToastStore";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import type { UserDocument, DocumentType } from "@/app/types/api";
@@ -48,6 +51,7 @@ export default function ProfilePage() {
   const [nationality, setNationality] = useState("");
   const [countryOfResidence, setCountryOfResidence] = useState("");
   const [profession, setProfession] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Email verification banner
   const { mutate: sendEmailVerification, isPending: isSendingVerif, error: sendVerifError } = useSendEmailVerification();
@@ -105,6 +109,15 @@ export default function ProfilePage() {
   }
 
   const handleSave = () => {
+    const fieldErrors = getFieldErrors(profileSchema, {
+      name,
+      dateOfBirth,
+      nationality,
+      countryOfResidence,
+      profession,
+    });
+    setErrors(fieldErrors);
+    if (Object.keys(fieldErrors).length > 0) return;
     updateProfile(
       { name, dateOfBirth, nationality, countryOfResidence, profession },
       {
@@ -220,6 +233,8 @@ export default function ProfilePage() {
               label="Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              maxLength={LIMITS.fullNameMax}
+              errorMessage={errors.name}
             />
 
             {/* Email */}
@@ -280,6 +295,7 @@ export default function ProfilePage() {
               type="date"
               value={dateOfBirth}
               onChange={(e) => setDateOfBirth(e.target.value)}
+              errorMessage={errors.dateOfBirth}
             />
             <FormField
               id="nationality"
@@ -287,6 +303,8 @@ export default function ProfilePage() {
               placeholder="e.g. American"
               value={nationality}
               onChange={(e) => setNationality(e.target.value)}
+              maxLength={LIMITS.nationalityMax}
+              errorMessage={errors.nationality}
             />
             <FormField
               id="countryOfResidence"
@@ -294,6 +312,8 @@ export default function ProfilePage() {
               placeholder="e.g. India"
               value={countryOfResidence}
               onChange={(e) => setCountryOfResidence(e.target.value)}
+              maxLength={LIMITS.nationalityMax}
+              errorMessage={errors.countryOfResidence}
             />
             <FormField
               id="profession"
@@ -301,6 +321,8 @@ export default function ProfilePage() {
               placeholder="e.g. Software Engineer"
               value={profession}
               onChange={(e) => setProfession(e.target.value)}
+              maxLength={LIMITS.professionMax}
+              errorMessage={errors.profession}
             />
             {isDirty && (
               <Button

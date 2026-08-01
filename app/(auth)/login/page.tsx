@@ -14,6 +14,7 @@ import Button from "@/components/Button/Button";
 import FormField from "@/components/FormField/FormField";
 import AuthCard from "@/components/AuthCard/AuthCard";
 import SegmentedControl from "@/components/SegmentedControl/SegmentedControl";
+import { LIMITS } from "@/lib/validation/limits";
 
 type Tab = "email" | "google";
 
@@ -154,6 +155,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
+              maxLength={LIMITS.emailMax}
             />
             <FormField
               id="login-password"
@@ -164,6 +166,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
+              maxLength={LIMITS.loginPasswordMax}
             />
             <Button
               variant="primary"

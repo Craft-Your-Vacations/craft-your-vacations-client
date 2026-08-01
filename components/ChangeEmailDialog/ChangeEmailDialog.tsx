@@ -3,6 +3,7 @@ import Dialog from "@/components/Dialog/Dialog";
 import FormField from "@/components/FormField/FormField";
 import Button from "@/components/Button/Button";
 import { isValidEmail } from "@/lib/utils";
+import { LIMITS } from "@/lib/validation/limits";
 
 interface ChangeEmailDialogProps {
   isOpen: boolean;
@@ -82,6 +83,7 @@ export default function ChangeEmailDialog({
               value={newEmail}
               onChange={(e) => setNewEmail(e.target.value)}
               required
+              maxLength={LIMITS.emailMax}
             />
             {(sameError || error) && (
               <p className="text-body-sm text-error">{sameError || error?.message}</p>

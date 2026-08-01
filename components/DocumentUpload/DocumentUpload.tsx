@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Upload, FileCheck, CheckCircle, Eye } from "lucide-react";
 import Button from "@/components/Button/Button";
+import { FILES } from "@/lib/validation/limits";
 import type { DocumentType, UserDocument } from "@/app/types/api";
 
 interface DocumentUploadProps {
@@ -23,13 +24,23 @@ export default function DocumentUpload({
   isUploading,
 }: DocumentUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState("");
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file) {
-      onUpload(type, file);
-      e.target.value = "";
+    e.target.value = "";
+    if (!file) return;
+    const ext = "." + (file.name.split(".").pop() ?? "").toLowerCase();
+    if (!(FILES.documentExtensions as readonly string[]).includes(ext)) {
+      setError("Allowed types: PDF, JPG, PNG.");
+      return;
     }
+    if (file.size > FILES.maxSizeBytes) {
+      setError(`File must be under ${FILES.maxSizeLabel}.`);
+      return;
+    }
+    setError("");
+    onUpload(type, file);
   }
 
   const formattedDate = existingDocument
@@ -132,6 +143,7 @@ export default function DocumentUpload({
         onChange={handleFileChange}
         disabled={isUploading}
       />
+      {error && <p className="text-body-sm text-error mt-2">{error}</p>}
     </div>
   );
 }

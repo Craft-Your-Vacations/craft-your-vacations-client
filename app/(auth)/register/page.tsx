@@ -11,7 +11,9 @@ import Button from "@/components/Button/Button";
 import FormField from "@/components/FormField/FormField";
 import AuthCard from "@/components/AuthCard/AuthCard";
 import { useRegister } from "@/hooks/useRegister";
-import { isValidEmail } from "@/lib/utils";
+import { registerSchema } from "@/lib/validation/schemas";
+import { getFieldErrors } from "@/lib/validation/getFieldErrors";
+import { LIMITS } from "@/lib/validation/limits";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -22,18 +24,21 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [signInError, setSignInError] = useState("");
-  const [validationError, setValidationError] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
     setSignInError("");
-    setValidationError("");
 
-    if (!isValidEmail(email.trim())) {
-      setValidationError("Please enter a valid email address.");
-      return;
-    }
-    if (password !== confirmPassword) return;
+    const fieldErrors = getFieldErrors(registerSchema, {
+      firstName,
+      lastName,
+      email,
+      password,
+      confirmPassword,
+    });
+    setErrors(fieldErrors);
+    if (Object.keys(fieldErrors).length > 0) return;
 
     register(
       { firstName, lastName, email, password },
@@ -87,6 +92,8 @@ export default function RegisterPage() {
               onChange={(e) => setFirstName(e.target.value)}
               required
               autoComplete="given-name"
+              maxLength={LIMITS.nameMax}
+              errorMessage={errors.firstName}
             />
             <FormField
               id="lastName"
@@ -96,6 +103,8 @@ export default function RegisterPage() {
               onChange={(e) => setLastName(e.target.value)}
               required
               autoComplete="family-name"
+              maxLength={LIMITS.nameMax}
+              errorMessage={errors.lastName}
             />
           </div>
           <FormField
@@ -107,6 +116,8 @@ export default function RegisterPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
+            maxLength={LIMITS.emailMax}
+            errorMessage={errors.email}
           />
           <FormField
             id="reg-password"
@@ -117,6 +128,8 @@ export default function RegisterPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
             autoComplete="new-password"
+            maxLength={LIMITS.passwordMax}
+            errorMessage={errors.password}
           />
           <FormField
             id="confirmPassword"
@@ -127,16 +140,18 @@ export default function RegisterPage() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
             autoComplete="new-password"
+            maxLength={LIMITS.passwordMax}
             errorMessage={
-              confirmPassword && password !== confirmPassword
+              errors.confirmPassword ??
+              (confirmPassword && password !== confirmPassword
                 ? "Passwords do not match"
-                : undefined
+                : undefined)
             }
           />
 
-          {(validationError || error || signInError) && (
+          {(error || signInError) && (
             <p className="text-body-sm text-error">
-              {validationError || error?.message || signInError}
+              {error?.message || signInError}
             </p>
           )}
 

@@ -12,6 +12,9 @@ import OtpInput from "@/components/OtpInput/OtpInput";
 import AuthCard from "@/components/AuthCard/AuthCard";
 import { useStartReset } from "@/hooks/useStartReset";
 import { useResetPassword } from "@/hooks/useResetPassword";
+import { startResetSchema, resetPasswordSchema } from "@/lib/validation/schemas";
+import { getFieldErrors } from "@/lib/validation/getFieldErrors";
+import { LIMITS } from "@/lib/validation/limits";
 
 // ─── Progress dots ──────────────────────────────────────────────────────────
 
@@ -50,10 +53,16 @@ function IdentifierStep({
   onSuccess: (identifier: string) => void;
 }) {
   const [username, setUsername] = useState("");
+  const [validationError, setValidationError] = useState("");
   const { mutate: startReset, isPending, error } = useStartReset();
 
   const handleSend = () => {
-    if (!username.trim()) return;
+    const errs = getFieldErrors(startResetSchema, { identifier: username.trim() });
+    if (errs.identifier) {
+      setValidationError(errs.identifier);
+      return;
+    }
+    setValidationError("");
     startReset(
       { identifier: username.trim() },
       { onSuccess: () => onSuccess(username.trim()) },
@@ -73,9 +82,11 @@ function IdentifierStep({
         label="Email or phone number"
         placeholder="you@example.com or +1 234 567 8900"
         value={username}
-        onChange={(e) => setUsername(e.target.value)}
+        onChange={(e) => { setUsername(e.target.value); setValidationError(""); }}
         required
         autoComplete="email"
+        maxLength={LIMITS.emailMax}
+        errorMessage={validationError}
       />
       {error && <p className="text-body-sm text-error">{error.message}</p>}
       <Button
@@ -99,6 +110,7 @@ function ResetStep({ identifier }: { identifier: string }) {
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const passwordMismatch =
     confirmPassword.length > 0 && newPassword !== confirmPassword;
@@ -108,6 +120,14 @@ function ResetStep({ identifier }: { identifier: string }) {
     newPassword === confirmPassword;
 
   const handleReset = () => {
+    const errs = getFieldErrors(resetPasswordSchema, {
+      identifier,
+      otp,
+      newPassword,
+      confirmPassword,
+    });
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return;
     resetPassword(
       { identifier: identifier, otp, newPassword },
       { onSuccess: () => router.replace("/login?reset=success") },
@@ -135,6 +155,8 @@ function ResetStep({ identifier }: { identifier: string }) {
         onChange={(e) => setNewPassword(e.target.value)}
         required
         autoComplete="new-password"
+        maxLength={LIMITS.passwordMax}
+        errorMessage={errors.newPassword}
       />
       <FormField
         id="confirm-password"
@@ -145,7 +167,11 @@ function ResetStep({ identifier }: { identifier: string }) {
         onChange={(e) => setConfirmPassword(e.target.value)}
         required
         autoComplete="new-password"
-        errorMessage={passwordMismatch ? "Passwords do not match" : undefined}
+        maxLength={LIMITS.passwordMax}
+        errorMessage={
+          errors.confirmPassword ??
+          (passwordMismatch ? "Passwords do not match" : undefined)
+        }
       />
 
       {error && (

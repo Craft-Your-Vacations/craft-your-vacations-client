@@ -21,6 +21,9 @@ import { useProfile } from "@/hooks/useProfile";
 import { useSendEmailVerification } from "@/hooks/useSendEmailVerification";
 import { useSendChangeEmail } from "@/hooks/useSendChangeEmail";
 import { isValidPhone } from "@/lib/utils";
+import { profileSchema } from "@/lib/validation/schemas";
+import { getFieldErrors } from "@/lib/validation/getFieldErrors";
+import { LIMITS } from "@/lib/validation/limits";
 
 // ─── Progress indicator ────────────────────────────────────────────────────────
 
@@ -298,8 +301,17 @@ function ProfileStep() {
   const [nationality, setNationality] = useState("");
   const [countryOfResidence, setCountryOfResidence] = useState("");
   const [profession, setProfession] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleComplete = () => {
+    const fieldErrors = getFieldErrors(profileSchema, {
+      dateOfBirth,
+      nationality,
+      countryOfResidence,
+      profession,
+    });
+    setErrors(fieldErrors);
+    if (Object.keys(fieldErrors).length > 0) return;
     updateProfile(
       { dateOfBirth, nationality, countryOfResidence, profession },
       {
@@ -333,6 +345,7 @@ function ProfileStep() {
           type="date"
           value={dateOfBirth}
           onChange={(e) => setDateOfBirth(e.target.value)}
+          errorMessage={errors.dateOfBirth}
         />
         <FormField
           id="nationality"
@@ -340,6 +353,8 @@ function ProfileStep() {
           placeholder="e.g. American"
           value={nationality}
           onChange={(e) => setNationality(e.target.value)}
+          maxLength={LIMITS.nationalityMax}
+          errorMessage={errors.nationality}
         />
         <FormField
           id="countryOfResidence"
@@ -347,6 +362,8 @@ function ProfileStep() {
           placeholder="e.g. India"
           value={countryOfResidence}
           onChange={(e) => setCountryOfResidence(e.target.value)}
+          maxLength={LIMITS.nationalityMax}
+          errorMessage={errors.countryOfResidence}
         />
         <FormField
           id="profession"
@@ -354,6 +371,8 @@ function ProfileStep() {
           placeholder="e.g. Software Engineer"
           value={profession}
           onChange={(e) => setProfession(e.target.value)}
+          maxLength={LIMITS.professionMax}
+          errorMessage={errors.profession}
         />
       </div>
 
