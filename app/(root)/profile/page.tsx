@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSignOut } from "@/hooks/useSignOut";
 import { useQueryClient } from "@tanstack/react-query";
@@ -66,14 +66,18 @@ export default function ProfilePage() {
   const { mutate: sendOtp, isPending: isSendingPhoneOtp, error: sendPhoneError, reset: resetSendOtp } = useSendOtp();
   const { mutate: verifyOtp, isPending: isVerifyingPhone, error: verifyPhoneError, reset: resetVerifyOtp } = useVerifyOtp();
 
-  useEffect(() => {
-    if (!profile) return;
+  // Seed the editable fields once when the profile first loads. Render-time
+  // reconciliation (not an effect) avoids a cascading render and won't clobber
+  // in-progress edits on a background refetch.
+  const [profileSeeded, setProfileSeeded] = useState(false);
+  if (profile && !profileSeeded) {
+    setProfileSeeded(true);
     setName(profile.name ?? "");
     setDateOfBirth(profile.dateOfBirth ?? "");
     setNationality(profile.nationality ?? "");
     setCountryOfResidence(profile.countryOfResidence ?? "");
     setProfession(profile.profession ?? "");
-  }, [profile]);
+  }
 
   const initial = {
     name: profile?.name ?? "",

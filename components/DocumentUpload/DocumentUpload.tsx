@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Upload, FileCheck, CheckCircle, Eye } from "lucide-react";
+import { formatDate } from "@/lib/constants";
 import Button from "@/components/Button/Button";
 import { FILES } from "@/lib/validation/limits";
 import type { DocumentType, UserDocument } from "@/app/types/api";
@@ -44,13 +45,7 @@ export default function DocumentUpload({
   }
 
   const formattedDate = existingDocument
-    ? new Date(
-        existingDocument.updatedAt ?? existingDocument.uploadedAt
-      ).toLocaleDateString("en-US", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      })
+    ? formatDate(existingDocument.updatedAt ?? existingDocument.uploadedAt)
     : null;
 
   return (

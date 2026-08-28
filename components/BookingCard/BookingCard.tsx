@@ -4,7 +4,9 @@ import Link from "next/link";
 import { CalendarDays, Users, FileText, Clock, CheckCircle2 } from "lucide-react";
 import type { Booking } from "@/app/types/api";
 import Button from "@/components/Button/Button";
-import { formatMonth, bookingStatusClasses, bookingStatusLabels } from "@/lib/constants";
+import BookingStatusBadge from "@/components/BookingStatusBadge/BookingStatusBadge";
+import Stat from "@/components/Stat/Stat";
+import { formatMonth, formatDate } from "@/lib/constants";
 
 interface BookingCardProps {
   booking: Booking;
@@ -12,58 +14,31 @@ interface BookingCardProps {
 }
 
 export default function BookingCard({ booking, onReviewClick }: BookingCardProps) {
-  const statusClass = bookingStatusClasses[booking.status];
-  const statusLabel = bookingStatusLabels[booking.status];
-
   return (
     <Link href={`/bookings/${booking.id}`} className="block glass rounded-2xl p-6 flex flex-col gap-4 hover:border-primary/30 border border-transparent transition-colors">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <h2 className="text-headline-sm text-text">{booking.package.title}</h2>
-        <span
-          className={`shrink-0 px-3 py-1 rounded-full text-label-sm font-medium ${statusClass}`}
-        >
-          {statusLabel}
-        </span>
+        <BookingStatusBadge status={booking.status} className="shrink-0" />
       </div>
 
       {/* Detail grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div className="flex items-center gap-2">
-          <Users className="w-4 h-4 text-primary/70 shrink-0" />
-          <div>
-            <p className="text-label-sm text-text-muted uppercase tracking-widest">
-              Travelers
-            </p>
-            <p className="text-body-sm text-text">{booking.travelersCount}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <CalendarDays className="w-4 h-4 text-primary/70 shrink-0" />
-          <div>
-            <p className="text-label-sm text-text-muted uppercase tracking-widest">
-              Travel Date
-            </p>
-            <p className="text-body-sm text-text">
-              {formatMonth(booking.travelDate)}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-primary/70 shrink-0" />
-          <div>
-            <p className="text-label-sm text-text-muted uppercase tracking-widest">
-              Submitted
-            </p>
-            <p className="text-body-sm text-text">
-              {new Date(booking.createdAt).toLocaleDateString("en-US", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })}
-            </p>
-          </div>
-        </div>
+        <Stat
+          icon={<Users className="w-4 h-4" />}
+          label="Travelers"
+          value={booking.travelersCount}
+        />
+        <Stat
+          icon={<CalendarDays className="w-4 h-4" />}
+          label="Travel Date"
+          value={formatMonth(booking.travelDate)}
+        />
+        <Stat
+          icon={<Clock className="w-4 h-4" />}
+          label="Submitted"
+          value={formatDate(booking.createdAt)}
+        />
       </div>
 
       {/* Notes */}

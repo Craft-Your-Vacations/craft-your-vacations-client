@@ -10,40 +10,15 @@ import Button from "@/components/Button/Button";
 import FormField from "@/components/FormField/FormField";
 import OtpInput from "@/components/OtpInput/OtpInput";
 import AuthCard from "@/components/AuthCard/AuthCard";
+import ProgressDots from "@/components/ProgressDots/ProgressDots";
 import { useStartReset } from "@/hooks/useStartReset";
 import { useResetPassword } from "@/hooks/useResetPassword";
 import { startResetSchema, resetPasswordSchema } from "@/lib/validation/schemas";
 import { getFieldErrors } from "@/lib/validation/getFieldErrors";
 import { LIMITS } from "@/lib/validation/limits";
 
-// ─── Progress dots ──────────────────────────────────────────────────────────
-
 type Step = "identifier" | "reset";
 const STEPS: Step[] = ["identifier", "reset"];
-
-function ProgressDots({ current }: { current: Step }) {
-  const currentIndex = STEPS.indexOf(current);
-  return (
-    <div className="flex items-center gap-3">
-      {STEPS.map((step, i) => (
-        <div key={step} className="flex items-center gap-3">
-          <div
-            className={`w-2.5 h-2.5 rounded-full transition-colors duration-300 ${
-              i <= currentIndex ? "bg-primary-app" : "bg-surface-highest"
-            }`}
-          />
-          {i < STEPS.length - 1 && (
-            <div
-              className={`w-8 h-px transition-colors duration-300 ${
-                i < currentIndex ? "bg-primary-app" : "bg-surface-highest"
-              }`}
-            />
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
 
 // ─── Step 1: Identifier ─────────────────────────────────────────────────────
 
@@ -211,7 +186,7 @@ export default function ResetPasswordPage() {
           <p className="text-label-md text-text-subtle">
             Step {STEPS.indexOf(step) + 1} of {STEPS.length}
           </p>
-          <ProgressDots current={step} />
+          <ProgressDots steps={STEPS} current={step} />
         </div>
 
         {step === "identifier" && (

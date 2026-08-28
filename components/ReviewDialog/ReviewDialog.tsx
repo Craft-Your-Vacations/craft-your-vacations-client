@@ -1,10 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { Star, MapPin, X } from "lucide-react";
+import { MapPin, X } from "lucide-react";
 import { formatMonth } from "@/lib/constants";
 import Dialog from "@/components/Dialog/Dialog";
 import Button from "@/components/Button/Button";
+import Chip from "@/components/Chip/Chip";
+import Avatar from "@/components/Avatar/Avatar";
+import StarRating from "@/components/StarRating/StarRating";
 
 interface ReviewDialogProps {
   isOpen: boolean;
@@ -16,15 +19,6 @@ interface ReviewDialogProps {
   packageTitle: string;
   travelDate: string;
   imagePaths: string[];
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
 }
 
 export default function ReviewDialog({
@@ -49,11 +43,7 @@ export default function ReviewDialog({
       {/* Header — author + close */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">
-            <span className="text-label-sm font-bold text-primary">
-              {getInitials(authorName)}
-            </span>
-          </div>
+          <Avatar name={authorName} variant="onSurface" />
           <div className="min-w-0">
             <p className="text-body-md font-semibold text-text">{authorName}</p>
             {authorProfession && (
@@ -73,14 +63,7 @@ export default function ReviewDialog({
       </div>
 
       {/* Stars */}
-      <div className="flex items-center gap-0.5">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Star
-            key={i}
-            className={`w-4 h-4 ${i < rating ? "fill-primary text-primary" : "text-text-subtle"}`}
-          />
-        ))}
-      </div>
+      <StarRating rating={rating} />
 
       {/* Images — horizontal scroll strip */}
       {imagePaths.length > 0 && (
@@ -105,12 +88,13 @@ export default function ReviewDialog({
       </p>
 
       {/* Location pill */}
-      <div className="flex items-center gap-1.5 bg-primary/10 rounded-full px-3 py-1.5 self-start">
-        <MapPin className="w-3 h-3 text-primary shrink-0" />
-        <span className="text-label-sm text-primary truncate">
-          {packageTitle} &middot; {formatMonth(travelDate)}
-        </span>
-      </div>
+      <Chip
+        variant="onSurface"
+        icon={<MapPin className="w-3 h-3" />}
+        className="self-start"
+      >
+        {packageTitle} &middot; {formatMonth(travelDate)}
+      </Chip>
     </Dialog>
   );
 }

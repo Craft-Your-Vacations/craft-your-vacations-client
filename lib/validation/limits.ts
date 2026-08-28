@@ -67,4 +67,4 @@ export const PATTERNS = {
   password: /^(?=.*[A-Za-z])(?=.*\d).+$/,
 } as const;
 
-export const BOOKING_STATUSES = ["Pending", "Confirmed", "Completed", "Cancelled"] as const;
+export const BOOKING_STATUSES = ["pending", "confirmed", "completed", "cancelled"] as const;

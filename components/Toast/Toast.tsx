@@ -50,7 +50,7 @@ export default function Toast({ toast, onDismiss }: ToastProps) {
         <button
           onClick={dismiss}
           className={cn(
-            "shrink-0 p-1 rounded-md transition-colors cursor-pointer",
+            "shrink-0 p-1 rounded-full transition-colors cursor-pointer",
             isSuccess
               ? "hover:bg-success/15 text-success"
               : "hover:bg-error/15 text-error",

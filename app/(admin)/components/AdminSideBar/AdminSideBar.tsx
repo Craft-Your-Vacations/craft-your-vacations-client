@@ -69,7 +69,7 @@ export function AdminSidebar() {
             <Link
               key={href}
               href={href}
-              className={`px-3 py-2 rounded-lg text-body-sm transition-colors ${
+              className={`px-3 py-2 rounded-xl text-body-sm transition-colors ${
                 isActive
                   ? "bg-primary text-white font-medium"
                   : "text-text-muted hover:bg-surface-high hover:text-text"

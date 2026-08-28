@@ -1,5 +1,13 @@
 import React from "react";
+import { Globe, Moon, Rss } from "lucide-react";
 import type { NavLink, FooterAction } from "@/app/types/component";
+
+// Map the action's icon key → a lucide icon (the project's icon system).
+const ACTION_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  language: Globe,
+  dark_mode: Moon,
+  rss_feed: Rss,
+};
 
 interface FooterProps {
   logo?: React.ReactNode;
@@ -56,7 +64,7 @@ export function Footer({
 }: FooterProps) {
   const year = new Date().getFullYear();
   const copyright =
-    copyrightText ?? `© ${year} CraftVacations. All rights reserved.`;
+    copyrightText ?? `© ${year} CraftYourVacations. All rights reserved.`;
 
   return (
     <footer className={`bg-surface-low border-t border-outline ${className}`}>
@@ -66,24 +74,25 @@ export function Footer({
           <div className="flex flex-col gap-4">
             {logo ?? (
               <span className="text-headline-sm text-text">
-                <span className="text-primary">Craft</span>Vacations
+                <span className="text-primary">Craft</span>YourVacations
               </span>
             )}
             <p className="text-body-sm text-text-muted">{tagline}</p>
             <div className="flex items-center gap-2 mt-2">
-              {actions.map((action) => (
-                <button
-                  key={action.label}
-                  type="button"
-                  onClick={action.onClick}
-                  aria-label={action.label}
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-high hover:bg-surface-highest text-text-muted hover:text-primary transition-colors"
-                >
-                  <span className="material-symbols-outlined text-[18px]">
-                    {action.icon}
-                  </span>
-                </button>
-              ))}
+              {actions.map((action) => {
+                const Icon = ACTION_ICONS[action.icon];
+                return (
+                  <button
+                    key={action.label}
+                    type="button"
+                    onClick={action.onClick}
+                    aria-label={action.label}
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-high hover:bg-surface-highest text-text-muted hover:text-primary transition-colors"
+                  >
+                    {Icon && <Icon className="w-5 h-5" />}
+                  </button>
+                );
+              })}
             </div>
           </div>
 

@@ -10,7 +10,8 @@ import EmptyState from "@/components/EmptyState/EmptyState";
 import { CalendarDays, Users, ChevronRight } from "lucide-react";
 import AdminPageHeader from "@/app/(admin)/components/AdminPageHeader";
 import AdminFilterTabs from "@/app/(admin)/components/AdminFilterTabs";
-import BookingStatusBadge, { formatMonth } from "@/app/(admin)/components/BookingStatusBadge";
+import BookingStatusBadge from "@/components/BookingStatusBadge/BookingStatusBadge";
+import { formatMonth } from "@/lib/constants";
 import Pagination from "@/components/Pagination/Pagination";
 import { BOOKING_STATUSES } from "@/lib/constants";
 

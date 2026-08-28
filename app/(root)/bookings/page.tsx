@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useMyBookings } from "@/hooks/useMyBookings";
 import { useSubmitReview } from "@/hooks/useSubmitReview";
-import { reviewsApi } from "@/lib/endpoints";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
 import Button from "@/components/Button/Button";
@@ -37,22 +36,13 @@ export default function BookingsPage() {
     setReviewingBooking(null);
   }
 
-  async function handleReviewSubmit({ rating, quote, files }: ReviewSubmitData) {
+  function handleReviewSubmit({ rating, quote, files }: ReviewSubmitData) {
     if (!reviewingBooking) return;
 
     mutate(
-      { bookingId: reviewingBooking.id, rating, quote },
+      { bookingId: reviewingBooking.id, rating, quote, files },
       {
-        onSuccess: async (review) => {
-          if (files.length > 0) {
-            const formData = new FormData();
-            files.forEach((f) => formData.append("files", f));
-            try {
-              await reviewsApi.uploadImages(review.id, formData);
-            } catch {
-              // Images failed but review was saved — show success anyway
-            }
-          }
+        onSuccess: () => {
           setReviewingBooking(null);
           setReviewSuccessOpen(true);
         },

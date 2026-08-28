@@ -41,6 +41,15 @@ export function formatMonth(value: string, short = false): string {
   return `${names[parseInt(parts[1], 10) - 1]} ${parts[0]}`;
 }
 
+// Formats an ISO timestamp/date string as a short date, e.g. "7 Aug 2026".
+export function formatDate(value: string): string {
+  return new Date(value).toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 export const DOCUMENT_OPTIONS: { value: DocumentType; label: string }[] = [
   { value: "passport", label: "Passport" },
   { value: "pan", label: "PAN Card" },

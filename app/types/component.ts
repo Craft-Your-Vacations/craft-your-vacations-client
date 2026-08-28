@@ -29,6 +29,10 @@ export interface DestinationCardData {
   title: string;
   content: string;
   href?: string;
+  /** Lowest package price for this destination (shown as a "From ₹…" badge). */
+  minPackagePrice?: number;
+  /** Marks the destination with a "Featured" accent badge. */
+  isFeatured?: boolean;
 }
 
 export interface PackageFeature {

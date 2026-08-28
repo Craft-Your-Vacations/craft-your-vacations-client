@@ -13,6 +13,7 @@ import { useOnboardingStore } from "@/stores/useOnboardingStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
 import AuthCard from "@/components/AuthCard/AuthCard";
+import ProgressDots from "@/components/ProgressDots/ProgressDots";
 import ChangeEmailDialog from "@/components/ChangeEmailDialog/ChangeEmailDialog";
 import { useSendOtp } from "@/hooks/useSendOtp";
 import { useVerifyOtp } from "@/hooks/useVerifyOtp";
@@ -25,34 +26,8 @@ import { profileSchema } from "@/lib/validation/schemas";
 import { getFieldErrors } from "@/lib/validation/getFieldErrors";
 import { LIMITS } from "@/lib/validation/limits";
 
-// ─── Progress indicator ────────────────────────────────────────────────────────
-
 const STEPS = ["phone", "otp", "email", "profile"] as const;
 const STEP_LABELS = ["Phone", "Verify", "Email", "Profile"];
-
-function ProgressDots({ current }: { current: (typeof STEPS)[number] }) {
-  const currentIndex = STEPS.indexOf(current);
-  return (
-    <div className="flex items-center gap-3">
-      {STEPS.map((step, i) => (
-        <div key={step} className="flex items-center gap-3">
-          <div
-            className={`w-2.5 h-2.5 rounded-full transition-colors duration-300 ${
-              i <= currentIndex ? "bg-primary-app" : "bg-surface-highest"
-            }`}
-          />
-          {i < STEPS.length - 1 && (
-            <div
-              className={`w-8 h-px transition-colors duration-300 ${
-                i < currentIndex ? "bg-primary-app" : "bg-surface-highest"
-              }`}
-            />
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
 
 // ─── Step 1: Phone ─────────────────────────────────────────────────────────────
 
@@ -417,7 +392,7 @@ export default function OnboardingPage() {
             Step {STEPS.indexOf(step) + 1} of {STEPS.length} —{" "}
             {STEP_LABELS[STEPS.indexOf(step)]}
           </p>
-          <ProgressDots current={step} />
+          <ProgressDots steps={STEPS} current={step} />
         </div>
 
         {step === "phone" && <PhoneStep />}

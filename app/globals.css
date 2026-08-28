@@ -46,7 +46,7 @@
   --glass-bg: rgba(236, 238, 240, 0.7);
   --glass-blur: 20px;
 
-  --font-display: var(--font-exo2), sans-serif;
+  --font-display: var(--font-bricolage), var(--font-exo2), sans-serif;
   --font-body: var(--font-exo2), sans-serif;
 
   /* --- Hero image overlays (same for both themes — always on top of photos) --- */
@@ -101,7 +101,7 @@
   --glass-blur: 16px;
 
   /* --- Typography Scale --- */
-  --font-display: var(--font-exo2), sans-serif;
+  --font-display: var(--font-bricolage), var(--font-exo2), sans-serif;
   --font-body: var(--font-exo2), sans-serif;
 
   /* --- Spacing rhythm --- */
@@ -172,11 +172,38 @@
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
   }
+
+  /* Reduced-motion backstop — CSS safety net alongside Framer's
+     useReducedMotion(). Neutralizes decorative transitions/animations
+     and smooth scrolling for users who request reduced motion. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 /* --------------------------------------------------------------------------
    4. TYPOGRAPHY SCALE — utility classes for the design system scale
    -------------------------------------------------------------------------- */
+/* Oversized poster headline for immersive hero — fluidly scales with viewport.
+   Tuned for a single centered statement word spanning most of the width. */
+@utility text-display-hero {
+  font-size: clamp(2.5rem, 9vw, 6.5rem);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  font-family: var(--font-display);
+}
+
 @utility text-display-xxl {
   font-size: 6rem; /* 96px */
   font-weight: 800;
@@ -291,6 +318,20 @@
     0 0 24px color-mix(in srgb, var(--color-primary) 25%, transparent);
 }
 
+/* Hero accent outline — theme-independent. The hero glass is always dark, so
+   this hardcodes the dark look (fixed cyan stroke + glow via --color-primary-app,
+   which is the same in both themes, plus a dark fill) so the accent word renders
+   identically in light and dark mode. */
+@utility text-outline-hero {
+  color: #14161c;
+  -webkit-text-stroke: 2px var(--color-primary-app);
+  paint-order: stroke fill;
+  text-shadow:
+    0 0 12px color-mix(in srgb, var(--color-primary-app) 55%, transparent),
+    0 0 26px color-mix(in srgb, var(--color-primary-app) 28%, transparent);
+}
+
+
 /* Glassmorphism — for navbar, floating cards */
 @utility glass {
   background: var(--glass-bg);
@@ -326,6 +367,47 @@
 /* Tight line-height for large display headings on hero images */
 @utility leading-hero {
   line-height: 0.9;
+}
+
+/* Gradient-filled display text — signature cyan accent for the hero word */
+@utility text-gradient-primary {
+  background-image: linear-gradient(
+    180deg,
+    #a6e2fb 0%,
+    var(--color-primary-app) 55%,
+    var(--color-gradient-end) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(
+    0 2px 20px color-mix(in srgb, var(--color-primary-app) 45%, transparent)
+  );
+}
+
+/* Soft primary glow behind the hero headline — adds depth without clutter */
+@utility hero-glow {
+  background: radial-gradient(
+    ellipse 55% 45% at 50% 40%,
+    color-mix(in srgb, var(--color-primary-app) 20%, transparent),
+    transparent 70%
+  );
+}
+
+/* Cinematic vignette — darkens the edges to focus the centered content */
+@utility hero-vignette {
+  background: radial-gradient(
+    ellipse 95% 85% at 50% 45%,
+    transparent 42%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+}
+
+/* Fine film grain over the hero imagery for a tactile, cinematic finish */
+@utility hero-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.14;
+  mix-blend-mode: soft-light;
 }
 
 /* Hide scrollbar but allow scrolling */
@@ -401,4 +483,72 @@
 
 @utility animate-toast-progress {
   animation: toast-progress linear forwards;
+}
+
+/* ─── Hero entrance (CSS-driven so above-the-fold content never waits on JS) ─── */
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* `both` keeps the element at opacity:0 during its stagger delay, then holds the
+   final visible state. The prefers-reduced-motion backstop collapses the
+   duration so content simply appears. */
+@utility animate-hero-rise {
+  animation: hero-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Content swap — hero destination cards slide in from the right + fade as the
+   row auto-advances, so each destination rolls into the enlarged lead slot. */
+@keyframes card-swap {
+  from {
+    opacity: 0;
+    transform: translateX(14px) scale(1.02);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@utility animate-card-swap {
+  animation: card-swap 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+
+@keyframes hero-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+@utility animate-hero-bob {
+  animation: hero-bob 1.8s ease-in-out infinite;
+}
+
+/* ─── Ken Burns — slow zoom + drift to bring a still hero photo to life ─── */
+/* transform-only (GPU-composited): no repaint, no layout, no extra bytes.
+   Disabled automatically by the prefers-reduced-motion backstop above. */
+@keyframes ken-burns {
+  from {
+    transform: scale(1.05) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.2) translate3d(-2.2%, -1.8%, 0);
+  }
+}
+
+@utility animate-ken-burns {
+  animation: ken-burns 15s ease-in-out infinite alternate;
+  will-change: transform;
 }

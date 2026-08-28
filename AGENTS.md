@@ -26,7 +26,20 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Design System
 
-The system name is "The Nocturnal Voyager" (tokens live in `globals.css`). Keep these rules — they exist because the component layer had drifted from the tokens.
+The system name is "The Nocturnal Voyager" (tokens live in `globals.css`; the written spec is `DESIGN.md` + `.impeccable/design.json`). Keep these rules — they exist because the component layer had drifted from the tokens.
+
+### First principle — reuse, extend, never reinvent (READ BEFORE BUILDING UI)
+
+This is the rule the whole design system depends on. Follow it in order:
+
+1. **Use the existing shared component.** Before writing any UI, check `components/` (and the table below) for something that already does the job. There is almost always one — use it. Never hand-roll markup that a shared component already provides (a styled `<button>`/`<span>` instead of `Button`, a raw `<input>` instead of `FormField`, custom overlay instead of `Dialog`, an inline pill instead of `Chip`, etc.).
+2. **If the design genuinely needs something the component can't do, extend the component** — add a `variant` / prop and restructure the primitive so the new need is served *from the one source of truth*. Then consume it. Do **not** fork a bespoke copy in the consuming file. A "we can't use `Button` here because X" situation is a signal to make `Button` support X.
+3. **Only change the shared component when the change is genuinely needed** — prefer an existing variant first; add a new one only when none fits. Reverting a needless variant is better than shipping it.
+4. **When the same block appears in 2+ places, extract it** into `components/<Name>/<Name>.tsx` (or a `lib/` helper for pure logic) and replace every copy. Duplication is drift waiting to happen.
+
+Exceptions that are *not* violations: a CTA inside a whole-card `<Link>` uses `Button render="span"` (an interactive element inside an `<a>` is invalid HTML); `<input type="file">` behind a styled `<label>`; and genuinely bespoke widgets (e.g. the interactive star-rating picker in `ReviewModal`). Don't force dissimilar blocks into one rigid component — extract only what is actually the same.
+
+Everything below (radius, spacing, shadow, color, icons) is the token layer this principle rests on: reuse the component; when you must touch styling, use the tokens, never raw values.
 
 ### Corner radius — role-based, proportional (control < card < modal)
 | Role | Class | Applies to |
@@ -57,9 +70,20 @@ Size material/lucide icons with the nearest standard step — `text-sm`(14) / `t
 | Dropdown | `SelectField` · Multiline | `TextAreaField` · Checkbox | `Checkbox` |
 | 6-digit OTP entry | `OtpInput` · Pill tab switcher | `SegmentedControl` |
 | Brand icon badge beside a label | `IconBadge` · Bordered key/value chip | `InfoChip` |
+| Location / meta pill (city, tag) with optional leading icon | `Chip` (`variant`: onImage for pills over photography, onSurface for pills on cards) |
+| Author / reviewer avatar (photo, else initials) | `Avatar` (`variant`: onImage, onSurface) |
+| Read-only star rating row | `StarRating` (interactive picking stays bespoke in `ReviewModal`) |
+| `icon + label + value` stat (booking/package summaries) | `Stat` |
+| Booking-status pill | `BookingStatusBadge` (labels + colors from `lib/constants`; admin + customer) |
+| Multi-step progress dots (auth flows) | `ProgressDots` (`steps`, `current`) |
+| Confirm / status / success / error modal | `ConfirmDialog` · `ModalSuccess` · `ModalError` |
 | Any modal | `Dialog` base → a dedicated `<Name>Dialog` (never inline overlay markup) |
 
+Shared pure helpers (don't re-implement inline): `formatMonth` / `formatDate` (dates) and `emptyDay` / `emptyActivity` (itinerary factories) live in `lib/constants.ts` and `lib/itinerary.ts`.
+
 `FormField`/`SelectField`/`TextAreaField` take an **optional** `label` — omit it for compact/inline fields (search boxes, table-row editors) instead of hand-rolling a raw `<input>`/`<select>`.
+
+When you add a new shared component or lib helper, add a row here so the next contributor reuses it instead of rebuilding it.
 
 ## Mobile-first & Responsive Design
 - **Always design for mobile first.** Base styles for mobile, `md:` overrides for desktop.
@@ -104,7 +128,24 @@ Pass mutations down as `onAction(value: string, onSuccess: () => void)` — the 
 
 ### Close handler convention
 - **Page close handler:** `setOpen(false)` + `resetMutation()` only — never reset component-internal state from the page.
-- **Component:** `useEffect(() => { if (!isOpen) resetLocalState(); }, [isOpen])` — the component is responsible for cleaning up its own state when closed.
+- **Component:** reset its own state on the `isOpen → false` transition via **render-time reconciliation**, not an effect (a synchronous `setState` in an effect trips `react-hooks/set-state-in-effect`):
+  ```tsx
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (wasOpen !== isOpen) {
+    setWasOpen(isOpen);
+    if (!isOpen) resetLocalState();
+  }
+  ```
+
+### Seeding editable state from fetched data
+Don't mirror query data into local editable state with `useEffect(… , [entity])` (trips `react-hooks/set-state-in-effect` and can clobber edits on refetch). Seed during render, keyed on the entity id:
+```tsx
+const [seededId, setSeededId] = useState<number | null>(null);
+if (entity && entity.id !== seededId) {
+  setSeededId(entity.id);
+  setFieldA(entity.a); // …seed each editable field
+}
+```
 
 ## User Feedback
 

@@ -42,6 +42,8 @@ export default function AutoSlider({
       className={`${className}`}
       onMouseEnter={() => { isPaused.current = true; }}
       onMouseLeave={() => { isPaused.current = false; }}
+      onFocus={() => { isPaused.current = true; }}
+      onBlur={() => { isPaused.current = false; }}
     >
       {/* Track row — relative so chevrons can anchor to its edges */}
       <div className="relative">

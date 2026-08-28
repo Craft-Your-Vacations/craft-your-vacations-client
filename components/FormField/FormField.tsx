@@ -45,6 +45,11 @@ export function FormField({
   icon,
 }: FormFieldProps) {
   const hasError = Boolean(errorMessage);
+  const describedBy = hasError
+    ? `${id}-error`
+    : helperText
+      ? `${id}-helper`
+      : undefined;
 
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
@@ -79,6 +84,8 @@ export function FormField({
           minLength={minLength}
           pattern={pattern}
           inputMode={inputMode}
+          aria-invalid={hasError || undefined}
+          aria-describedby={describedBy}
           className={`w-full ${icon ? "pl-10 pr-4" : "px-4"} py-3 rounded-xl text-body-md text-text placeholder:text-text-subtle bg-surface-highest border border-outline outline-none transition-all
            focus:border-transparent focus:ring-2 focus:ring-primary/50
            disabled:opacity-50 disabled:cursor-not-allowed
@@ -86,9 +93,15 @@ export function FormField({
          `}
         />
       </div>
-      {hasError && <p className="text-body-sm text-error">{errorMessage}</p>}
+      {hasError && (
+        <p id={`${id}-error`} className="text-body-sm text-error">
+          {errorMessage}
+        </p>
+      )}
       {!hasError && helperText && (
-        <p className="text-body-sm text-text-subtle">{helperText}</p>
+        <p id={`${id}-helper`} className="text-body-sm text-text-subtle">
+          {helperText}
+        </p>
       )}
     </div>
   );

@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CraftYourVacations — Web Client
 
-## Getting Started
+Frontend for CraftYourVacations, a bespoke travel-planning platform (browse curated destinations, craft a day-by-day itinerary, book, upload documents, review). Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · Supabase auth · TanStack Query.
 
-First, run the development server:
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). The .NET API is expected at `localhost:5025` (see `lib/bff.ts`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Useful checks before committing:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npx tsc --noEmit     # types
+npx eslint .         # lint (design-drift + react-hooks rules included)
+```
 
-## Learn More
+## Design system & component discipline (read this first)
 
-To learn more about Next.js, take a look at the following resources:
+This project follows a documented design system — **"The Nocturnal Voyager"** — and a strict component-reuse discipline. The single most important rule when building or changing any UI:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+> **Reuse, extend, never reinvent.**
+>
+> 1. **Use the existing shared component.** Check `components/` first — there is almost always one that fits. Never hand-roll markup a shared component already provides (a styled `<button>` instead of `Button`, a raw `<input>` instead of `FormField`, a custom overlay instead of `Dialog`, an inline pill instead of `Chip`, …).
+> 2. **If the design truly needs something the component can't do, extend the component** — add a `variant`/prop to the primitive so the need is met from one source of truth, then consume it. Don't fork a bespoke copy in the page. "We can't use `Button` here because X" means *make `Button` support X*.
+> 3. **Only change a shared component when genuinely needed** — prefer an existing variant; add a new one only when none fits.
+> 4. **When the same block appears in 2+ places, extract it** to `components/<Name>/` (or a `lib/` helper) and replace every copy. Duplication is drift waiting to happen.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Alongside reuse, all styling goes through **tokens**, never raw values: role-based corner radii (`control < card < modal`), the semantic status colors (`text-error`/`text-warning`/`text-success`), the named type scale (`text-body-*` / `text-label-*` / `text-headline-*` / `text-display-*`), the soft-depth shadow rule (`shadow-ambient` or `shadow-primary/20` only), and the `px-6 md:px-10` page gutter. New colors/tokens are defined once in `globals.css` — never inline a hex.
 
-## Deploy on Vercel
+### Where the rules live (source of truth)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Doc | What it covers |
+|---|---|
+| **`AGENTS.md`** | The full, enforced convention set — component reuse, design tokens, data-fetching layers, auth, state, dialogs. **Start here before writing code.** (Loaded automatically via `CLAUDE.md`.) |
+| **`DESIGN.md`** + `.impeccable/design.json` | The written design system: palette, typography, shapes, elevation, named rules, and per-component specs. |
+| `globals.css` | The token layer (CSS variables + Tailwind v4 theme) that everything consumes. |
+| `docs/rate-limiting.md` | Rate-limit endpoints and limits (enforced by the .NET backend). |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+If you add a shared component or lib helper, register it in `AGENTS.md`'s "reach for these shared components" table so the next contributor reuses it.

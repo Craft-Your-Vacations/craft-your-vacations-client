@@ -9,7 +9,6 @@ import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
 import CtaBanner from "@/components/CtaBanner/CtaBanner";
 import DestinationHero from "./_sections/DestinationHero/DestinationHero";
-import DestinationOverview from "./_sections/DestinationOverview/DestinationOverview";
 import PhotoGallery from "./_sections/PhotoGallery/PhotoGallery";
 import PackagesGrid from "./_sections/PackagesGrid/PackagesGrid";
 import ReviewsSection from "./_sections/ReviewsSection/ReviewsSection";
@@ -67,9 +66,8 @@ export default function DestinationDetailPage({
     allDestinations?.filter((d) => d.slug !== id).slice(0, 4) ?? [];
 
   return (
-    <div className="pt-(--section-gap)">
+    <div>
       <DestinationHero destination={data} />
-      <DestinationOverview destination={data} />
       <PhotoGallery
         title={data.title}
         photos={unsplashPhotos}

@@ -30,7 +30,7 @@ export default function HomePage() {
 
   return (
     <div className="no-scrollbar overflow-y-auto">
-      <HeroSection />
+      <HeroSection destinations={data} />
       <WhoWeAre />
       <CuratedDestinations destinations={data} />
       <Testimonials reviews={reviews} visibleCount={sliderVisibleCount} />

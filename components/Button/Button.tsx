@@ -11,6 +11,12 @@ interface ButtonProps {
   disabled?: boolean;
   loading?: boolean;
   type?: "button" | "submit" | "reset";
+  /**
+   * Render as a non-interactive <span> carrying the button's look but no
+   * button/link semantics. For CTAs that live inside a wrapping <Link> (e.g. a
+   * whole-card link), where nesting an interactive element would be invalid HTML.
+   */
+  render?: "button" | "span";
   className?: string;
   "aria-label"?: string;
 }
@@ -52,11 +58,12 @@ export function Button({
   disabled = false,
   loading = false,
   type = "button",
+  render = "button",
   className = "",
   "aria-label": ariaLabel,
 }: ButtonProps) {
   const baseClass =
-    "inline-flex items-center justify-center gap-2 font-semibold transition-all cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center gap-2 font-semibold transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:opacity-50 disabled:cursor-not-allowed";
 
   let variantClass = "";
   let sizeClass = "";
@@ -103,7 +110,20 @@ export function Button({
 
   const content = loading ? <Spinner /> : children;
 
-  if (href) {
+  // Presentational render: button look, no interactivity. For CTAs nested in a
+  // wrapping <Link> where an interactive element would be invalid HTML.
+  if (render === "span") {
+    return (
+      <span className={allClasses} aria-hidden="true">
+        {content}
+      </span>
+    );
+  }
+
+  // A disabled/loading link has no accessible "disabled" state, so fall through
+  // to the <button> render (which honors disabled) rather than shipping an
+  // active link the user can still follow.
+  if (href && !disabled && !loading) {
     return (
       <Link
         href={href}

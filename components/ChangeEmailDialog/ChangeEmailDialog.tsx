@@ -28,14 +28,18 @@ export default function ChangeEmailDialog({
   const [sameError, setSameError] = useState("");
   const [cooldown, setCooldown] = useState(0);
 
-  useEffect(() => {
+  // Reset local state when the dialog closes (render-time reconciliation on the
+  // isOpen transition — avoids a cascading render from an effect).
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (wasOpen !== isOpen) {
+    setWasOpen(isOpen);
     if (!isOpen) {
       setNewEmail("");
       setSent(false);
       setSameError("");
       setCooldown(0);
     }
-  }, [isOpen]);
+  }
 
   useEffect(() => {
     if (cooldown <= 0) return;

@@ -7,7 +7,7 @@ import { useAdminCustomers } from "@/hooks/useAdminCustomers";
 import { CalendarDays, Star, Users, Clock } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import AdminPageHeader from "@/app/(admin)/components/AdminPageHeader";
-import BookingStatusBadge from "@/app/(admin)/components/BookingStatusBadge";
+import BookingStatusBadge from "@/components/BookingStatusBadge/BookingStatusBadge";
 
 export default function AdminDashboard() {
   const { data: bookings, isLoading: bookingsLoading } = useAdminBookings();

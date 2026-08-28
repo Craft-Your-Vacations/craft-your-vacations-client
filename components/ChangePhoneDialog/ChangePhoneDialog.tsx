@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Dialog from "@/components/Dialog/Dialog";
 import FormField from "@/components/FormField/FormField";
 import Button from "@/components/Button/Button";
@@ -33,14 +33,18 @@ export default function ChangePhoneDialog({
   const [otp, setOtp] = useState("");
   const [sameError, setSameError] = useState("");
 
-  useEffect(() => {
+  // Reset local state when the dialog closes (render-time reconciliation on the
+  // isOpen transition — avoids a cascading render from an effect).
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (wasOpen !== isOpen) {
+    setWasOpen(isOpen);
     if (!isOpen) {
       setNewPhone("");
       setOtpSent(false);
       setOtp("");
       setSameError("");
     }
-  }, [isOpen]);
+  }
 
   const handleSendOtp = () => {
     const trimmed = newPhone.trim();

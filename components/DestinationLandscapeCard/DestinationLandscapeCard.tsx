@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 import type { DestinationCardData } from "@/app/types/component";
 
 interface DestinationLandscapeCardProps extends DestinationCardData {
+  /** Which side the floating glass detail panel sits on (desktop). */
   panelLeft?: boolean;
 }
 
@@ -17,22 +18,21 @@ export function DestinationLandscapeCard({
   href,
   panelLeft = true,
 }: DestinationLandscapeCardProps) {
+  const cities = destinationCities.slice(0, 3).join(" · ");
+
   const card = (
-    <div
-      className="group relative overflow-hidden rounded-2xl h-96
-        shadow-xl shadow-primary/10 hover:shadow-2xl hover:shadow-primary/20
-        transition-shadow duration-500 cursor-pointer"
-    >
+    // Height tracks the image via aspect-video so wide landscape photos sit well.
+    <div className="group relative aspect-video overflow-hidden rounded-3xl cursor-pointer shadow-lg shadow-primary/20 transition-transform duration-300 ease-out hover:-translate-y-1.5">
       {/* Full-bleed image */}
       <Image
         src={imagePath}
         alt={title}
         fill
-        sizes="100vw"
+        sizes="(min-width: 1024px) 66vw, 100vw"
         className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
       />
 
-      {/* Directional dark vignette from panel side */}
+      {/* Directional dark vignette from the panel side */}
       <div
         className={`absolute inset-0 ${
           panelLeft
@@ -41,26 +41,30 @@ export function DestinationLandscapeCard({
         }`}
       />
 
-      {/* Floating glass panel */}
+      {/* Floating frosted-glass detail panel. Full-width bottom strip on mobile,
+          a side panel on desktop (single md: breakpoint). */}
       <div
-        className={`absolute inset-y-6 w-[32%] bg-black/35 backdrop-blur-md border border-white/10 rounded-2xl p-8
-          flex flex-col justify-between ${panelLeft ? "left-6" : "right-6"}`}
+        className={`absolute left-4 right-4 bottom-4 flex flex-col justify-between gap-4 rounded-2xl border border-white/10 bg-black/35 p-6 backdrop-blur-md md:top-6 md:bottom-6 md:w-1/3 md:p-8 ${
+          panelLeft
+            ? "md:left-6 md:right-auto"
+            : "md:right-6 md:left-auto"
+        }`}
       >
-        <div className="flex flex-col gap-4">
-          <span className="text-label-sm text-primary-app uppercase tracking-widest">
-            {destinationCities.join(" · ")}
-          </span>
-          <h3 className="text-headline-lg text-white leading-tight">
-            {title}
-          </h3>
-          <p className="text-body-sm text-white/70 line-clamp-4 leading-relaxed">
+        <div className="flex flex-col gap-3 md:gap-4">
+          {cities && (
+            <span className="text-label-sm uppercase tracking-widest text-primary-app">
+              {cities}
+            </span>
+          )}
+          <h3 className="text-headline-lg leading-tight text-white">{title}</h3>
+          <p className="text-body-sm leading-relaxed text-white/70 line-clamp-3 md:line-clamp-4">
             {content}
           </p>
         </div>
-        <div className="flex items-center gap-1.5 text-primary-app text-body-sm font-semibold">
+        <span className="mt-1 flex items-center gap-1.5 text-body-sm font-semibold text-primary-app">
           Explore destination
-          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-        </div>
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+        </span>
       </div>
     </div>
   );

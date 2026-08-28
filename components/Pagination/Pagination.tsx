@@ -36,7 +36,10 @@ export default function Pagination({
   const pageNumbers = getPageNumbers(page, totalPages);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 md:left-56 bg-surface border-t border-outline z-10">
+    <nav
+      aria-label="Pagination"
+      className="fixed bottom-0 left-0 right-0 md:left-56 bg-surface border-t border-outline z-10"
+    >
       <div className="flex items-center justify-center md:justify-between px-4 py-3">
         <span className="hidden md:block text-label-sm text-text-muted w-24">
           {total} total
@@ -46,7 +49,8 @@ export default function Pagination({
           <button
             onClick={() => onPageChange(page - 1)}
             disabled={page === 1}
-            className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-body-sm text-text-muted hover:text-text hover:bg-surface-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            aria-label="Previous page"
+            className="flex items-center gap-1 px-2 py-1.5 rounded-xl text-body-sm text-text-muted hover:text-text hover:bg-surface-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
             <span className="hidden md:inline">Prev</span>
@@ -64,7 +68,9 @@ export default function Pagination({
               <button
                 key={p}
                 onClick={() => onPageChange(p)}
-                className={`w-8 h-8 rounded-lg text-body-sm transition-colors ${
+                aria-label={`Page ${p}`}
+                aria-current={p === page ? "page" : undefined}
+                className={`w-8 h-8 rounded-xl text-body-sm transition-colors ${
                   p === page
                     ? "bg-primary text-white font-medium"
                     : "text-text-muted hover:text-text hover:bg-surface-high"
@@ -78,7 +84,8 @@ export default function Pagination({
           <button
             onClick={() => onPageChange(page + 1)}
             disabled={page === totalPages}
-            className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-body-sm text-text-muted hover:text-text hover:bg-surface-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            aria-label="Next page"
+            className="flex items-center gap-1 px-2 py-1.5 rounded-xl text-body-sm text-text-muted hover:text-text hover:bg-surface-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             <span className="hidden md:inline">Next</span>
             <ChevronRight className="w-4 h-4" />
@@ -89,6 +96,6 @@ export default function Pagination({
           Page {page} of {totalPages}
         </span>
       </div>
-    </div>
+    </nav>
   );
 }
