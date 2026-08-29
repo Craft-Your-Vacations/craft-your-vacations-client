@@ -41,3 +41,10 @@ yarn-error.log*
 next-env.d.ts
 
 .idea/
+
+# claude code
+# Local tooling, not product code. settings.local.json is machine-specific
+# (absolute paths, personal permissions) and skills/ is vendored third-party
+# tooling. A shared .claude/settings.json is still tracked if you add one.
+.claude/*
+!.claude/settings.json

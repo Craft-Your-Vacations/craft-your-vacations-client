@@ -192,6 +192,21 @@
     scroll-behavior: smooth;
   }
 
+  /* Hide the page scrollbar. Scrolling itself is untouched — wheel, touch,
+     keyboard and scroll-into-view all behave normally; only the visual track
+     is gone. Inner scroll containers keep their own scrollbars unless they
+     opt out with the `no-scrollbar` utility. */
+  html,
+  body {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* legacy Edge */
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+  }
+
   /* Reduced-motion backstop — CSS safety net alongside Framer's
      useReducedMotion(). Neutralizes decorative transitions/animations
      and smooth scrolling for users who request reduced motion. */
