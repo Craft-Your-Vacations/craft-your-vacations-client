@@ -70,16 +70,26 @@ Size material/lucide icons with the nearest standard step — `text-sm`(14) / `t
 | Dropdown | `SelectField` · Multiline | `TextAreaField` · Checkbox | `Checkbox` |
 | 6-digit OTP entry | `OtpInput` · Pill tab switcher | `SegmentedControl` |
 | Brand icon badge beside a label | `IconBadge` · Bordered key/value chip | `InfoChip` |
-| Location / meta pill (city, tag) with optional leading icon | `Chip` (`variant`: onImage for pills over photography, onSurface for pills on cards) |
+| Location / meta pill (city, tag, "needs attention") with optional leading icon | `Chip` (`variant`: onImage for pills over photography, onSurface for pills on cards, warning for outstanding-action pills) |
 | Author / reviewer avatar (photo, else initials) | `Avatar` (`variant`: onImage, onSurface) |
 | Read-only star rating row | `StarRating` (interactive picking stays bespoke in `ReviewModal`) |
 | `icon + label + value` stat (booking/package summaries) | `Stat` |
 | Booking-status pill | `BookingStatusBadge` (labels + colors from `lib/constants`; admin + customer) |
+| "Paperwork still outstanding" pill | `PendingDocumentsChip` (`booking`, `uploadedDocumentTypes`) — owns the confirmed-only rule and the singular/plural wording; renders nothing when there is nothing pending |
 | Multi-step progress dots (auth flows) | `ProgressDots` (`steps`, `current`) |
 | Confirm / status / success / error modal | `ConfirmDialog` · `ModalSuccess` · `ModalError` |
 | Any modal | `Dialog` base → a dedicated `<Name>Dialog` (never inline overlay markup) |
+| Customer-feedback section (home, destination detail) | `TravellerVoices` (`reviews`, `id`, `eyebrow`, `title`, `titleAccent`, `description`, optional `image`) — copy + one `ReviewCard` at a time on the left, a `PhotoMosaic` on the right. Returns null with no reviews, so callers skip the guard. Each page adds a thin `<Name>Section` adapter supplying its own wording |
+| Review photographs as a sliding strip | `TravellerMemories` (`reviews`, `id`, `title`, `description`) — flattens every review's `imagePaths` into landscape cards with a hover caption; owns its own responsive slot count. Renders nothing when no review has a photo. Home page passes all approved reviews, a destination page passes its own |
+| Destinations as alternating landscape cards down the page | `DestinationsShowcase` (`destinations`, `numbered`) — portrait cards below lg, landscape cards alternating sides above it, each paired with a `RouteWaypoint` meta column. Shared by the destinations index and the "explore more" strip on a destination page |
+| One photo broken into a staggered tile cluster | `PhotoMosaic` (`src`, `alt`) — percentage geometry over the `mosaic-tile` utility in globals.css; every tile carries the same photo offset so they reassemble one continuous image |
+| Full-screen page hero over photography | `GlassHero` (`image`, `eyebrow`, `title`, `titleAccent`, `description`, `tags`, `stats`, `cta`, `scrollCue`) — owns the `min-h-dvh` section, the hard-edged glass panel, and the `id="hero-sentinel"` the navbar observes. Each page adds a thin `<Name>Hero` adapter that maps its data onto these props; never re-implement the panel. The home hero (`HeroSection`) is deliberately bespoke — see below |
 
-Shared pure helpers (don't re-implement inline): `formatMonth` / `formatDate` (dates) and `emptyDay` / `emptyActivity` (itinerary factories) live in `lib/constants.ts` and `lib/itinerary.ts`.
+Shared hooks: `useVisibleCount({ base, sm, lg })` returns how many slider slots fit at the current width — sliders need a number for their track maths, so keep the resize listener there rather than in each page.
+
+Shared pure helpers (don't re-implement inline): `formatMonth` / `formatDate` (dates), `formatSlug` (slug → display name, e.g. `hong-kong` → `Hong Kong`), `DOCUMENT_LABELS` / `bookingStatusLabels` / `bookingStatusClasses` (display maps) and `emptyDay` / `emptyActivity` (itinerary factories) live in `lib/constants.ts` and `lib/itinerary.ts`. Never keep a local copy of a display map next to the component that renders it — that is how the booking detail page ended up labelling a PAN card "PAN Surface".
+
+**The home hero is the one intentional exception.** `HeroSection` shares the glass-panel *look* with `GlassHero` but almost nothing else: a Ken Burns base image, a grain/scrim stack, the fanned `HeroDestinationCards`, a three-line staggered headline, `HeroSearch` in place of a CTA, and a highlight row in place of the stat row. Folding it into `GlassHero` would need roughly six new slots and would turn the shared hero into configuration soup — exactly the "don't force dissimilar blocks into one rigid component" case above. Leave it bespoke; if the two panels need to stay in visual lockstep, share the recipe as a `@utility` in `globals.css`, not as a prop.
 
 `FormField`/`SelectField`/`TextAreaField` take an **optional** `label` — omit it for compact/inline fields (search boxes, table-row editors) instead of hand-rolling a raw `<input>`/`<select>`.
 

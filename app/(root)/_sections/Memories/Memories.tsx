@@ -1,17 +1,17 @@
 import TravellerMemories from "@/components/TravellerMemories/TravellerMemories";
 import type { Review } from "@/app/types/api";
 
-interface MemoriesSectionProps {
+interface MemoriesProps {
   reviews: Review[];
 }
 
-export default function MemoriesSection({ reviews }: MemoriesSectionProps) {
+export default function Memories({ reviews }: MemoriesProps) {
   return (
     <TravellerMemories
       id="memories"
       reviews={reviews}
-      title="Memories from this destination"
-      description="Moments captured by travellers who have already been"
+      title="Memories from our travellers"
+      description="Moments captured on trips across every destination we craft"
     />
   );
 }

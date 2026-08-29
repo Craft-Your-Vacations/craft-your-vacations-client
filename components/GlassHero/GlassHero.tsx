@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
 import { MapPin, ChevronDown } from "lucide-react";
 import Button from "@/components/Button/Button";
 import Chip from "@/components/Chip/Chip";
@@ -10,20 +10,31 @@ export interface HeroStat {
 }
 
 interface GlassHeroProps {
-  /** Single background image URL. Falls back to a solid surface if omitted. */
-  image?: string;
+  /** Single background image (URL or static import). Falls back to a solid surface if omitted. */
+  image?: string | StaticImageData;
   imageAlt?: string;
   /** Small label above the title (e.g. "Discover"). */
   eyebrow?: string;
   title: string;
+  /**
+   * Optional second headline line rendered in the hero accent treatment
+   * (italic `text-outline-hero`). One accent word per hero — see the
+   * Accent-Word Rule in DESIGN.md.
+   */
+  titleAccent?: string;
   /** About copy shown under the title. */
   description?: string;
   /** Location pills shown under the title (e.g. cities). */
   tags?: string[];
   /** Key-stat row shown under the description (e.g. price, packages, days). */
   stats?: HeroStat[];
-  /** Primary call-to-action (anchor link). */
+  /** Primary call-to-action (anchor or route link). */
   cta?: { label: string; href: string };
+  /**
+   * Wording of the scroll cue at the foot of the hero. Name what is below it so
+   * the cue reads as an instruction rather than decoration.
+   */
+  scrollCue?: string;
 }
 
 export default function GlassHero({
@@ -31,10 +42,12 @@ export default function GlassHero({
   imageAlt = "",
   eyebrow,
   title,
+  titleAccent,
   description,
   tags,
   stats,
   cta,
+  scrollCue = "Scroll to explore",
 }: GlassHeroProps) {
   return (
     // id is observed by the Navbar to toggle its transparent/solid state.
@@ -90,8 +103,11 @@ export default function GlassHero({
               </span>
             )}
 
-            <h1 className="text-display-lg md:text-display-xl font-bold leading-hero drop-shadow-lg">
-              {title}
+            <h1 className="flex flex-col text-display-lg md:text-display-xl font-bold leading-hero drop-shadow-lg">
+              <span>{title}</span>
+              {titleAccent && (
+                <span className="text-outline-hero italic">{titleAccent}</span>
+              )}
             </h1>
 
             {tags && tags.length > 0 && (
@@ -139,13 +155,19 @@ export default function GlassHero({
         </div>
       </div>
 
-      {/* Scroll-down cue, aligned to the content's left edge */}
+      {/* Scroll cue, aligned to the content's left edge. Labelled rather than a
+          bare chevron so it reads as an instruction, not decoration. */}
       <div className="absolute bottom-8 left-0 right-0">
         <div className="max-w-(--container-max-w) mx-auto px-6 md:px-10">
-          <ChevronDown
-            aria-hidden="true"
-            className="animate-hero-bob h-6 w-6 text-white/55"
-          />
+          <span className="inline-flex items-center gap-2 text-white/65">
+            <span className="text-label-md uppercase tracking-widest">
+              {scrollCue}
+            </span>
+            <ChevronDown
+              aria-hidden="true"
+              className="animate-hero-bob h-5 w-5 shrink-0"
+            />
+          </span>
         </div>
       </div>
     </section>

@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
-type ChipVariant = "onImage" | "onSurface";
+type ChipVariant = "onImage" | "onSurface" | "warning";
 
 interface ChipProps {
   children: React.ReactNode;
@@ -10,6 +10,7 @@ interface ChipProps {
   /**
    * - onImage  : cyan glass, for pills sitting over photography (hero / card overlays)
    * - onSurface: primary tint, for pills on theme-adaptive card / surface backgrounds
+   * - warning  : amber tint, for "needs your attention" pills (semantic token, not raw palette)
    */
   variant?: ChipVariant;
   className?: string;
@@ -21,6 +22,7 @@ const variantClasses: Record<ChipVariant, string> = {
   onImage:
     "bg-primary/20 border border-primary/35 text-primary-app backdrop-blur-sm",
   onSurface: "bg-primary/10 text-primary",
+  warning: "bg-warning/10 text-warning",
 };
 
 export function Chip({

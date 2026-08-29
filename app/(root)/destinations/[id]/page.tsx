@@ -27,21 +27,17 @@ export default function DestinationDetailPage({
 
   const { data: unsplashPhotos = [] } = useUnsplashPhotos(id);
 
-  const [reviewSliderCount, setReviewSliderCount] = useState(1);
-  const [memoriesSliderCount, setMemoriesSliderCount] = useState(1);
   const [photoSliderCount, setPhotoSliderCount] = useState(1);
 
   useEffect(() => {
     const update = () => {
       const w = window.innerWidth;
-      setReviewSliderCount(reviews.length === 1 ? 1 : w >= 1024 ? 3 : w >= 640 ? 2 : 1);
-      setMemoriesSliderCount(w >= 1024 ? 4 : w >= 640 ? 2 : 1);
       setPhotoSliderCount(w >= 1024 ? 3 : w >= 640 ? 2 : 1);
     };
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
-  }, [reviews.length]);
+  }, []);
 
   if (isLoading) {
     return (
@@ -74,8 +70,8 @@ export default function DestinationDetailPage({
         visibleCount={photoSliderCount}
       />
       <PackagesGrid destinationId={id} packages={data.packages} />
-      <ReviewsSection reviews={reviews} visibleCount={reviewSliderCount} />
-      <MemoriesSection reviews={reviews} visibleCount={memoriesSliderCount} />
+      <ReviewsSection reviews={reviews} />
+      <MemoriesSection reviews={reviews} />
       <PopularDestinations destinations={popularDestinations} />
       <CtaBanner subtext="We can help you craft the perfect itinerary within your budget." />
     </div>

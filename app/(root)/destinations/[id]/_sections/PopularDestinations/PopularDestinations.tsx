@@ -1,6 +1,5 @@
 import Section from "@/components/Section/Sections";
-import DestinationCard from "@/components/DestinationCard/DestinationCard";
-import DestinationLandscapeCard from "@/components/DestinationLandscapeCard/DestinationLandscapeCard";
+import DestinationsShowcase from "@/components/DestinationsShowcase/DestinationsShowcase";
 import type { Destination } from "@/app/types/api";
 
 interface PopularDestinationsProps {
@@ -22,34 +21,9 @@ export default function PopularDestinations({
           Continue your journey somewhere new
         </p>
       </div>
-      {/* Mobile: portrait cards, 1 column */}
-      <div className="lg:hidden grid grid-cols-1 gap-4">
-        {destinations.map((destination) => (
-          <DestinationCard
-            key={destination.id}
-            href={`/destinations/${destination.slug}`}
-            imagePath={destination.imagePath}
-            title={destination.title}
-            destinationCities={destination.destinationCities}
-            content={destination.content}
-          />
-        ))}
-      </div>
 
-      {/* Desktop: landscape cards */}
-      <div className="hidden lg:flex flex-col gap-5">
-        {destinations.map((destination, index) => (
-          <DestinationLandscapeCard
-            key={destination.id}
-            href={`/destinations/${destination.slug}`}
-            panelLeft={index % 2 === 0}
-            imagePath={destination.imagePath}
-            title={destination.title}
-            destinationCities={destination.destinationCities}
-            content={destination.content}
-          />
-        ))}
-      </div>
+      {/* Unnumbered: this is a short related strip, not the whole catalogue. */}
+      <DestinationsShowcase destinations={destinations} numbered={false} />
     </Section>
   );
 }

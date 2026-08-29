@@ -37,6 +37,11 @@ export default function AutoSlider({
 
   const itemWidthPercent = 100 / visibleCount;
 
+  // With fewer items than slots there is nothing to slide: drop the percentage
+  // track and the transform, and just lay the items out at their normal slot
+  // width from the start of the row.
+  const isStatic = total <= visibleCount;
+
   return (
     <div
       className={`${className}`}
@@ -68,15 +73,23 @@ export default function AutoSlider({
           {/* Track */}
           <div
             className="flex transition-transform duration-500 ease-in-out"
-            style={{
-              transform: `translateX(-${(currentIndex * 100) / total}%)`,
-              width: `${(total / visibleCount) * 100}%`,
-            }}
+            style={
+              isStatic
+                ? undefined
+                : {
+                    transform: `translateX(-${(currentIndex * 100) / total}%)`,
+                    width: `${(total / visibleCount) * 100}%`,
+                  }
+            }
           >
             {children.map((child, i) => (
               <div
                 key={i}
-                style={{ width: `${itemWidthPercent / (total / visibleCount)}%` }}
+                style={{
+                  width: isStatic
+                    ? `${itemWidthPercent}%`
+                    : `${itemWidthPercent / (total / visibleCount)}%`,
+                }}
                 className="px-3 box-border"
               >
                 {child}

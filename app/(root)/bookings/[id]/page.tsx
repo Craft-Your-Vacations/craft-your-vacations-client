@@ -1,24 +1,22 @@
 "use client";
 
-import { use, useState } from "react";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { use, useMemo, useState } from "react";
 import { useBooking } from "@/hooks/useBooking";
+import { useDestinations } from "@/hooks/useDestinations";
 import { useUserDocuments } from "@/hooks/useUserDocuments";
 import { useUploadDocument } from "@/hooks/useUploadDocument";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
+import CtaBanner from "@/components/CtaBanner/CtaBanner";
+import Reveal from "@/components/motion/Reveal";
 import DocumentViewerDialog from "@/components/DocumentViewerDialog/DocumentViewerDialog";
+import { DOCUMENT_LABELS } from "@/lib/constants";
 import type { DocumentType, UserDocument } from "@/app/types/api";
 import BookingDetailHeader from "./_sections/BookingDetailHeader/BookingDetailHeader";
+import BookingProgress from "./_sections/BookingProgress/BookingProgress";
 import BookingPackageDetails from "./_sections/BookingPackageDetails/BookingPackageDetails";
 import BookingItinerary from "./_sections/BookingItinerary/BookingItinerary";
 import RequiredDocuments from "./_sections/RequiredDocuments/RequiredDocuments";
-
-const DOCUMENT_LABELS: Record<DocumentType, string> = {
-  passport: "Passport",
-  pan: "PAN Surface",
-};
 
 export default function BookingDetailPage({
   params,
@@ -38,11 +36,24 @@ export default function BookingDetailPage({
     refetch,
   } = useBooking(bookingId);
   const { data: documents } = useUserDocuments();
+  // The listing payload already carries the photo, title and cities we need for
+  // the header card, and it is usually warm in the cache from browsing.
+  const { data: destinations } = useDestinations();
   const {
     mutate: uploadDocument,
     isPending: isUploading,
     variables: uploadingVars,
   } = useUploadDocument();
+
+  const uploadedDocumentTypes = useMemo(
+    () => (documents ?? []).map((d) => d.type),
+    [documents],
+  );
+
+  const destination = useMemo(
+    () => destinations?.find((d) => d.slug === booking?.package.destinationSlug),
+    [destinations, booking?.package.destinationSlug],
+  );
 
   function handleUpload(type: DocumentType, file: File) {
     const formData = new FormData();
@@ -65,35 +76,47 @@ export default function BookingDetailPage({
     booking.status === "confirmed" || booking.status === "completed";
 
   return (
-    <div className="pt-24 pb-16 px-6 md:px-10 max-w-(--container-max-w) mx-auto">
-      {/* Back link */}
-      <Link
-        href="/bookings"
-        className="inline-flex items-center gap-1.5 text-body-sm text-text-muted hover:text-primary transition-colors mb-6"
-      >
-        <ChevronLeft className="w-4 h-4" />
-        Back to bookings
-      </Link>
+    // The header owns its own top padding so its backdrop can bleed up behind
+    // the fixed navbar.
+    <div>
+      <BookingDetailHeader
+        booking={booking}
+        uploadedDocumentTypes={uploadedDocumentTypes}
+        destination={destination}
+      />
 
-      <BookingDetailHeader booking={booking} />
+      <BookingProgress
+        booking={booking}
+        uploadedDocumentTypes={uploadedDocumentTypes}
+      />
 
-      <div className="flex flex-col gap-6">
+      <Reveal>
         <BookingPackageDetails booking={booking} />
+      </Reveal>
+
+      <Reveal>
         <BookingItinerary
           itinerary={booking.confirmedItinerary}
           isConfirmed={isConfirmed}
         />
+      </Reveal>
+
+      <Reveal>
         <RequiredDocuments
           isConfirmed={isConfirmed}
           requiredDocuments={booking.requiredDocuments ?? []}
           documents={documents}
-          labels={DOCUMENT_LABELS}
           onUpload={handleUpload}
           onView={setViewDoc}
           isUploading={isUploading}
           uploadingType={uploadingVars?.type}
         />
-      </div>
+      </Reveal>
+
+      <CtaBanner
+        heading="Questions about this trip?"
+        subtext="Our team is a message away — we'll tailor every detail with you before anything is confirmed."
+      />
 
       <DocumentViewerDialog
         isOpen={viewDoc !== null}

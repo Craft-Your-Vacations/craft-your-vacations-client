@@ -36,12 +36,14 @@ export function Navbar({ links = defaultLinks, className = "" }: NavbarProps) {
   const isSessionLoading = status === "loading";
   const isUserLogged = status === "authenticated";
 
-  // Routes that render a full-screen hero (home + destination/package details)
-  // exposing an element with id="hero-sentinel". Computed from the path so the
-  // navbar starts transparent immediately (no flash) without a setState.
+  // Routes that render a full-screen hero (home + the destinations index +
+  // destination/package details) exposing an element with id="hero-sentinel".
+  // Computed from the path so the navbar starts transparent immediately (no
+  // flash) without a setState.
   const pathHasHero =
     pathname === "/" ||
-    /^\/destinations\/[^/]+(\/packages\/[^/]+)?\/?$/.test(pathname);
+    pathname === "/bookings" ||
+    /^\/destinations(\/[^/]+(\/packages\/[^/]+)?)?\/?$/.test(pathname);
 
   // On hero routes the navbar floats transparently over the photo and turns
   // solid once the hero scrolls out of view. Optimistically true so the top of

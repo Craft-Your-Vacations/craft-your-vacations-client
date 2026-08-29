@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import Image from "next/image";
 import { MapPin, Compass, Headphones, ChevronDown } from "lucide-react";
-import HeroImage from "@/public/hero-balloons.jpg";
+import HeroImage from "@/public/introImage1.jpg";
 import HeroSearch from "@/components/HeroSearch/HeroSearch";
 import HeroDestinationCards from "@/components/HeroDestinationCards/HeroDestinationCards";
 import type { Destination } from "@/app/types/api";

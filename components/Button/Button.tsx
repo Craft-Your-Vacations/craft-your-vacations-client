@@ -1,6 +1,7 @@
 import React from "react";
 import type { ButtonVariant, ButtonSize } from "@/app/types/component";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 interface ButtonProps {
   variant?: ButtonVariant;
@@ -106,7 +107,8 @@ export function Button({
       break;
   }
 
-  const allClasses = `${baseClass} ${variantClass} ${sizeClass} ${className}`;
+  // cn() so a caller's className reliably wins over the variant's own colours.
+  const allClasses = cn(baseClass, variantClass, sizeClass, className);
 
   const content = loading ? <Spinner /> : children;
 
