@@ -77,7 +77,9 @@ export default function PackageDetailPage({
 
   function handleBook() {
     if (!isAuthenticated) {
-      router.replace("/login");
+      // Tell the login page why it is being shown, and where to come back to.
+      const next = encodeURIComponent(`/destinations/${id}/packages/${key}`);
+      router.replace(`/login?reason=booking&next=${next}`);
       return;
     }
     // Require a verified email before booking (documents are delivered there).

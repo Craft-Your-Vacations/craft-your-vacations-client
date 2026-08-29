@@ -28,13 +28,25 @@ export default function CuratedDestinations({
     >
       <div className="mx-auto max-w-(--container-max-w) px-6 py-12 md:px-10 md:py-20">
         <div className="grid items-center gap-10 lg:grid-cols-12">
-          {/* Text — left */}
-          <Reveal className="flex flex-col gap-5 lg:col-span-4">
-            <h2 className="text-display-sm text-text">Curated Destinations</h2>
-            <p className="max-w-md text-body-lg leading-relaxed text-text-muted">
+          {/* Text — left. Same opener as WhoWeAre and TravellerVoices: tracked
+              eyebrow, display-scale heading with one cyan italic accent line. */}
+          <Reveal className="flex min-w-0 flex-col gap-6 lg:col-span-4">
+            <span className="inline-flex items-center gap-3 text-label-md uppercase tracking-widest text-primary">
+              Where to next
+              <span aria-hidden="true" className="h-px w-10 bg-primary/50" />
+            </span>
+
+            <h2 className="text-display-sm md:text-display-md text-text tracking-tighter leading-tight">
+              Curated
+              <br />
+              <span className="text-primary italic">Destinations</span>
+            </h2>
+
+            <p className="max-w-md text-body-lg font-light leading-relaxed text-text-muted">
               Our signature selection of locations where luxury meets untamed
               nature — handpicked and always in motion.
             </p>
+
             <Button href="/destinations" variant="secondary" className="self-start">
               Explore all
               <ArrowRight className="h-4 w-4" />

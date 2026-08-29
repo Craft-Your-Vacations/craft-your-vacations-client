@@ -39,6 +39,23 @@ const GoogleIcon = () => (
   </svg>
 );
 
+/**
+ * Why the visitor was sent here, keyed off `?reason=`. Guards that bounce an
+ * anonymous user to login should set one so the page can explain itself
+ * instead of appearing out of nowhere.
+ */
+const LOGIN_PROMPTS: Record<string, string> = {
+  booking: "Please sign in to continue with your booking.",
+  bookings: "Please sign in to view your bookings.",
+  profile: "Please sign in to view your profile.",
+};
+
+/** Only same-origin relative paths may be returned to (prevents open redirect). */
+function safeNext(value: string | null): string | null {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return null;
+  return value;
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,6 +64,9 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const prompt = LOGIN_PROMPTS[searchParams.get("reason") ?? ""];
+  const next = safeNext(searchParams.get("next"));
 
   useEffect(() => {
     const err = searchParams.get("error");
@@ -85,14 +105,21 @@ export default function LoginPage() {
     const role = decodeClaims(data.session?.access_token).user_role;
     // No router.refresh() after replace — it re-renders the current (/login) route before
     // the navigation commits, cancelling it and leaving a blank AuthGuard-null screen.
-    router.replace(role === "Admin" ? "/admin" : "/");
+    // `next` carries the page that bounced them here, so they resume where they left off.
+    router.replace(role === "Admin" ? "/admin" : (next ?? "/"));
   };
 
   const handleGoogleSignIn = async () => {
     const supabase = getSupabaseBrowserClient();
+    // Carry the return path through OAuth: the /auth/callback route reads and
+    // re-validates `next` before redirecting, so Google users resume where they
+    // were bounced from rather than landing on the home page.
+    const callback = new URL("/auth/callback", window.location.origin);
+    if (next) callback.searchParams.set("next", next);
+
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: callback.toString() },
     });
   };
 
@@ -129,6 +156,12 @@ export default function LoginPage() {
             Sign in to continue planning your next journey
           </p>
         </div>
+
+        {prompt && (
+          <div className="w-full rounded-xl border border-primary/20 bg-primary/8 p-4">
+            <p className="text-body-sm text-text">{prompt}</p>
+          </div>
+        )}
 
         {/* Tab switcher */}
         <SegmentedControl<Tab>

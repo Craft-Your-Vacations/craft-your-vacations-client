@@ -7,7 +7,15 @@ import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
 import { useInactivityLogout } from "@/hooks/useInactivityLogout";
 import InactivityDialog from "@/components/InactivityDialog/InactivityDialog";
 
-const PROTECTED_PATHS = ["/profile", "/bookings"];
+/**
+ * Routes that need a session, paired with the `reason` the login page uses to
+ * explain itself (see LOGIN_PROMPTS there). Without it the visitor is dropped
+ * on a bare login screen with no idea why.
+ */
+const PROTECTED_PATHS = [
+  { path: "/profile", reason: "profile" },
+  { path: "/bookings", reason: "bookings" },
+];
 
 export function RootGuard({ children }: { children: React.ReactNode }) {
   const status = useAuthStore((s) => s.status);
@@ -20,9 +28,10 @@ export function RootGuard({ children }: { children: React.ReactNode }) {
   const { showWarning, countdown, keepSignedIn, signOutNow } =
     useInactivityLogout(isAuthenticated);
 
-  const isProtected = PROTECTED_PATHS.some(
-    (p) => pathname === p || pathname.startsWith(p + "/"),
+  const protectedRoute = PROTECTED_PATHS.find(
+    ({ path }) => pathname === path || pathname.startsWith(path + "/"),
   );
+  const isProtected = Boolean(protectedRoute);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -32,8 +41,10 @@ export function RootGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (isProtected && !isAuthenticated) {
-      redirect("/login");
+    if (protectedRoute && !isAuthenticated) {
+      // Carry why they were bounced, and where to return them afterwards.
+      const next = encodeURIComponent(pathname);
+      redirect(`/login?reason=${protectedRoute.reason}&next=${next}`);
     }
 
     if (isAuthenticated && !phoneVerified) {
@@ -47,6 +58,7 @@ export function RootGuard({ children }: { children: React.ReactNode }) {
     pathname,
     router,
     isProtected,
+    protectedRoute?.reason,
   ]);
 
   // Only block on loading for protected routes. Public routes render immediately —
