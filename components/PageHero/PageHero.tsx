@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { MapPin } from "lucide-react";
 import BackButton from "@/components/BackButton/BackButton";
+import Chip from "@/components/Chip/Chip";
 
 export interface HeroChip {
   icon: React.ReactNode;
@@ -64,13 +65,9 @@ export default function PageHero({
         {tags && tags.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
             {tags.map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/20 backdrop-blur-sm border border-primary/35 text-label-sm text-primary-app uppercase tracking-widest"
-              >
-                <MapPin className="w-3 h-3" />
+              <Chip key={tag} icon={<MapPin className="w-3 h-3" />}>
                 {tag}
-              </span>
+              </Chip>
             ))}
           </div>
         )}

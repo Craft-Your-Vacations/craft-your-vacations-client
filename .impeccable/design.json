@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-06T00:00:00Z",
+  "title": "Design System: The Nocturnal Voyager",
+  "extensions": {
+    "colorMeta": {
+      "signature-cyan": {
+        "role": "primary",
+        "displayName": "Signature Cyan",
+        "canonical": "#75d2f7",
+        "note": "Theme-constant brand accent (--color-primary-app); also --color-primary in dark theme.",
+        "tonalRamp": ["#06222e", "#0a3547", "#0f4a63", "#166b8e", "#2b9ac1", "#4fbfe6", "#75d2f7", "#a6e2fb"]
+      },
+      "cyan-deep": {
+        "role": "primary",
+        "displayName": "Cyan Deep",
+        "canonical": "#3a9fc2",
+        "note": "Gradient partner (--color-gradient-end) and dark hover.",
+        "tonalRamp": ["#0a2733", "#0f3646", "#164a5e", "#1e6379", "#2b8199", "#3a9fc2", "#66bcd9", "#9ad6ea"]
+      },
+      "teal-cta": {
+        "role": "primary",
+        "displayName": "Teal CTA (light theme)",
+        "canonical": "#006782",
+        "note": "Light-theme resolution of --color-primary; deepened for contrast on pale surfaces.",
+        "tonalRamp": ["#022a35", "#023a48", "#014d63", "#006782", "#0a86a5", "#2ba6c4", "#66c6dd", "#a3e0ee"]
+      },
+      "ink-bg": {
+        "role": "neutral",
+        "displayName": "Ink (page)",
+        "canonical": "#0e0e0e",
+        "note": "Dark page background; part of the six-step surface ladder (base #080808 → surface-highest #2e2e2e).",
+        "tonalRamp": ["#080808", "#0e0e0e", "#161616", "#1c1c1c", "#242424", "#2e2e2e", "#525a62", "#8d9499"]
+      },
+      "text-primary": {
+        "role": "neutral",
+        "displayName": "On-Surface Text",
+        "canonical": "#e2e4e8",
+        "note": "Primary readable text in dark theme (#191c1e in light).",
+        "tonalRamp": ["#2e2e2e", "#3e484d", "#525a62", "#6b7378", "#8d9499", "#b3b8bd", "#d0d3d7", "#e2e4e8"]
+      },
+      "error": {
+        "role": "error",
+        "displayName": "Error",
+        "canonical": "#f87171",
+        "note": "Dark-theme value; light theme uses #dc2626. Consume via text-error/bg-error only.",
+        "tonalRamp": ["#3f1212", "#5c1a1a", "#7f2323", "#a83030", "#dc2626", "#f87171", "#fca5a5", "#fecaca"]
+      },
+      "success": {
+        "role": "success",
+        "displayName": "Success",
+        "canonical": "#4ade80",
+        "note": "Dark-theme value; light theme uses #16a34a.",
+        "tonalRamp": ["#0a2e1a", "#0f4526", "#166534", "#16a34a", "#22c55e", "#4ade80", "#86efac", "#bbf7d0"]
+      },
+      "warning": {
+        "role": "warning",
+        "displayName": "Warning",
+        "canonical": "#fbbf24",
+        "note": "Dark-theme value; light theme uses #d97706.",
+        "tonalRamp": ["#3d2606", "#5c390a", "#854d0e", "#b45309", "#d97706", "#f59e0b", "#fbbf24", "#fde68a"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Poster-scale hero statements and section openers. Bricolage Grotesque, tight leading, negative tracking." },
+      "headline": { "displayName": "Headline", "purpose": "Card titles, section subheads, dialog titles. Exo 2, 600–700." },
+      "body": { "displayName": "Body", "purpose": "All reading copy. Exo 2, 400, line-height ~1.6." },
+      "label": { "displayName": "Label", "purpose": "Eyebrows, field labels, chip and metadata text. Uppercase, tracked 0.05em." }
+    },
+    "shadows": [
+      { "name": "shadow-ambient", "value": "0 8px 48px 0 rgba(11,19,38,0.08)", "purpose": "Default diffuse lift for elevated panels, primary buttons, and package cards." },
+      { "name": "cyan-halo", "value": "0 10px 15px -3px rgba(117,210,247,0.20), 0 4px 6px -4px rgba(117,210,247,0.20)", "purpose": "Soft brand-tinted glow (shadow-lg shadow-primary/20) for imagery cards and the dialog panel; won't clip harshly at carousel edges." }
+    ],
+    "motion": [
+      { "name": "ease-emphasized", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Signature entrance/exit easing for hero rise, card swap, and slider transitions." },
+      { "name": "hero-rise", "value": "hero-rise 0.7s cubic-bezier(0.22,1,0.36,1) both", "purpose": "CSS-driven above-the-fold entrance so hero content never waits on JS." },
+      { "name": "ken-burns", "value": "ken-burns 15s ease-in-out infinite alternate", "purpose": "Slow zoom+drift bringing still hero photography to life (transform-only)." },
+      { "name": "transition-colors-300", "value": "300ms", "purpose": "Navbar transparent→solid flip on scroll / route change." }
+    ],
+    "breakpoints": [
+      { "name": "md", "value": "768px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single high-emphasis action. Cyan gradient, ambient lift, moderate radius.",
+      "html": "<button class=\"ds-btn-primary\">Start crafting</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 12px 24px; font-family: 'Exo 2', sans-serif; font-size: 0.9375rem; font-weight: 600; color: #0e0e0e; background: linear-gradient(135deg, #75d2f7, #3a9fc2); border: none; border-radius: 1rem; box-shadow: 0 8px 48px 0 rgba(11,19,38,0.08); cursor: pointer; transition: opacity 0.2s, transform 0.2s; } .ds-btn-primary:hover { opacity: 0.9; } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(117,210,247,0.5); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outlined companion action. No fill; cyan border and text.",
+      "html": "<button class=\"ds-btn-secondary\">Explore all</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 12px 24px; font-family: 'Exo 2', sans-serif; font-size: 0.9375rem; font-weight: 600; color: #75d2f7; background: transparent; border: 2px solid rgba(117,210,247,0.3); border-radius: 1rem; cursor: pointer; transition: border-color 0.2s, background 0.2s; } .ds-btn-secondary:hover { border-color: #75d2f7; background: rgba(117,210,247,0.05); }"
+    },
+    {
+      "name": "Icon Button",
+      "kind": "button",
+      "refersTo": "button-icon",
+      "description": "Circular surface control; used for slider chevrons and toolbar actions.",
+      "html": "<button class=\"ds-btn-icon\" aria-label=\"Next\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"9 18 15 12 9 6\"></polyline></svg></button>",
+      "css": ".ds-btn-icon { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; color: #8d9499; background: #242424; border: none; border-radius: 9999px; cursor: pointer; transition: color 0.2s; } .ds-btn-icon:hover { color: #75d2f7; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Labeled field on the raised input surface with a cyan focus ring.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Email</span><input class=\"ds-input\" type=\"email\" placeholder=\"you@example.com\" /></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 0.375rem; } .ds-field-label { font-family: 'Exo 2', sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #8d9499; } .ds-input { width: 100%; padding: 12px 16px; font-family: 'Exo 2', sans-serif; font-size: 0.9375rem; color: #e2e4e8; background: #2e2e2e; border: 1px solid rgba(120,120,120,0.15); border-radius: 0.75rem; outline: none; transition: box-shadow 0.2s, border-color 0.2s; } .ds-input::placeholder { color: #525a62; } .ds-input:focus { border-color: transparent; box-shadow: 0 0 0 2px rgba(117,210,247,0.5); }"
+    },
+    {
+      "name": "Pill Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Metadata/status pill with a cyan icon; sits on cards and photography.",
+      "html": "<span class=\"ds-chip\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#75d2f7\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z\"></path><circle cx=\"12\" cy=\"10\" r=\"3\"></circle></svg>Bali</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 0.25rem; padding: 4px 12px; font-family: 'Exo 2', sans-serif; font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #e2e4e8; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: 9999px; }"
+    },
+    {
+      "name": "Glass Surface Card",
+      "kind": "card",
+      "refersTo": "card-surface",
+      "description": "The canonical frosted panel primitive (Surface, default variant).",
+      "html": "<div class=\"ds-surface\"><h3 class=\"ds-surface-title\">Your itinerary</h3><p class=\"ds-surface-body\">Shape every day exactly as you imagine.</p></div>",
+      "css": ".ds-surface { display: flex; flex-direction: column; gap: 1.25rem; padding: 1.5rem; background: rgba(18,18,18,0.72); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(120,120,120,0.15); border-radius: 1rem; } .ds-surface-title { font-family: 'Exo 2', sans-serif; font-size: 1.375rem; font-weight: 600; line-height: 1.3; color: #e2e4e8; margin: 0; } .ds-surface-body { font-family: 'Exo 2', sans-serif; font-size: 0.9375rem; line-height: 1.6; color: #8d9499; margin: 0; }"
+    },
+    {
+      "name": "Dialog Panel",
+      "kind": "custom",
+      "refersTo": "dialog",
+      "description": "Modal panel: glass in dark, opaque in light, cyan-halo shadow, largest radius.",
+      "html": "<div class=\"ds-dialog\"><h2 class=\"ds-dialog-title\">Confirm booking</h2><p class=\"ds-dialog-body\">Review the details before you continue.</p></div>",
+      "css": ".ds-dialog { width: 100%; max-width: 32rem; padding: 32px; display: flex; flex-direction: column; gap: 1.25rem; background: rgba(18,18,18,0.72); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(120,120,120,0.15); border-radius: 1.5rem; box-shadow: 0 10px 15px -3px rgba(117,210,247,0.2), 0 4px 6px -4px rgba(117,210,247,0.2); } .ds-dialog-title { font-family: 'Exo 2', sans-serif; font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; color: #e2e4e8; margin: 0; } .ds-dialog-body { font-family: 'Exo 2', sans-serif; font-size: 0.9375rem; line-height: 1.6; color: #8d9499; margin: 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Nocturnal Voyager",
+    "overview": "This is a design system built for dreaming at night — the moment a traveler opens a new tab after dark and imagines somewhere far away. It is dark-led by identity, not by default: near-black surfaces recede so that full-bleed destination photography and a single signature cyan carry all the light in the room. Depth comes from frosted glass and layered tonal surfaces rather than heavy borders or drop shadows, giving the interface the calm, unhurried feel of a private concierge rather than a busy booking engine. The system is disciplined about restraint: a confident geometric display face for aspiration, a clean humanist sans for everything readable, and cyan spent sparingly on the things that matter — the next action, the active state, the accent word. It adapts to a light theme for daytime and accessibility, but the nocturnal resolution is the canonical identity.",
+    "keyCharacteristics": [
+      "Dark-led glassmorphism with photography as the primary light source",
+      "One signature cyan (#75d2f7), spent sparingly on action and accent",
+      "Tonal surface ladder (six steps) instead of borders for hierarchy",
+      "Fluid, poster-scale display type over a clean humanist body face",
+      "Fully token-driven and dual-theme; nocturnal is canonical"
+    ],
+    "rules": [
+      { "name": "The One Cyan Rule", "body": "Signature Cyan is the only decorative color; spend it on ≤10% of any screen — the next action, the active state, one accent word. Its rarity is what makes it read as luxury.", "section": "colors" },
+      { "name": "The Tonal-Ladder Rule", "body": "Depth is built by moving up the six-step surface ladder, not by adding borders or shadows. If two things need to feel separated, change the surface step before reaching for a border.", "section": "colors" },
+      { "name": "The Semantic-Status Rule", "body": "Error/warning/success come only from the three semantic tokens, which adapt per theme. Never text-red-*, bg-amber-*, text-green-*.", "section": "colors" },
+      { "name": "The Named-Scale Rule", "body": "Copy always uses a named step (text-body-*, text-label-*, text-headline-*, text-display-*); raw Tailwind sizes are permitted only for sizing icon glyphs.", "section": "typography" },
+      { "name": "The Accent-Word Rule", "body": "The hero's one emphasized word uses the theme-independent text-outline-hero treatment so it renders identically in light and dark. Don't restyle it per theme.", "section": "typography" },
+      { "name": "The Soft-Depth Rule", "body": "Elevation is ambient (shadow-ambient) or a cyan halo (shadow-primary/20) — nothing else. No shadow-xl, no shadow-black/*, no hard multi-layer drop shadows.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do define every color, type step, radius, and effect as a token or @utility in globals.css, and consume it — check globals.css before introducing anything new.",
+      "Do build depth with the six-step surface ladder and glass first; use only shadow-ambient or shadow-primary/20 when a shadow is genuinely needed.",
+      "Do use role-based radii (control rounded-xl < card/button rounded-2xl < modal/large panel rounded-3xl, pills rounded-full).",
+      "Do name every text size (text-body-*, text-label-*, text-headline-*, text-display-*); reserve raw text-sm/text-lg for icon glyphs only.",
+      "Do reach for the shared component (Button, Surface, FormField, Dialog, EmptyState, InfoChip, SelectField, TextAreaField) instead of re-inventing its markup.",
+      "Do design mobile-first with a single md: breakpoint and the px-6 md:px-10 / max-w-(--container-max-w) container."
+    ],
+    "donts": [
+      "Don't hardcode a hex value in a component — always a token.",
+      "Don't use raw palette colors for status (text-red-*, bg-amber-*, text-green-*); use text-error / text-warning / text-success.",
+      "Don't introduce hard or heavy shadows (shadow-xl, shadow-black/*, stacked drop shadows) — they violate the Soft-Depth Rule.",
+      "Don't use off-scale radii (rounded-lg, rounded-md) — snap to the role-based xl / 2xl / 3xl / full set.",
+      "Don't use px-4 or px-8 as the page gutter; the gutter is px-6 md:px-10.",
+      "Don't overspend the cyan — one accent per view, ≤10% of the screen.",
+      "Don't hand-roll overlays, glass panels, or raw inputs when a shared primitive exists."
+    ]
+  }
+}

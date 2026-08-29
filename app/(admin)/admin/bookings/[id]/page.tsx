@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
 import { useAdminBookingDetail } from "@/hooks/useAdminBookingDetail";
 import { useAdminUpdateBooking } from "@/hooks/useAdminUpdateBooking";
@@ -16,7 +16,8 @@ import SelectField from "@/components/SelectField/SelectField";
 import { CalendarDays, Users, FileText, Phone, Mail, Globe } from "lucide-react";
 import type { BookingStatus, ItineraryDay, DocumentType } from "@/app/types/api";
 import BackButton from "@/components/BackButton/BackButton";
-import BookingStatusBadge, { formatMonth } from "@/app/(admin)/components/BookingStatusBadge";
+import BookingStatusBadge from "@/components/BookingStatusBadge/BookingStatusBadge";
+import { formatMonth, formatDate } from "@/lib/constants";
 import ItineraryEditor from "@/app/(admin)/components/ItineraryEditor/ItineraryEditor";
 import RequiredDocumentsSelector from "@/app/(admin)/components/RequiredDocumentsSelector/RequiredDocumentsSelector";
 import { BOOKING_STATUSES } from "@/lib/constants";
@@ -46,21 +47,28 @@ export default function AdminBookingDetailPage({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const addToast = useToastStore((s) => s.addToast);
 
-  // Pre-populate required docs once when booking loads
-  useEffect(() => {
-    if (!booking) return;
+  // Seed editable state from the loaded booking (once per booking id). Done
+  // during render rather than in an effect to avoid a cascading extra render;
+  // keying on booking.id means a background refetch won't clobber user edits.
+  const [seededBookingId, setSeededBookingId] = useState<number | null>(null);
+  if (booking && booking.id !== seededBookingId) {
+    setSeededBookingId(booking.id);
     setRequiredDocs(booking.requiredDocuments ?? []);
-    // If a confirmed itinerary already exists, seed from it immediately
-    if (booking.confirmedItinerary?.length) {
-      setItinerary(booking.confirmedItinerary);
-    }
-  }, [booking]);
+    setItinerary(booking.confirmedItinerary?.length ? booking.confirmedItinerary : []);
+  }
 
-  // Seed itinerary from original package only when there is no confirmed itinerary yet
-  useEffect(() => {
-    if (!packageDetail?.itinerary?.length) return;
-    setItinerary((prev) => (prev.length === 0 ? packageDetail.itinerary : prev));
-  }, [packageDetail]);
+  // Fall back to the package's itinerary once, only when the booking has no
+  // confirmed itinerary yet.
+  const [pkgItinerarySeeded, setPkgItinerarySeeded] = useState(false);
+  if (
+    booking &&
+    !booking.confirmedItinerary?.length &&
+    packageDetail?.itinerary?.length &&
+    !pkgItinerarySeeded
+  ) {
+    setPkgItinerarySeeded(true);
+    setItinerary(packageDetail.itinerary);
+  }
 
   if (isLoading) return <LoadingSpinner message="Loading booking…" fullScreen={false} />;
   if (isError)
@@ -152,12 +160,7 @@ export default function AdminBookingDetailPage({
             <div className="flex items-center gap-3">
               <BookingStatusBadge status={booking.status} />
               <span className="text-label-sm text-text-muted">
-                #{booking.id} ·{" "}
-                {new Date(booking.createdAt).toLocaleDateString("en-US", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })}
+                #{booking.id} · {formatDate(booking.createdAt)}
               </span>
             </div>
 

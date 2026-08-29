@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useState } from "react";
 import { useDestination } from "@/hooks/useDestination";
 import { usePackageDetail } from "@/hooks/usePackageDetail";
 import { useUpdatePackage } from "@/hooks/useUpdatePackage";
@@ -38,15 +38,16 @@ export default function EditPackagePage({
   const addToast = useToastStore((s) => s.addToast);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    if (pkg) {
-      setTitle(pkg.title);
-      setPrice(String(pkg.price));
-      setDays(String(pkg.days));
-      setExcerpt(pkg.excerpt);
-      setItinerary(pkg.itinerary ?? []);
-    }
-  }, [pkg]);
+  // Seed editable fields from the loaded package (once per id, render-time).
+  const [seededId, setSeededId] = useState<number | null>(null);
+  if (pkg && pkg.id !== seededId) {
+    setSeededId(pkg.id);
+    setTitle(pkg.title);
+    setPrice(String(pkg.price));
+    setDays(String(pkg.days));
+    setExcerpt(pkg.excerpt);
+    setItinerary(pkg.itinerary ?? []);
+  }
 
   if (destLoading || pkgLoading)
     return <LoadingSpinner message="Loading package…" fullScreen={false} />;

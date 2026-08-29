@@ -59,6 +59,7 @@ export function ItineraryDay({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
+        aria-expanded={isOpen}
         className="w-full flex items-center gap-4 px-5 py-4 text-left group"
       >
         {/* Day pill */}

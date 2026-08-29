@@ -8,16 +8,19 @@ interface OtpInputProps {
   value: string;
   onChange: (code: string) => void;
   disabled?: boolean;
+  /** Marks every box in the invalid state (e.g. wrong code entered). */
+  error?: boolean;
   className?: string;
 }
 
 // Segmented numeric OTP entry. Parent owns the code as a single string;
-// this component manages per-box focus, backspace navigation and paste.
+// this component manages per-box focus, arrow/backspace navigation and paste.
 export function OtpInput({
   length = 6,
   value,
   onChange,
   disabled = false,
+  error = false,
   className = "",
 }: OtpInputProps) {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -39,6 +42,12 @@ export function OtpInput({
   ) => {
     if (e.key === "Backspace" && !digits[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
+    } else if (e.key === "ArrowLeft" && index > 0) {
+      e.preventDefault();
+      inputRefs.current[index - 1]?.focus();
+    } else if (e.key === "ArrowRight" && index < length - 1) {
+      e.preventDefault();
+      inputRefs.current[index + 1]?.focus();
     }
   };
 
@@ -65,12 +74,18 @@ export function OtpInput({
           }}
           type="text"
           inputMode="numeric"
+          autoComplete={i === 0 ? "one-time-code" : "off"}
+          aria-label={`Verification code digit ${i + 1} of ${length}`}
+          aria-invalid={error || undefined}
           maxLength={1}
           value={digit}
           disabled={disabled}
           onChange={(e) => handleChange(e.target.value, i)}
           onKeyDown={(e) => handleKeyDown(e, i)}
-          className="w-12 h-12 text-center text-headline-sm bg-surface-highest rounded-xl border border-outline focus:ring-2 focus:ring-primary/50 focus:border-primary/40 outline-none text-text transition-all disabled:opacity-50"
+          className={cn(
+            "w-12 h-12 text-center text-headline-sm bg-surface-highest rounded-xl border border-outline outline-none text-text transition-all focus:border-transparent focus:ring-2 focus:ring-primary/50 disabled:opacity-50",
+            error && "border-error/50 ring-2 ring-error/50"
+          )}
         />
       ))}
     </div>

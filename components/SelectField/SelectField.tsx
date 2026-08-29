@@ -25,6 +25,11 @@ export function SelectField({
   onChange,
 }: SelectFieldProps) {
   const hasError = Boolean(errorMessage);
+  const describedBy = hasError
+    ? `${id}-error`
+    : helperText
+      ? `${id}-helper`
+      : undefined;
 
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
@@ -38,13 +43,15 @@ export function SelectField({
         <select
           id={id}
           aria-label={label ? undefined : placeholder}
+          aria-invalid={hasError || undefined}
+          aria-describedby={describedBy}
           value={value}
           defaultValue={defaultValue}
           onChange={onChange}
           disabled={disabled}
           required={required}
           className={`w-full px-4 py-3 pr-10 rounded-xl text-body-md text-text bg-surface-highest border border-outline outline-none appearance-none cursor-pointer transition-all
-           focus:ring-2 focus:ring-primary/50 focus:border-primary/40
+           focus:border-transparent focus:ring-2 focus:ring-primary/50
            disabled:opacity-50 disabled:cursor-not-allowed
            ${hasError ? "ring-2 ring-error/50 border-error/50" : ""}
          `}
@@ -65,9 +72,15 @@ export function SelectField({
           aria-hidden="true"
         />
       </div>
-      {hasError && <p className="text-body-sm text-error">{errorMessage}</p>}
+      {hasError && (
+        <p id={`${id}-error`} className="text-body-sm text-error">
+          {errorMessage}
+        </p>
+      )}
       {!hasError && helperText && (
-        <p className="text-body-sm text-text-subtle">{helperText}</p>
+        <p id={`${id}-helper`} className="text-body-sm text-text-subtle">
+          {helperText}
+        </p>
       )}
     </div>
   );

@@ -33,6 +33,11 @@ export function TextAreaField({
   const charCount = value !== undefined ? value.length : internalCount;
 
   const hasError = Boolean(errorMessage);
+  const describedBy = hasError
+    ? `${id}-error`
+    : helperText
+      ? `${id}-helper`
+      : undefined;
 
   function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     if (value === undefined) setInternalCount(e.target.value.length);
@@ -68,15 +73,23 @@ export function TextAreaField({
         required={required}
         rows={rows}
         maxLength={maxLength}
+        aria-invalid={hasError || undefined}
+        aria-describedby={describedBy}
         className={`w-full px-4 py-3 rounded-xl text-body-md text-text placeholder:text-text-subtle bg-surface-highest border border-outline outline-none resize-y transition-all
-         focus:ring-2 focus:ring-primary/50 focus:border-primary/40
+         focus:border-transparent focus:ring-2 focus:ring-primary/50
          disabled:opacity-50 disabled:cursor-not-allowed
          ${hasError ? "ring-2 ring-error/50 border-error/50" : ""}
        `}
       />
-      {hasError && <p className="text-body-sm text-error">{errorMessage}</p>}
+      {hasError && (
+        <p id={`${id}-error`} className="text-body-sm text-error">
+          {errorMessage}
+        </p>
+      )}
       {!hasError && helperText && (
-        <p className="text-body-sm text-text-subtle">{helperText}</p>
+        <p id={`${id}-helper`} className="text-body-sm text-text-subtle">
+          {helperText}
+        </p>
       )}
     </div>
   );

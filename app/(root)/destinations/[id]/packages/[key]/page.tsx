@@ -169,7 +169,7 @@ export default function PackageDetailPage({
     destination?.packages.filter((p) => p.key !== key) ?? [];
 
   return (
-    <div className="pt-(--section-gap)">
+    <div>
       <PackageHero
         pkg={pkg}
         destination={destination}

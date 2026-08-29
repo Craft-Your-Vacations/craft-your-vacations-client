@@ -41,17 +41,41 @@ export function formatMonth(value: string, short = false): string {
   return `${names[parseInt(parts[1], 10) - 1]} ${parts[0]}`;
 }
 
+// Formats an ISO timestamp/date string as a short date, e.g. "7 Aug 2026".
+export function formatDate(value: string): string {
+  return new Date(value).toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+/** "hong-kong" -> "Hong Kong". For slugs surfaced in customer-facing copy. */
+export function formatSlug(value: string): string {
+  return value
+    .split("-")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+/** Customer-facing name for each document type. */
+export const DOCUMENT_LABELS: Record<DocumentType, string> = {
+  passport: "Passport",
+  pan: "PAN Card",
+};
+
 export const DOCUMENT_OPTIONS: { value: DocumentType; label: string }[] = [
-  { value: "passport", label: "Passport" },
-  { value: "pan", label: "PAN Card" },
+  { value: "passport", label: DOCUMENT_LABELS.passport },
+  { value: "pan", label: DOCUMENT_LABELS.pan },
 ];
 
 /** Tailwind classes for each booking status — used in badges/pills */
 export const bookingStatusClasses: Record<BookingStatus, string> = {
-  pending: "bg-primary/15 text-primary",
-  confirmed: "bg-green-500/15 text-green-400",
-  completed: "bg-primary/10 text-primary/70",
-  cancelled: "bg-red-500/15 text-red-400",
+  pending: "bg-warning/10 text-warning",
+  confirmed: "bg-success/10 text-success",
+  completed: "bg-primary/10 text-primary",
+  cancelled: "bg-error/10 text-error",
 };
 
 export const REVIEW_TABS = [

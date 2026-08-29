@@ -1,5 +1,19 @@
 import { Compass, PenLine, Plane } from "lucide-react";
 import PillarCard from "./PillarCard";
+import PhotoCluster, {
+  type ClusterImage,
+} from "@/components/PhotoCluster/PhotoCluster";
+import Reveal from "@/components/motion/Reveal";
+import { Stagger, StaggerItem } from "@/components/motion/Stagger";
+import Maldives from "@/public/maldives.jpg";
+import Switzerland from "@/public/switzerland.jpg";
+import Paris from "@/public/paris.jpg";
+
+const clusterImages: [ClusterImage, ClusterImage, ClusterImage] = [
+  { src: Maldives, alt: "Overwater villas in the Maldives" },
+  { src: Switzerland, alt: "Alpine peaks in Switzerland" },
+  { src: Paris, alt: "Rooftops of Paris" },
+];
 
 const stats = [
   { value: "50+", label: "Destinations" },
@@ -29,14 +43,14 @@ export default function WhoWeAre() {
   return (
     <section id="about" className="mt-10 md:mt-16">
       <div className="mx-auto max-w-(--container-max-w) px-6 md:px-10">
-        {/* Top block */}
-        <div className="flex flex-col lg:flex-row lg:items-center gap-12 mb-16">
-          {/* Left — text */}
-          <div className="flex-1 flex flex-col gap-6">
+        {/* Top block — text (left) · fanned photo cluster (right) */}
+        <Reveal className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-8 md:items-center mb-16">
+          {/* Text + stats */}
+          <div className="md:col-span-5 flex flex-col gap-6">
             <span className="text-label-sm text-primary uppercase tracking-[0.2em]">
               Who We Are
             </span>
-            <h2 className="text-display-sm text-text tracking-tighter leading-tight">
+            <h2 className="text-display-md text-text tracking-tighter leading-tight">
               Travel on <span className="text-primary italic">your terms</span>
             </h2>
             <p className="text-body-lg text-text-muted max-w-lg leading-relaxed font-light">
@@ -46,27 +60,34 @@ export default function WhoWeAre() {
               and the structure. You bring the curiosity. No rigid packages, no
               cookie-cutter schedules — just your story, told your way.
             </p>
+
+            {/* Compact stat strip */}
+            <div className="flex flex-wrap gap-x-8 gap-y-4 pt-2">
+              {stats.map(({ value, label }) => (
+                <div key={label} className="flex flex-col">
+                  <span className="text-headline-lg text-primary font-bold tracking-tighter">
+                    {value}
+                  </span>
+                  <span className="text-label-sm text-text-subtle">{label}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Right — stats */}
-          <div className="grid grid-cols-3 gap-4 lg:flex lg:flex-col lg:gap-6 lg:items-end">
-            {stats.map(({ value, label }) => (
-              <div key={label} className="flex flex-col gap-1 lg:text-right">
-                <span className="text-display-sm text-primary font-bold tracking-tighter">
-                  {value}
-                </span>
-                <span className="text-label-md text-text-subtle">{label}</span>
-              </div>
-            ))}
+          {/* Fanned photo cluster */}
+          <div className="md:col-span-7">
+            <PhotoCluster images={clusterImages} />
           </div>
-        </div>
+        </Reveal>
 
         {/* Three pillar cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {pillars.map(({ icon, title, body }) => (
-            <PillarCard key={title} icon={icon} title={title} body={body} />
+        <Stagger className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {pillars.map(({ icon, title, body }, index) => (
+            <StaggerItem key={title}>
+              <PillarCard icon={icon} title={title} body={body} index={index} />
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       </div>
     </section>
   );

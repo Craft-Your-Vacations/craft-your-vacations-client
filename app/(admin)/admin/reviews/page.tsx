@@ -16,7 +16,7 @@ import AdminPageHeader from "@/app/(admin)/components/AdminPageHeader";
 import { useToastStore } from "@/stores/useToastStore";
 import AdminFilterTabs from "@/app/(admin)/components/AdminFilterTabs";
 import Pagination from "@/components/Pagination/Pagination";
-import { REVIEW_TABS } from "@/lib/constants";
+import { REVIEW_TABS, formatDate } from "@/lib/constants";
 
 export default function AdminReviewsPage() {
   const [activeTab, setActiveTab] = useState("pending");
@@ -73,7 +73,7 @@ export default function AdminReviewsPage() {
                   <span>·</span>
                   <span>{review.packageTitle}</span>
                   <span>·</span>
-                  <span>{new Date(review.createdAt).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })}</span>
+                  <span>{formatDate(review.createdAt)}</span>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
@@ -86,12 +86,12 @@ export default function AdminReviewsPage() {
               </div>
             </div>
 
-            <p className="text-body-md text-text leading-relaxed">"{review.quote}"</p>
+            <p className="text-body-md text-text leading-relaxed">&ldquo;{review.quote}&rdquo;</p>
 
             {review.imagePaths?.length > 0 && (
               <div className="flex gap-2 flex-wrap">
                 {review.imagePaths.map((path, i) => (
-                  <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden shrink-0">
+                  <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0">
                     <Image
                       src={path}
                       alt="Review"

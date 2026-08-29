@@ -1,4 +1,4 @@
-import Surface from "@/components/Surface/Surface";
+import Section from "@/components/Section/Sections";
 import ItineraryView from "@/components/ItineraryView/ItineraryView";
 import type { Booking } from "@/app/types/api";
 
@@ -14,10 +14,10 @@ export default function BookingItinerary({
   if (!itinerary || itinerary.length === 0) return null;
 
   return (
-    <Surface className="gap-4">
-      <div>
-        <h2 className="text-headline-sm text-text">Your Itinerary</h2>
-        <p className="text-body-sm text-text-muted mt-1">
+    <Section id="itinerary" title="">
+      <div className="mb-8">
+        <h2 className="text-headline-lg text-text">Your itinerary</h2>
+        <p className="text-body-md text-text-muted mt-1">
           {itinerary.length} days ·{" "}
           {isConfirmed
             ? "customised for your trip"
@@ -25,6 +25,6 @@ export default function BookingItinerary({
         </p>
       </div>
       <ItineraryView itinerary={itinerary} />
-    </Surface>
+    </Section>
   );
 }

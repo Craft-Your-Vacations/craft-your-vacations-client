@@ -1,5 +1,4 @@
-import { Package, Clock } from "lucide-react";
-import PageHero from "@/components/PageHero/PageHero";
+import GlassHero, { type HeroStat } from "@/components/GlassHero/GlassHero";
 import type { DestinationDetail } from "@/app/types/api";
 
 interface DestinationHeroProps {
@@ -7,24 +6,28 @@ interface DestinationHeroProps {
 }
 
 export default function DestinationHero({ destination }: DestinationHeroProps) {
-  const { title, imagePath, packages, destinationCities } = destination;
+  const { title, imagePath, content, destinationCities, packages } = destination;
+
+  // Prices are intentionally omitted — packages are customizable, so we don't
+  // advertise a starting price anywhere.
+  const days = packages.map((p) => p.days);
+  const stats: HeroStat[] = [
+    ...(packages.length
+      ? [{ value: String(packages.length), label: packages.length === 1 ? "Package" : "Packages" }]
+      : []),
+    ...(days.length ? [{ value: `${Math.min(...days)}–${Math.max(...days)}`, label: "Days" }] : []),
+  ];
 
   return (
-    <PageHero
-      imagePath={imagePath}
+    <GlassHero
+      image={imagePath}
       imageAlt={title}
+      eyebrow="Discover"
       title={title}
+      description={content}
       tags={destinationCities}
-      chips={[
-        {
-          icon: <Package className="w-4 h-4" />,
-          label: `${packages.length} Packages`,
-        },
-        {
-          icon: <Clock className="w-4 h-4" />,
-          label: `${Math.min(...packages.map((p) => p.days))}–${Math.max(...packages.map((p) => p.days))} Days`,
-        },
-      ]}
+      stats={stats}
+      cta={{ label: "Explore Packages", href: "#packages" }}
     />
   );
 }

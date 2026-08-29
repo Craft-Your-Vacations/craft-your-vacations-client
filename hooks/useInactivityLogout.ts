@@ -11,7 +11,7 @@ function envNumber(value: string | undefined, fallback: number): number {
 }
 
 const INACTIVITY_TIMEOUT_MS =
-  envNumber(process.env.NEXT_PUBLIC_INACTIVITY_TIMEOUT_MINUTES, 15) * 60 * 1000;
+  envNumber(process.env.NEXT_PUBLIC_INACTIVITY_TIMEOUT_MINUTES, 60) * 60 * 1000;
 const COUNTDOWN_SECONDS = 30;
 const COUNTDOWN_MS = COUNTDOWN_SECONDS * 1000;
 // Idle duration at which the "Still there?" warning appears (timeout minus the

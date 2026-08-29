@@ -10,7 +10,18 @@ export function useAuthListener() {
     const supabase = getSupabaseBrowserClient();
     const setSession = useAuthStore.getState().setSession;
 
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    // A rejected getSession (e.g. a stale/invalid refresh token that fails at the
+    // network level) must still resolve the store out of "loading" — otherwise the
+    // guards render null forever and the page never paints. Purge the bad local
+    // session so the failing refresh doesn't retry on the next mount.
+    supabase.auth
+      .getSession()
+      .then(({ data }) => setSession(data.session))
+      .catch(() => {
+        console.log("Error getting session");
+        setSession(null);
+        void supabase.auth.signOut({ scope: "local" });
+      });
 
     const {
       data: { subscription },

@@ -9,7 +9,6 @@ import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
 import CtaBanner from "@/components/CtaBanner/CtaBanner";
 import DestinationHero from "./_sections/DestinationHero/DestinationHero";
-import DestinationOverview from "./_sections/DestinationOverview/DestinationOverview";
 import PhotoGallery from "./_sections/PhotoGallery/PhotoGallery";
 import PackagesGrid from "./_sections/PackagesGrid/PackagesGrid";
 import ReviewsSection from "./_sections/ReviewsSection/ReviewsSection";
@@ -28,21 +27,17 @@ export default function DestinationDetailPage({
 
   const { data: unsplashPhotos = [] } = useUnsplashPhotos(id);
 
-  const [reviewSliderCount, setReviewSliderCount] = useState(1);
-  const [memoriesSliderCount, setMemoriesSliderCount] = useState(1);
   const [photoSliderCount, setPhotoSliderCount] = useState(1);
 
   useEffect(() => {
     const update = () => {
       const w = window.innerWidth;
-      setReviewSliderCount(reviews.length === 1 ? 1 : w >= 1024 ? 3 : w >= 640 ? 2 : 1);
-      setMemoriesSliderCount(w >= 1024 ? 4 : w >= 640 ? 2 : 1);
       setPhotoSliderCount(w >= 1024 ? 3 : w >= 640 ? 2 : 1);
     };
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
-  }, [reviews.length]);
+  }, []);
 
   if (isLoading) {
     return (
@@ -67,17 +62,16 @@ export default function DestinationDetailPage({
     allDestinations?.filter((d) => d.slug !== id).slice(0, 4) ?? [];
 
   return (
-    <div className="pt-(--section-gap)">
+    <div>
       <DestinationHero destination={data} />
-      <DestinationOverview destination={data} />
       <PhotoGallery
         title={data.title}
         photos={unsplashPhotos}
         visibleCount={photoSliderCount}
       />
       <PackagesGrid destinationId={id} packages={data.packages} />
-      <ReviewsSection reviews={reviews} visibleCount={reviewSliderCount} />
-      <MemoriesSection reviews={reviews} visibleCount={memoriesSliderCount} />
+      <ReviewsSection reviews={reviews} />
+      <MemoriesSection reviews={reviews} />
       <PopularDestinations destinations={popularDestinations} />
       <CtaBanner subtext="We can help you craft the perfect itinerary within your budget." />
     </div>

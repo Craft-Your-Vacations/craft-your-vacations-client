@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Phone } from "lucide-react";
 import { DISPLAY_PHONE, WHATSAPP_URL } from "@/lib/contact";
+import Reveal from "@/components/motion/Reveal";
 import BannerBg from "@/public/introImage3.jpg";
 
 interface CtaBannerProps {
@@ -30,8 +31,8 @@ export default function CtaBanner({
       <div className="absolute inset-0 bg-black/60" />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center gap-6 px-6 py-16 text-center max-w-3xl mx-auto">
-        <h2 className="text-display-sm md:text-display-md text-white font-serif leading-tight tracking-tight">
+      <Reveal className="relative z-10 flex flex-col items-center gap-6 px-6 py-16 text-center max-w-3xl mx-auto">
+        <h2 className="text-display-sm md:text-display-md text-white leading-tight tracking-tight">
           {heading}
         </h2>
         <p className="text-body-lg text-white/70 max-w-xl">{subtext}</p>
@@ -52,7 +53,7 @@ export default function CtaBanner({
             </span>
           </Link>
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }

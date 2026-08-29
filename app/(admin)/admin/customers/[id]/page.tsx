@@ -17,9 +17,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import BackButton from "@/components/BackButton/BackButton";
-import BookingStatusBadge, {
-  formatMonth,
-} from "@/app/(admin)/components/BookingStatusBadge";
+import BookingStatusBadge from "@/components/BookingStatusBadge/BookingStatusBadge";
+import { formatMonth } from "@/lib/constants";
 
 export default function AdminCustomerDetailPage({
   params,

@@ -1,5 +1,4 @@
-import { Clock, Zap } from "lucide-react";
-import PageHero from "@/components/PageHero/PageHero";
+import GlassHero from "@/components/GlassHero/GlassHero";
 import type { PackageDetail, DestinationDetail } from "@/app/types/api";
 
 interface PackageHeroProps {
@@ -8,22 +7,15 @@ interface PackageHeroProps {
   totalActivities: number;
 }
 
-export default function PackageHero({
-  pkg,
-  destination,
-  totalActivities,
-}: PackageHeroProps) {
+export default function PackageHero({ pkg, destination }: PackageHeroProps) {
   return (
-    <PageHero
-      imagePath={destination?.imagePath}
+    <GlassHero
+      image={destination?.imagePath}
       imageAlt={destination?.title}
+      eyebrow={destination?.title}
       title={pkg.title}
-      subtitle={pkg.excerpt}
-      tags={destination?.destinationCities.slice(0, 2)}
-      chips={[
-        { icon: <Clock className="w-4 h-4" />, label: `${pkg.days} Days` },
-        { icon: <Zap className="w-4 h-4" />, label: `${totalActivities} Activities` },
-      ]}
+      description={pkg.excerpt}
+      cta={{ label: "View Itinerary", href: "#itinerary" }}
     />
   );
 }

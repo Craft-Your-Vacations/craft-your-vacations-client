@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useState } from "react";
 import { useDestination } from "@/hooks/useDestination";
 import { useUpdateDestination } from "@/hooks/useUpdateDestination";
 import { useDeletePackage } from "@/hooks/useDeletePackage";
@@ -43,15 +43,16 @@ export default function EditDestinationPage({
   const [confirmDeleteKey, setConfirmDeleteKey] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    if (destination) {
-      setTitle(destination.title);
-      setContent(destination.content);
-      setImagePath(destination.imagePath);
-      setIsFeatured(destination.isFeatured);
-      setCities(destination.destinationCities ?? []);
-    }
-  }, [destination]);
+  // Seed editable fields from the loaded destination (once per id, render-time).
+  const [seededId, setSeededId] = useState<number | null>(null);
+  if (destination && destination.id !== seededId) {
+    setSeededId(destination.id);
+    setTitle(destination.title);
+    setContent(destination.content);
+    setImagePath(destination.imagePath);
+    setIsFeatured(destination.isFeatured);
+    setCities(destination.destinationCities ?? []);
+  }
 
   if (isLoading) return <LoadingSpinner message="Loading destination…" fullScreen={false} />;
   if (isError)

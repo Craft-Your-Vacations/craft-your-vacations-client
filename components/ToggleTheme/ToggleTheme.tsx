@@ -2,19 +2,20 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/Button/Button";
 import { Moon } from "lucide-react";
 import { Sun } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
-function ToggleTheme() {
+const emptySubscribe = () => () => {};
+
+function ToggleTheme({ className = "" }: { className?: string }) {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState<boolean>(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // True only after client hydration. Using useSyncExternalStore (server
+  // snapshot = false, client = true) avoids the SSR/client icon mismatch
+  // without a setState-in-effect mount guard.
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
   if (!mounted) {
     return (
-      <Button variant="icon" disabled={true} aria-hidden="true">
+      <Button variant="icon" disabled={true} aria-hidden="true" className={className}>
         <Sun className="h-5 w-5" />
       </Button>
     );
@@ -22,6 +23,7 @@ function ToggleTheme() {
   return (
     <Button
       variant="icon"
+      className={className}
       onClick={() => {
         setTheme(theme == "dark" ? "light" : "dark");
       }}

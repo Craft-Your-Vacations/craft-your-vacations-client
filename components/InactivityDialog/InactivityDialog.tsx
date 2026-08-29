@@ -24,7 +24,7 @@ export default function InactivityDialog({
       <div className="relative w-16 h-16 flex items-center justify-center">
         <div className="absolute inset-0 rounded-full bg-primary/15" />
         <Clock className="w-7 h-7 text-primary" strokeWidth={1.5} />
-        <span className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center text-[11px] font-bold text-white">
+        <span className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center text-label-sm text-white">
           {countdown}
         </span>
       </div>
@@ -32,11 +32,11 @@ export default function InactivityDialog({
       <div>
         <h2 className="text-headline-md text-text">Still there?</h2>
         <p className="text-body-md text-text-muted mt-2">
-          You've been inactive for a while. You'll be signed out in{" "}
+          You&rsquo;ve been inactive for a while. You&rsquo;ll be signed out in{" "}
           <span className="text-primary font-semibold">
             {countdown} second{countdown !== 1 ? "s" : ""}
           </span>{" "}
-          unless you'd like to continue.
+          unless you&rsquo;d like to continue.
         </p>
       </div>
 

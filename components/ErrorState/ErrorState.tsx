@@ -18,9 +18,9 @@ export function ErrorState({
     <div
       className={`flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 ${className}`}
     >
-      <div className="glass ghost-border shadow-ambient rounded-3xl p-10 w-full max-w-sm flex flex-col items-center gap-6 text-center">
+      <div className="glass ghost-border shadow-lg shadow-primary/20 rounded-3xl p-10 w-full max-w-sm flex flex-col items-center gap-6 text-center">
         {/* Icon */}
-        <TriangleAlert className="w-10 h-10 text-primary-app" strokeWidth={1.5} />
+        <TriangleAlert className="w-10 h-10 text-error" strokeWidth={1.5} />
 
         {/* Text */}
         <div className="flex flex-col gap-2">

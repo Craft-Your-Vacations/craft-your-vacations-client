@@ -201,7 +201,7 @@ export const packageEditSchema = packageSchema.omit({ key: true });
 
 // Admin booking patch — admins may set past travel dates (unlike customer booking).
 export const adminBookingPatchSchema = z.object({
-  status: z.enum(["Pending", "Confirmed", "Completed", "Cancelled"], {
+  status: z.enum(["pending", "confirmed", "completed", "cancelled"], {
     message: "Select a valid status.",
   }),
   travelersCount: zTravelersCount,

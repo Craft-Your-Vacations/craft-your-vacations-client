@@ -7,18 +7,11 @@ import Button from "@/components/Button/Button";
 import Surface from "@/components/Surface/Surface";
 import type { ItineraryDay, Activity, ActivityType } from "@/app/types/api";
 import { ACTIVITY_TYPES } from "@/lib/constants";
+import { emptyActivity, emptyDay } from "@/lib/itinerary";
 
 interface ItineraryEditorProps {
   itinerary: ItineraryDay[];
   onChange: (itinerary: ItineraryDay[]) => void;
-}
-
-function emptyActivity(): Activity {
-  return { time: "", description: "", type: "leisure" };
-}
-
-function emptyDay(dayNumber: number): ItineraryDay {
-  return { dayNumber, title: "", activities: [emptyActivity()] };
 }
 
 export default function ItineraryEditor({ itinerary, onChange }: ItineraryEditorProps) {

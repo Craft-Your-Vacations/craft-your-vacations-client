@@ -1,10 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
-import { Star, MapPin, X } from "lucide-react";
+import { MapPin, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { formatMonth } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 import Dialog from "@/components/Dialog/Dialog";
 import Button from "@/components/Button/Button";
+import Chip from "@/components/Chip/Chip";
+import Avatar from "@/components/Avatar/Avatar";
+import StarRating from "@/components/StarRating/StarRating";
 
 interface ReviewDialogProps {
   isOpen: boolean;
@@ -18,15 +23,6 @@ interface ReviewDialogProps {
   imagePaths: string[];
 }
 
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
-
 export default function ReviewDialog({
   isOpen,
   onClose,
@@ -38,6 +34,17 @@ export default function ReviewDialog({
   travelDate,
   imagePaths,
 }: ReviewDialogProps) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const total = imagePaths.length;
+
+  // Start from the first photo each time the dialog opens. Reconciled during
+  // render rather than in an effect (see AGENTS.md).
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (wasOpen !== isOpen) {
+    setWasOpen(isOpen);
+    if (!isOpen) setActiveIndex(0);
+  }
+
   return (
     <Dialog
       isOpen={isOpen}
@@ -49,11 +56,7 @@ export default function ReviewDialog({
       {/* Header — author + close */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">
-            <span className="text-label-sm font-bold text-primary">
-              {getInitials(authorName)}
-            </span>
-          </div>
+          <Avatar name={authorName} variant="onSurface" />
           <div className="min-w-0">
             <p className="text-body-md font-semibold text-text">{authorName}</p>
             {authorProfession && (
@@ -73,29 +76,63 @@ export default function ReviewDialog({
       </div>
 
       {/* Stars */}
-      <div className="flex items-center gap-0.5">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Star
-            key={i}
-            className={`w-4 h-4 ${i < rating ? "fill-primary text-primary" : "text-text-subtle"}`}
-          />
-        ))}
-      </div>
+      <StarRating rating={rating} />
 
-      {/* Images — horizontal scroll strip */}
-      {imagePaths.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-8 px-8">
+      {/* Photos — one at a time, stepped with the chevrons. Sits inside the
+          panel's own padding, so it keeps a gutter on both sides. */}
+      {total > 0 && (
+        <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-surface-high">
           {imagePaths.map((src, i) => (
-            <div key={i} className="relative w-36 h-24 rounded-xl overflow-hidden shrink-0">
-              <Image
-                src={src}
-                alt={`Trip photo ${i + 1}`}
-                fill
-                sizes="144px"
-                className="object-cover"
-              />
-            </div>
+            <Image
+              key={src}
+              src={src}
+              alt={`${authorName}'s trip photo ${i + 1} of ${total}`}
+              fill
+              sizes="(max-width: 768px) 90vw, 448px"
+              className={cn(
+                "object-cover transition-opacity duration-300",
+                i === activeIndex ? "opacity-100" : "opacity-0",
+              )}
+            />
           ))}
+
+          {total > 1 && (
+            <>
+              <Button
+                variant="overlay"
+                size="sm"
+                onClick={() => setActiveIndex((i) => (i - 1 + total) % total)}
+                aria-label="Previous photo"
+                className="absolute left-2 top-1/2 -translate-y-1/2"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </Button>
+              <Button
+                variant="overlay"
+                size="sm"
+                onClick={() => setActiveIndex((i) => (i + 1) % total)}
+                aria-label="Next photo"
+                className="absolute right-2 top-1/2 -translate-y-1/2"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </Button>
+
+              <div
+                aria-hidden="true"
+                className="absolute inset-x-0 bottom-3 flex justify-center gap-1.5"
+              >
+                {imagePaths.map((src, i) => (
+                  <span
+                    key={src}
+                    className={cn(
+                      "h-1.5 rounded-full transition-all duration-300",
+                      i === activeIndex ? "w-4 bg-white" : "w-1.5 bg-white/50",
+                    )}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -105,12 +142,13 @@ export default function ReviewDialog({
       </p>
 
       {/* Location pill */}
-      <div className="flex items-center gap-1.5 bg-primary/10 rounded-full px-3 py-1.5 self-start">
-        <MapPin className="w-3 h-3 text-primary shrink-0" />
-        <span className="text-label-sm text-primary truncate">
-          {packageTitle} &middot; {formatMonth(travelDate)}
-        </span>
-      </div>
+      <Chip
+        variant="onSurface"
+        icon={<MapPin className="w-3 h-3" />}
+        className="self-start"
+      >
+        {packageTitle} &middot; {formatMonth(travelDate)}
+      </Chip>
     </Dialog>
   );
 }

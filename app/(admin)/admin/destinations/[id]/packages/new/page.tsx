@@ -16,10 +16,7 @@ import { packageSchema } from "@/lib/validation/schemas";
 import { getFieldErrors } from "@/lib/validation/getFieldErrors";
 import { LIMITS } from "@/lib/validation/limits";
 import { useToastStore } from "@/stores/useToastStore";
-
-function emptyDay(dayNumber: number): ItineraryDay {
-  return { dayNumber, title: "", activities: [{ time: "", description: "", type: "leisure" }] };
-}
+import { emptyDay } from "@/lib/itinerary";
 
 export default function NewPackagePage({
   params,

@@ -1,25 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { CalendarDays, PlaneTakeoff, History } from "lucide-react";
 import { useMyBookings } from "@/hooks/useMyBookings";
+import { useUserDocuments } from "@/hooks/useUserDocuments";
 import { useSubmitReview } from "@/hooks/useSubmitReview";
-import { reviewsApi } from "@/lib/endpoints";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
 import Button from "@/components/Button/Button";
 import EmptyState from "@/components/EmptyState/EmptyState";
-import BookingCard from "@/components/BookingCard/BookingCard";
-import BookingsHeader from "./_sections/BookingsHeader/BookingsHeader";
+import CtaBanner from "@/components/CtaBanner/CtaBanner";
 import ReviewModal from "@/components/ReviewModal/ReviewModal";
 import ModalSuccess from "@/components/ModalSuccess/ModalSuccess";
 import ModalError from "@/components/ModalError/ModalError";
-import { CalendarDays } from "lucide-react";
+import BookingsHero from "./_sections/BookingsHero/BookingsHero";
+import BookingsToolbar, {
+  type BookingTab,
+} from "./_sections/BookingsToolbar/BookingsToolbar";
+import BookingsList from "./_sections/BookingsList/BookingsList";
 import type { Booking } from "@/app/types/api";
 import type { ReviewSubmitData } from "@/components/ReviewModal/ReviewModal";
 
+// travelDate is either "YYYY-MM" or "YYYY-MM-DD"; both sort correctly as plain
+// strings, and mixing the two still orders by month, which is all we need.
+const byTravelDate = (a: Booking, b: Booking) =>
+  a.travelDate.localeCompare(b.travelDate);
+
 export default function BookingsPage() {
   const { data: bookings, isLoading, isError, error, refetch } = useMyBookings();
+  // Documents live on the profile, not the booking, so one fetch covers the
+  // whole list. The card compares each booking's requirements against it.
+  const { data: documents } = useUserDocuments();
 
+  const [tab, setTab] = useState<BookingTab>("upcoming");
+  const [tabSeeded, setTabSeeded] = useState(false);
   const [reviewingBooking, setReviewingBooking] = useState<Booking | null>(null);
   const [reviewSuccessOpen, setReviewSuccessOpen] = useState(false);
   const [reviewErrorOpen, setReviewErrorOpen] = useState(false);
@@ -37,22 +51,13 @@ export default function BookingsPage() {
     setReviewingBooking(null);
   }
 
-  async function handleReviewSubmit({ rating, quote, files }: ReviewSubmitData) {
+  function handleReviewSubmit({ rating, quote, files }: ReviewSubmitData) {
     if (!reviewingBooking) return;
 
     mutate(
-      { bookingId: reviewingBooking.id, rating, quote },
+      { bookingId: reviewingBooking.id, rating, quote, files },
       {
-        onSuccess: async (review) => {
-          if (files.length > 0) {
-            const formData = new FormData();
-            files.forEach((f) => formData.append("files", f));
-            try {
-              await reviewsApi.uploadImages(review.id, formData);
-            } catch {
-              // Images failed but review was saved — show success anyway
-            }
-          }
+        onSuccess: () => {
           setReviewingBooking(null);
           setReviewSuccessOpen(true);
         },
@@ -64,6 +69,30 @@ export default function BookingsPage() {
       }
     );
   }
+
+  const list = useMemo(() => bookings ?? [], [bookings]);
+
+  const uploadedDocumentTypes = useMemo(
+    () => (documents ?? []).map((d) => d.type),
+    [documents],
+  );
+
+  const upcoming = useMemo(
+    () =>
+      list
+        .filter((b) => b.status === "pending" || b.status === "confirmed")
+        .sort(byTravelDate),
+    [list],
+  );
+
+  // Past trips read best newest-first.
+  const past = useMemo(
+    () =>
+      list
+        .filter((b) => b.status === "completed" || b.status === "cancelled")
+        .sort((a, b) => byTravelDate(b, a)),
+    [list],
+  );
 
   if (isLoading) {
     return <LoadingSpinner message="Loading your travel interests…" fullScreen={false} />;
@@ -78,35 +107,84 @@ export default function BookingsPage() {
     );
   }
 
-  return (
-    <div className="pt-24 pb-16 px-6 md:px-10 max-w-(--container-max-w) mx-auto">
-      {/* Page header */}
-      <BookingsHeader />
+  const visible = tab === "upcoming" ? upcoming : past;
 
-      {/* Empty state */}
-      {bookings?.length === 0 && (
-        <EmptyState
-          icon={<CalendarDays className="w-10 h-10 text-primary/50" strokeWidth={1.5} />}
-          title="No booking interests yet"
-          description="Browse packages and express your interest to get started."
-          action={
-            <Button variant="primary" href="/destinations">
-              Explore Destinations
-            </Button>
-          }
-        />
+  // Land on the tab that actually has something in it. Seeded during render on
+  // the first resolved payload (an effect here would trip set-state-in-effect).
+  if (!tabSeeded && bookings) {
+    setTabSeeded(true);
+    if (upcoming.length === 0 && past.length > 0) setTab("past");
+  }
+
+  return (
+    <div>
+      <BookingsHero bookings={list} />
+
+      {list.length === 0 ? (
+        <div className="mx-auto max-w-(--container-max-w) px-6 md:px-10 py-16">
+          <EmptyState
+            icon={<CalendarDays className="w-10 h-10 text-primary/50" strokeWidth={1.5} />}
+            title="No booking interests yet"
+            description="Browse packages and express your interest to get started."
+            action={
+              <Button variant="primary" href="/destinations">
+                Explore Destinations
+              </Button>
+            }
+            className="mx-auto w-full max-w-md"
+          />
+        </div>
+      ) : (
+        <>
+          <BookingsToolbar
+            tab={tab}
+            onTabChange={setTab}
+            resultCount={visible.length}
+            totalCount={list.length}
+          />
+
+          <div className="mx-auto max-w-(--container-max-w) px-6 md:px-10 pt-10 md:pt-14">
+            {visible.length === 0 ? (
+              <EmptyState
+                icon={
+                  tab === "upcoming" ? (
+                    <PlaneTakeoff className="w-10 h-10 text-primary/50" strokeWidth={1.5} />
+                  ) : (
+                    <History className="w-10 h-10 text-primary/50" strokeWidth={1.5} />
+                  )
+                }
+                title={
+                  tab === "upcoming" ? "Nothing coming up" : "No past trips yet"
+                }
+                description={
+                  tab === "upcoming"
+                    ? "Your confirmed and pending trips will appear here."
+                    : "Trips you've completed or cancelled will be kept here."
+                }
+                action={
+                  tab === "upcoming" ? (
+                    <Button variant="primary" href="/destinations">
+                      Explore Destinations
+                    </Button>
+                  ) : undefined
+                }
+                className="mx-auto w-full max-w-md"
+              />
+            ) : (
+              <BookingsList
+                bookings={visible}
+                uploadedDocumentTypes={uploadedDocumentTypes}
+                onReviewClick={handleOpenReview}
+              />
+            )}
+          </div>
+        </>
       )}
 
-      {/* Booking list */}
-      <div className="flex flex-col gap-4">
-        {bookings?.map((booking) => (
-          <BookingCard
-            key={booking.id}
-            booking={booking}
-            onReviewClick={() => handleOpenReview(booking)}
-          />
-        ))}
-      </div>
+      <CtaBanner
+        heading="Questions about your trip?"
+        subtext="Our team is a message away — we'll tailor every detail with you before anything is confirmed."
+      />
 
       <ReviewModal
         isOpen={reviewingBooking !== null}

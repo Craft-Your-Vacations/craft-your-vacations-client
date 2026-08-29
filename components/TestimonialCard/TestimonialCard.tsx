@@ -1,5 +1,6 @@
 import React from "react";
-import Image from "next/image";
+import { Quote } from "lucide-react";
+import Avatar from "@/components/Avatar/Avatar";
 import type { TestimonialData } from "@/app/types/component";
 
 interface TestimonialCardProps extends TestimonialData {
@@ -19,31 +20,22 @@ export function TestimonialCard({
       className={`relative flex flex-col gap-4 bg-surface rounded-2xl p-6 overflow-hidden ${className}`}
     >
       {/* Decorative quote icon */}
-      <span
-        className="material-symbols-outlined absolute -top-2 -left-1 text-[80px] text-primary/10 pointer-events-none select-none"
+      <Quote
+        className="absolute -top-2 -left-1 w-20 h-20 fill-primary/10 text-primary/10 pointer-events-none select-none"
         aria-hidden="true"
-      >
-        format_quote
-      </span>
+      />
 
       {/* Quote */}
       <p className="text-body-lg text-text-muted relative z-10 pt-4">{quote}</p>
 
       {/* Author */}
       <div className="flex items-center gap-3 mt-2">
-        {authorAvatarUrl ? (
-          <Image
-            src={authorAvatarUrl}
-            alt={authorAvatarAlt ?? authorName}
-            width={40}
-            height={40}
-            className="w-10 h-10 rounded-full object-cover border-2 border-primary/20"
-          />
-        ) : (
-          <span className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 border-2 border-primary/20 text-primary text-label-md font-semibold">
-            {authorName.charAt(0)}
-          </span>
-        )}
+        <Avatar
+          name={authorName}
+          imageUrl={authorAvatarUrl}
+          imageAlt={authorAvatarAlt}
+          variant="onSurface"
+        />
         <div>
           <p className="text-body-md text-text font-semibold">{authorName}</p>
           {authorTitle && (
