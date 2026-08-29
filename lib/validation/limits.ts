@@ -51,6 +51,7 @@ export const FILES = {
   maxSizeLabel: "5 MB",
   documentExtensions: [".pdf", ".jpg", ".jpeg", ".png"] as const,
   reviewImageExtensions: [".jpg", ".jpeg", ".png", ".webp"] as const,
+  imageExtensions: [".jpg", ".jpeg", ".png", ".webp"] as const,
   reviewImagesMax: 5,
 } as const;
 

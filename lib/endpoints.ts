@@ -78,16 +78,27 @@ export const bookingsApi = {
   getById: (id: number) => api.get<Booking>(`bookings/${id}`),
 };
 
+/**
+ * File uploads relay the bytes browser -> Next route -> .NET -> R2, so they take
+ * far longer than a JSON call. The client's default 15s timeout in lib/api.ts is
+ * a good ceiling for those but cuts uploads off mid-flight.
+ */
+const UPLOAD_TIMEOUT_MS = 60_000;
+
 export const documentsApi = {
   getMyDocuments: () => api.get<UserDocument[]>("users/documents"),
   uploadDocument: (type: DocumentType, formData: FormData) =>
-    api.putForm<UserDocument>(`users/documents/${type}`, formData),
+    api.putForm<UserDocument>(`users/documents/${type}`, formData, {
+      timeout: UPLOAD_TIMEOUT_MS,
+    }),
 };
 
 export const reviewsApi = {
   create: (body: CreateReviewRequest) => api.post<Review>("reviews", body),
   uploadImages: (id: number, formData: FormData) =>
-    api.postForm<Review>(`reviews/${id}/images`, formData),
+    api.postForm<Review>(`reviews/${id}/images`, formData, {
+      timeout: UPLOAD_TIMEOUT_MS,
+    }),
   getByDestination: (slug: string) =>
     api.get<Review[]>(`reviews/destination/${slug}`),
   getApproved: () => api.get<Review[]>("reviews/approved"),
@@ -142,6 +153,10 @@ export const adminApi = {
     api.patch<Destination>(`admin/destinations/${id}`, body),
   deleteDestination: (id: number) =>
     api.delete<void>(`admin/destinations/${id}`),
+  uploadDestinationImage: (id: number, formData: FormData) =>
+    api.postForm<Destination>(`admin/destinations/${id}/image`, formData, {
+      timeout: UPLOAD_TIMEOUT_MS,
+    }),
   // Packages
   createPackage: (destId: number, body: CreatePackageRequest) =>
     api.post<PackageDetail>(`admin/destinations/${destId}/packages`, body),

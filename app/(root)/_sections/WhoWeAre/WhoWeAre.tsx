@@ -5,14 +5,14 @@ import PhotoCluster, {
 } from "@/components/PhotoCluster/PhotoCluster";
 import Reveal from "@/components/motion/Reveal";
 import { Stagger, StaggerItem } from "@/components/motion/Stagger";
-import Maldives from "@/public/maldives.jpg";
-import Switzerland from "@/public/switzerland.jpg";
-import Paris from "@/public/paris.jpg";
+import CoverImage1 from "@/public/coverImage1.jpg";
+import CoverImage2 from "@/public/coverImage2.jpg";
+import CoverImage3 from "@/public/coverImage3.jpg";
 
 const clusterImages: [ClusterImage, ClusterImage, ClusterImage] = [
-  { src: Maldives, alt: "Overwater villas in the Maldives" },
-  { src: Switzerland, alt: "Alpine peaks in Switzerland" },
-  { src: Paris, alt: "Rooftops of Paris" },
+  { src: CoverImage1, alt: "Overwater villas in the Maldives" },
+  { src: CoverImage2, alt: "Alpine peaks in Switzerland" },
+  { src: CoverImage3, alt: "Rooftops of Paris" },
 ];
 
 const stats = [

@@ -3,6 +3,7 @@
 import { use, useState } from "react";
 import { useDestination } from "@/hooks/useDestination";
 import { useUpdateDestination } from "@/hooks/useUpdateDestination";
+import { useUploadDestinationImage } from "@/hooks/useUploadDestinationImage";
 import { useDeletePackage } from "@/hooks/useDeletePackage";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import ErrorState from "@/components/ErrorState/ErrorState";
@@ -11,6 +12,7 @@ import Surface from "@/components/Surface/Surface";
 import Checkbox from "@/components/Checkbox/Checkbox";
 import ConfirmDialog from "@/components/ConfirmDialog/ConfirmDialog";
 import FormField from "@/components/FormField/FormField";
+import ImageUpload from "@/components/ImageUpload/ImageUpload";
 import TextAreaField from "@/components/TextAreaField/TextAreaField";
 import { Plus, Trash2 } from "lucide-react";
 import BackButton from "@/components/BackButton/BackButton";
@@ -32,6 +34,7 @@ export default function EditDestinationPage({
   const numericId = destination?.id ?? 0;
   const updateDestination = useUpdateDestination(numericId, slug);
   const deletePackage = useDeletePackage(numericId, slug);
+  const uploadImage = useUploadDestinationImage(numericId, slug);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -80,6 +83,31 @@ export default function EditDestinationPage({
     setConfirmSaveOpen(true);
   }
 
+  // Uploading replaces the image server-side straight away, so the local field
+  // is synced from the response rather than waiting for the form's Save.
+  function handleImageUpload(file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    uploadImage.mutate(formData, {
+      onSuccess: (updated) => {
+        setImagePath(updated.imagePath);
+        addToast({
+          key: "destination-image",
+          type: "success",
+          message: "Image updated.",
+        });
+      },
+      onError: () => {
+        addToast({
+          key: "destination-image",
+          type: "error",
+          message: "Could not upload the image. Please try again.",
+        });
+      },
+    });
+  }
+
   function handleConfirmSave() {
     updateDestination.mutate(
       { title, content, imagePath, isFeatured, destinationCities: cities },
@@ -114,13 +142,19 @@ export default function EditDestinationPage({
             errorMessage={errors.title}
           />
 
-          <FormField
-            id="dest-image"
-            label="Image Path"
+          <ImageUpload
+            label="Hero image"
+            alt={title}
             value={imagePath}
-            onChange={(e) => setImagePath(e.target.value)}
-            maxLength={LIMITS.imagePathMax}
-            errorMessage={errors.imagePath}
+            onUpload={handleImageUpload}
+            isUploading={uploadImage.isPending}
+            error={
+              errors.imagePath ??
+              (uploadImage.error instanceof Error
+                ? uploadImage.error.message
+                : null)
+            }
+            helperText="Stored in R2 and saved to this destination immediately."
           />
 
           <TextAreaField

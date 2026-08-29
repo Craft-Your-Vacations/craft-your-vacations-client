@@ -32,7 +32,7 @@ const destinations = [
     id: 1,
     slug: "dubai",
     title: "Dubai",
-    imagePath: "/dubai.jpg",
+    imagePath: "/dubai_2.jpg",
     content:
       "Glamour, modern skylines, desert safaris and luxury — Dubai awaits the discerning traveler.",
     minPackagePrice: 60000,
