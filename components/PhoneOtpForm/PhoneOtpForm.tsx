@@ -67,7 +67,11 @@ export default function PhoneOtpForm({
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   // Turnstile tokens are single-use, so each attempt needs a fresh one.
   const [captchaNonce, setCaptchaNonce] = useState(0);
-  const [captchaUnavailable, setCaptchaUnavailable] = useState(false);
+  // Two different failures, needing different copy and different affordances:
+  // the script never loaded (terminal — nothing to retry against), or the
+  // challenge itself kept failing (recoverable by resetting the widget).
+  const [captchaBlocked, setCaptchaBlocked] = useState(false);
+  const [captchaFailed, setCaptchaFailed] = useState(false);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -80,16 +84,35 @@ export default function PhoneOtpForm({
 
   // With appearance: "interaction-only" the check is invisible, so a disabled
   // button would otherwise have no visible cause.
-  const sendLabel = captchaUnavailable
-    ? "Security check unavailable"
-    : cooldown > 0
-      ? `Try again in ${cooldown}s`
-      : awaitingCaptcha
-        ? "Checking your browser…"
-        : "Send code";
+  function sendButtonLabel() {
+    if (captchaBlocked) return "Security check unavailable";
+    if (captchaFailed) return "Security check failed";
+    if (cooldown > 0) return `Try again in ${cooldown}s`;
+    if (awaitingCaptcha) return "Checking your browser…";
+    return "Send code";
+  }
+
+  /**
+   * A token arriving clears a declared failure: Turnstile retries on its own,
+   * so one can land after we had already given up on it. Without this the form
+   * would show "security check failed" while holding a perfectly good token.
+   */
+  function handleCaptchaToken(token: string | null) {
+    setCaptchaToken(token);
+    if (token) setCaptchaFailed(false);
+  }
 
   function consumeCaptcha() {
     setCaptchaToken(null);
+    // A new attempt starts the check over, so an earlier failure is moot.
+    setCaptchaFailed(false);
+    setCaptchaNonce((n) => n + 1);
+  }
+
+  /** Manual retry for the failed state. Not offered when blocked — a reset has
+   * nothing to act on if the script never loaded. */
+  function retryCaptcha() {
+    setCaptchaFailed(false);
     setCaptchaNonce((n) => n + 1);
   }
 
@@ -133,15 +156,29 @@ export default function PhoneOtpForm({
   const captcha = (
     <>
       <TurnstileWidget
-        onToken={setCaptchaToken}
-        onUnavailable={() => setCaptchaUnavailable(true)}
+        onToken={handleCaptchaToken}
+        onBlocked={() => setCaptchaBlocked(true)}
+        onFailed={() => setCaptchaFailed(true)}
         resetKey={captchaNonce}
       />
-      {captchaUnavailable && (
+      {captchaBlocked ? (
         <p className="text-body-sm text-error text-center">
           We couldn&apos;t load the security check. Please disable your ad
           blocker for this site, or try a different browser.
         </p>
+      ) : (
+        captchaFailed && (
+          <p className="text-body-sm text-error text-center">
+            The security check didn&apos;t complete.{" "}
+            <button
+              type="button"
+              onClick={retryCaptcha}
+              className="text-primary transition-opacity hover:underline cursor-pointer"
+            >
+              Try again
+            </button>
+          </p>
+        )
       )}
     </>
   );
@@ -171,7 +208,7 @@ export default function PhoneOtpForm({
           disabled={!phone.trim() || cooldown > 0 || awaitingCaptcha}
           className="w-full"
         >
-          {sendLabel}
+          {sendButtonLabel()}
         </Button>
       </div>
     );

@@ -1,10 +1,21 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 const SCRIPT_SRC =
   "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+
+/**
+ * How long a failing challenge gets to recover before we tell the user.
+ *
+ * Turnstile's `retry` option defaults to "auto" with a ~8s interval, so retries
+ * land at roughly t+8, t+16 and t+24. 25s therefore covers three of them. The
+ * errors that show up here are mostly transient — 110600 is literally "challenge
+ * timed out", which a slow connection produces — so reporting the first one
+ * would cry failure over something that fixes itself seconds later.
+ */
+const FAILURE_GRACE_MS = 25_000;
 
 /**
  * Whether CAPTCHA is switched on for this deployment.
@@ -69,15 +80,21 @@ interface TurnstileWidgetProps {
   /** Receives the token, or null when it expires, errors, or is reset. */
   onToken: (token: string | null) => void;
   /**
-   * The Cloudflare script could not be fetched — almost always an ad blocker,
-   * since challenges.cloudflare.com appears on some blocklists. Without this the
-   * form would sit with a disabled button and no explanation.
+   * The Cloudflare script could not be fetched at all — almost always an ad
+   * blocker, since challenges.cloudflare.com appears on some blocklists. There
+   * is no widget to retry against, so this one is terminal.
    */
-  onUnavailable?: () => void;
+  onBlocked?: () => void;
+  /**
+   * The widget loaded, but the challenge kept failing for longer than
+   * FAILURE_GRACE_MS. Distinct from onBlocked because this IS recoverable —
+   * the caller should offer a manual retry (bump `resetKey`), not a dead end.
+   */
+  onFailed?: () => void;
   /**
    * Bump to force a fresh token. Turnstile tokens are single-use and short-lived
    * (~5 min), so one cannot be reused across two auth calls — every attempt
-   * needs its own.
+   * needs its own. Also abandons any failure countdown in flight.
    */
   resetKey?: number;
 }
@@ -91,19 +108,31 @@ interface TurnstileWidgetProps {
  */
 export default function TurnstileWidget({
   onToken,
-  onUnavailable,
+  onBlocked,
+  onFailed,
   resetKey = 0,
 }: TurnstileWidgetProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const widgetIdRef = useRef<string | null>(null);
-  // Kept in a ref so re-rendering with a new closure doesn't re-create the
+  const failureTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Kept in refs so re-rendering with a new closure doesn't re-create the
   // widget, which would discard a token the user already solved for.
   const onTokenRef = useRef(onToken);
-  const onUnavailableRef = useRef(onUnavailable);
+  const onBlockedRef = useRef(onBlocked);
+  const onFailedRef = useRef(onFailed);
   useEffect(() => {
     onTokenRef.current = onToken;
-    onUnavailableRef.current = onUnavailable;
-  }, [onToken, onUnavailable]);
+    onBlockedRef.current = onBlocked;
+    onFailedRef.current = onFailed;
+  }, [onToken, onBlocked, onFailed]);
+
+  // Empty deps, so its identity is stable and naming it as a dependency below
+  // never re-runs an effect (which would remount the widget).
+  const cancelFailureCountdown = useCallback(() => {
+    if (!failureTimerRef.current) return;
+    clearTimeout(failureTimerRef.current);
+    failureTimerRef.current = null;
+  }, []);
 
   useEffect(() => {
     if (!SITE_KEY) return;
@@ -117,9 +146,24 @@ export default function TurnstileWidget({
 
         widgetIdRef.current = window.turnstile.render(containerRef.current, {
           sitekey: SITE_KEY,
-          callback: (token) => onTokenRef.current(token),
+          callback: (token) => {
+            // A retry landed — withdraw the verdict we were counting down to.
+            cancelFailureCountdown();
+            onTokenRef.current(token);
+          },
           "expired-callback": () => onTokenRef.current(null),
-          "error-callback": () => onTokenRef.current(null),
+          "error-callback": () => {
+            onTokenRef.current(null);
+            // Don't report the first failure: Turnstile is already retrying,
+            // and these errors are usually transient. Start one countdown and
+            // let `callback` cancel it, so a slow-but-eventual success stays
+            // silent and only a sustained failure reaches the user.
+            if (failureTimerRef.current) return;
+            failureTimerRef.current = setTimeout(() => {
+              failureTimerRef.current = null;
+              onFailedRef.current?.();
+            }, FAILURE_GRACE_MS);
+          },
           theme: "auto",
           // Render nothing unless Cloudflare actually needs the user to do
           // something. The default ("always") leaves a white Cloudflare badge
@@ -130,22 +174,23 @@ export default function TurnstileWidget({
         });
       })
       .catch(() => {
-        // Script blocked (ad blocker, network). Tell the form, so it can say so
-        // instead of leaving a dead button with no explanation.
+        // Script blocked (ad blocker, network). No widget exists, so there is
+        // nothing to retry — report it straight away rather than after a wait.
         if (cancelled) return;
         onTokenRef.current(null);
-        onUnavailableRef.current?.();
+        onBlockedRef.current?.();
       });
 
     return () => {
       cancelled = true;
+      cancelFailureCountdown();
       const id = widgetIdRef.current;
       if (id && window.turnstile) {
         window.turnstile.remove(id);
         widgetIdRef.current = null;
       }
     };
-  }, []);
+  }, [cancelFailureCountdown]);
 
   // Reset on demand. Skips the first run: there is no token to clear yet, and
   // resetting an unrendered widget throws.
@@ -153,12 +198,14 @@ export default function TurnstileWidget({
   useEffect(() => {
     if (lastResetRef.current === resetKey) return;
     lastResetRef.current = resetKey;
+    // A fresh attempt supersedes whatever the old one was failing at.
+    cancelFailureCountdown();
     const id = widgetIdRef.current;
     if (id && window.turnstile) {
       window.turnstile.reset(id);
       onTokenRef.current(null);
     }
-  }, [resetKey]);
+  }, [resetKey, cancelFailureCountdown]);
 
   if (!SITE_KEY) return null;
 
