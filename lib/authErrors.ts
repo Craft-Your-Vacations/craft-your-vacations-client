@@ -45,11 +45,20 @@ export function otpSendErrorMessage(error: AuthError): string {
     case "sms_send_failed":
       return "We couldn't deliver the code. Please check the number and try again.";
     case "otp_disabled":
+    case "phone_provider_disabled":
       return "Phone sign-in is temporarily unavailable. Please use Google instead.";
     case "captcha_failed":
       return "We couldn't verify you're human. Please try again.";
     case "validation_failed":
       return "That phone number doesn't look right. Please check and try again.";
+    // Only reachable from the phone-*change* paths (updateUser): a Google user
+    // in onboarding, or the profile page. signInWithOtp can't produce it — it
+    // would just sign the number's owner in. Worth a case of its own because the
+    // generic fallback ends in "Please try again", inviting an endless retry
+    // against a number that can never work. Saying it belongs to someone else is
+    // no new disclosure either: Supabase already says so in the response body.
+    case "phone_exists":
+      return "That number is already linked to another account. Please use a different one.";
   }
 
   // A 429 with no code we recognise is still a rate limit.
