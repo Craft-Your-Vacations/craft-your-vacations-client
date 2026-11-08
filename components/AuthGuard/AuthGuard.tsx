@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuthStore } from "@/stores/useAuthStore";
+import { selectNeedsOnboarding, useAuthStore } from "@/stores/useAuthStore";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
@@ -8,11 +8,11 @@ import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const status = useAuthStore((s) => s.status);
   const role = useAuthStore((s) => s.role);
-  const phoneVerified = useAuthStore((s) => s.phoneVerified);
+  const needsOnboarding = useAuthStore(selectNeedsOnboarding);
   const router = useRouter();
   const pathname = usePathname();
   const isAuthenticated = status === "authenticated";
-  const isAuthPage = pathname === "/login" || pathname === "/register";
+  const isAuthPage = pathname === "/login";
 
   useEffect(() => {
     if (status === "loading") return;
@@ -29,9 +29,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     }
 
     if (isAuthPage && isAuthenticated) {
-      router.replace(phoneVerified ? "/" : "/onboarding");
+      router.replace(needsOnboarding ? "/onboarding" : "/");
     }
-  }, [status, role, phoneVerified, isAuthenticated, pathname, router]);
+  }, [status, role, needsOnboarding, isAuthenticated, pathname, router]);
 
   if (status === "loading") return <LoadingSpinner />;
 

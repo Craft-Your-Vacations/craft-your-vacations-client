@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuthStore } from "@/stores/useAuthStore";
+import { selectNeedsOnboarding, useAuthStore } from "@/stores/useAuthStore";
 import { redirect, usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
@@ -20,7 +20,7 @@ const PROTECTED_PATHS = [
 export function RootGuard({ children }: { children: React.ReactNode }) {
   const status = useAuthStore((s) => s.status);
   const role = useAuthStore((s) => s.role);
-  const phoneVerified = useAuthStore((s) => s.phoneVerified);
+  const needsOnboarding = useAuthStore(selectNeedsOnboarding);
   const router = useRouter();
   const pathname = usePathname();
   const isAuthenticated = status === "authenticated";
@@ -47,13 +47,13 @@ export function RootGuard({ children }: { children: React.ReactNode }) {
       redirect(`/login?reason=${protectedRoute.reason}&next=${next}`);
     }
 
-    if (isAuthenticated && !phoneVerified) {
+    if (isAuthenticated && needsOnboarding) {
       redirect("/onboarding");
     }
   }, [
     status,
     role,
-    phoneVerified,
+    needsOnboarding,
     isAuthenticated,
     pathname,
     router,
@@ -66,7 +66,7 @@ export function RootGuard({ children }: { children: React.ReactNode }) {
   if (status === "loading" && isProtected) return <LoadingSpinner />;
   if (role === "Admin") return null;
   if (isProtected && !isAuthenticated) return null;
-  if (isAuthenticated && !phoneVerified) return null;
+  if (isAuthenticated && needsOnboarding) return null;
 
   return (
     <>

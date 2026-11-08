@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // /register is gone: signing in by phone creates the account (signInWithOtp
+  // with shouldCreateUser), and Google sign-in always did. One page now covers
+  // both, so old links and bookmarks land on it instead of a 404.
+  async redirects() {
+    return [{ source: "/register", destination: "/login", permanent: false }];
+  },
   images: {
     localPatterns: [{ pathname: "/**" }],
     remotePatterns: [

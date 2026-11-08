@@ -11,12 +11,12 @@ import { useToastStore } from "@/stores/useToastStore";
 import Logo from "@/public/logo.png";
 import LogoText from "@/public/logo_text.png";
 import Button from "@/components/Button/Button";
-import FormField from "@/components/FormField/FormField";
 import AuthCard from "@/components/AuthCard/AuthCard";
 import SegmentedControl from "@/components/SegmentedControl/SegmentedControl";
-import { LIMITS } from "@/lib/validation/limits";
+import PhoneOtpForm from "@/components/PhoneOtpForm/PhoneOtpForm";
+import { otpSendErrorMessage, otpVerifyErrorMessage } from "@/lib/authErrors";
 
-type Tab = "email" | "google";
+type Tab = "phone" | "google";
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5 shrink-0" aria-hidden="true">
@@ -60,10 +60,10 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const addToast = useToastStore((s) => s.addToast);
-  const [activeTab, setActiveTab] = useState<Tab>("email");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>("phone");
+  const [otpSending, setOtpSending] = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
 
   const prompt = LOGIN_PROMPTS[searchParams.get("reason") ?? ""];
   const next = safeNext(searchParams.get("next"));
@@ -81,32 +81,76 @@ export default function LoginPage() {
     }
   }, []);
 
-  const handleEmailSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  /**
+   * Where to land after a successful sign-in. Admins always go to /admin; everyone
+   * else resumes the page that bounced them here (`next`).
+   *
+   * No router.refresh() after replace — it re-renders the current (/login) route
+   * before the navigation commits, cancelling it and leaving a blank
+   * AuthGuard-null screen.
+   */
+  const redirectAfterSignIn = (accessToken: string | undefined) => {
+    const role = decodeClaims(accessToken).user_role;
+    router.replace(role === "Admin" ? "/admin" : (next ?? "/"));
+  };
+
+  /**
+   * Phone sign-in and phone sign-up are the same Supabase call: signInWithOtp
+   * creates the auth user when the number is new (shouldCreateUser defaults to
+   * true), and the on_auth_user_created trigger creates the users_master row.
+   * A brand-new user therefore arrives with no name, so RootGuard sends them on
+   * to /onboarding.
+   */
+  const handleSendOtp = async (
+    phone: string,
+    captchaToken: string | null,
+    onSuccess: () => void,
+  ) => {
+    setOtpError(null);
+    setOtpSending(true);
 
     const supabase = getSupabaseBrowserClient();
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    const { error } = await supabase.auth.signInWithOtp({
+      phone,
+      options: captchaToken ? { captchaToken } : undefined,
     });
 
-    setLoading(false);
+    setOtpSending(false);
 
     if (error) {
-      addToast({
-        key: "login",
-        type: "error",
-        message: "Invalid email or password.",
-      });
+      setOtpError(otpSendErrorMessage(error));
       return;
     }
 
-    const role = decodeClaims(data.session?.access_token).user_role;
-    // No router.refresh() after replace — it re-renders the current (/login) route before
-    // the navigation commits, cancelling it and leaving a blank AuthGuard-null screen.
-    // `next` carries the page that bounced them here, so they resume where they left off.
-    router.replace(role === "Admin" ? "/admin" : (next ?? "/"));
+    onSuccess();
+  };
+
+  const handleVerifyOtp = async (
+    phone: string,
+    code: string,
+    captchaToken: string | null,
+    onSuccess: () => void,
+  ) => {
+    setOtpError(null);
+    setOtpVerifying(true);
+
+    const supabase = getSupabaseBrowserClient();
+    const { data, error } = await supabase.auth.verifyOtp({
+      phone,
+      token: code,
+      type: "sms",
+      options: captchaToken ? { captchaToken } : undefined,
+    });
+
+    setOtpVerifying(false);
+
+    if (error) {
+      setOtpError(otpVerifyErrorMessage(error));
+      return;
+    }
+
+    onSuccess();
+    redirectAfterSignIn(data.session?.access_token);
   };
 
   const handleGoogleSignIn = async () => {
@@ -124,6 +168,7 @@ export default function LoginPage() {
   };
 
   const switchTab = (tab: Tab) => {
+    setOtpError(null);
     setActiveTab(tab);
   };
 
@@ -166,56 +211,23 @@ export default function LoginPage() {
         {/* Tab switcher */}
         <SegmentedControl<Tab>
           options={[
-            { label: "Email", value: "email" },
+            { label: "Phone", value: "phone" },
             { label: "Google", value: "google" },
           ]}
           value={activeTab}
           onChange={switchTab}
         />
 
-        {/* Email / Password */}
-        {activeTab === "email" && (
-          <form
-            onSubmit={handleEmailSignIn}
-            className="w-full flex flex-col gap-4"
-          >
-            <FormField
-              id="login-email"
-              label="Email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-              maxLength={LIMITS.emailMax}
-            />
-            <FormField
-              id="login-password"
-              label="Password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="current-password"
-              maxLength={LIMITS.loginPasswordMax}
-            />
-            <Button
-              variant="primary"
-              size="md"
-              type="submit"
-              loading={loading}
-            >
-              Sign in
-            </Button>
-            <Link
-              href="/reset-password"
-              className="text-body-sm text-text-muted hover:text-primary transition-colors text-center"
-            >
-              Forgot password?
-            </Link>
-          </form>
+        {/* Phone + OTP */}
+        {activeTab === "phone" && (
+          <PhoneOtpForm
+            onSendOtp={handleSendOtp}
+            onVerifyOtp={handleVerifyOtp}
+            isSending={otpSending}
+            isVerifying={otpVerifying}
+            error={otpError}
+            submitLabel="Sign in"
+          />
         )}
 
         {/* Google */}
@@ -229,10 +241,7 @@ export default function LoginPage() {
         {/* Footer links */}
         <div className="flex flex-col items-center gap-2 w-full">
           <p className="text-body-sm text-text-subtle text-center">
-            Don&apos;t have an account?{" "}
-            <Link href="/register" className="text-primary hover:underline">
-              Register
-            </Link>
+            New here? Signing in creates your account.
           </p>
           <p className="text-body-sm text-text-subtle text-center">
             By continuing you agree to our{" "}

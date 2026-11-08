@@ -8,6 +8,7 @@ import { LIMITS } from "@/lib/validation/limits";
 interface ChangeEmailDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  /** "" for an account with no email yet — the dialog then reads as "add". */
   currentEmail: string;
   /** Page calls the mutation and invokes onSuccess when it completes. */
   onSend: (email: string, onSuccess: () => void) => void;
@@ -23,6 +24,9 @@ export default function ChangeEmailDialog({
   isSending,
   error,
 }: ChangeEmailDialogProps) {
+  // Adding a first address and changing an existing one are the same
+  // confirm-by-link call; only the wording differs.
+  const isAdding = !currentEmail;
   const [newEmail, setNewEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [sameError, setSameError] = useState("");
@@ -66,14 +70,23 @@ export default function ChangeEmailDialog({
   };
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} ariaLabel="Change email address" size="sm">
+    <Dialog
+      isOpen={isOpen}
+      onClose={onClose}
+      ariaLabel={isAdding ? "Add email address" : "Change email address"}
+      size="sm"
+    >
       <div className="flex flex-col gap-6">
         <div className="text-center flex flex-col gap-1">
-          <h2 className="text-headline-sm text-text">Change email</h2>
+          <h2 className="text-headline-sm text-text">
+            {isAdding ? "Add email" : "Change email"}
+          </h2>
           <p className="text-body-sm text-text-muted">
             {sent
               ? `Check your inbox — click the link we sent to ${newEmail} to confirm.`
-              : "Enter your new email address and we'll send you a verification link."}
+              : isAdding
+                ? "Enter your email address and we'll send you a verification link."
+                : "Enter your new email address and we'll send you a verification link."}
           </p>
         </div>
 
@@ -81,7 +94,7 @@ export default function ChangeEmailDialog({
           <>
             <FormField
               id="new-email"
-              label="New email address"
+              label={isAdding ? "Email address" : "New email address"}
               type="email"
               placeholder="you@example.com"
               value={newEmail}

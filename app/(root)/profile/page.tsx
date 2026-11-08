@@ -17,14 +17,14 @@ import { useProfile } from "@/hooks/useProfile";
 import { useUpdateProfile } from "@/hooks/useUpdateProfile";
 import { useUserDocuments } from "@/hooks/useUserDocuments";
 import { useUploadDocument } from "@/hooks/useUploadDocument";
-import { useSendOtp } from "@/hooks/useSendOtp";
-import { useVerifyOtp } from "@/hooks/useVerifyOtp";
 import { useSendEmailVerification } from "@/hooks/useSendEmailVerification";
 import { useSendChangeEmail } from "@/hooks/useSendChangeEmail";
 import { queryKeys } from "@/lib/queryKeys";
 import { profileSchema } from "@/lib/validation/schemas";
 import { getFieldErrors } from "@/lib/validation/getFieldErrors";
 import { LIMITS } from "@/lib/validation/limits";
+import { toE164Phone } from "@/lib/utils";
+import { otpSendErrorMessage, otpVerifyErrorMessage } from "@/lib/authErrors";
 import { useToastStore } from "@/stores/useToastStore";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 import type { UserDocument, DocumentType } from "@/app/types/api";
@@ -61,10 +61,15 @@ export default function ProfilePage() {
   const [changeEmailOpen, setChangeEmailOpen] = useState(false);
   const { mutate: sendChangeEmail, isPending: isSendingChangeEmail, error: sendChangeEmailError, reset: resetChangeEmail } = useSendChangeEmail();
 
-  // Change phone modal
+  // Change phone modal. The number is the Supabase login identity now, so the
+  // change has to go through Supabase (updateUser + verifyOtp) rather than the
+  // old .NET OTP endpoints — those wrote users_master only, which would leave
+  // auth.users.phone stale and lock the user out of phone sign-in.
   const [changePhoneOpen, setChangePhoneOpen] = useState(false);
-  const { mutate: sendOtp, isPending: isSendingPhoneOtp, error: sendPhoneError, reset: resetSendOtp } = useSendOtp();
-  const { mutate: verifyOtp, isPending: isVerifyingPhone, error: verifyPhoneError, reset: resetVerifyOtp } = useVerifyOtp();
+  const [isSendingPhoneOtp, setIsSendingPhoneOtp] = useState(false);
+  const [isVerifyingPhone, setIsVerifyingPhone] = useState(false);
+  const [sendPhoneError, setSendPhoneError] = useState<Error | null>(null);
+  const [verifyPhoneError, setVerifyPhoneError] = useState<Error | null>(null);
 
   // Seed the editable fields once when the profile first loads. Render-time
   // reconciliation (not an effect) avoids a cascading render and won't clobber
@@ -137,27 +142,53 @@ export default function ProfilePage() {
   };
 
   // Change phone handlers
-  const handleSendPhoneOtp = (phone: string, onSuccess: () => void) => {
-    sendOtp({ mobileNumber: phone }, { onSuccess });
+  const handleSendPhoneOtp = async (phone: string, onSuccess: () => void) => {
+    setSendPhoneError(null);
+    setIsSendingPhoneOtp(true);
+
+    const { error } = await supabase.auth.updateUser({
+      phone: toE164Phone(phone),
+    });
+
+    setIsSendingPhoneOtp(false);
+
+    if (error) {
+      setSendPhoneError(new Error(otpSendErrorMessage(error)));
+      return;
+    }
+
+    onSuccess();
   };
 
-  const handleVerifyPhoneOtp = (phone: string, otp: string, onSuccess: () => void) => {
-    verifyOtp(
-      { mobileNumber: phone, otp },
-      {
-        onSuccess: async () => {
-          await supabase.auth.refreshSession();
-          queryClient.invalidateQueries({ queryKey: queryKeys.profile.me() });
-          onSuccess();
-        },
-      },
-    );
+  const handleVerifyPhoneOtp = async (phone: string, otp: string, onSuccess: () => void) => {
+    setVerifyPhoneError(null);
+    setIsVerifyingPhone(true);
+
+    const { error } = await supabase.auth.verifyOtp({
+      phone: toE164Phone(phone),
+      token: otp,
+      type: "phone_change",
+    });
+
+    if (error) {
+      setIsVerifyingPhone(false);
+      setVerifyPhoneError(new Error(otpVerifyErrorMessage(error)));
+      return;
+    }
+
+    // on_auth_user_phone_changed has mirrored the number into users_master;
+    // re-mint the token so phone_verified reflects it.
+    await supabase.auth.refreshSession();
+    queryClient.invalidateQueries({ queryKey: queryKeys.profile.me() });
+
+    setIsVerifyingPhone(false);
+    onSuccess();
   };
 
   const closeChangePhoneModal = () => {
     setChangePhoneOpen(false);
-    resetSendOtp();
-    resetVerifyOtp();
+    setSendPhoneError(null);
+    setVerifyPhoneError(null);
   };
 
   // Change email handlers
@@ -189,7 +220,9 @@ export default function ProfilePage() {
           </div>
           <div className="text-center">
             <p className="text-headline-sm text-text">{profile?.name}</p>
-            <p className="text-body-sm text-text-muted">{profile?.email}</p>
+            <p className="text-body-sm text-text-muted">
+              {profile?.email || "No email added"}
+            </p>
           </div>
         </div>
 

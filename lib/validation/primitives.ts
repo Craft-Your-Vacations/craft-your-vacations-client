@@ -84,16 +84,17 @@ export const zIdentifier = z
     message: "Enter a valid email or phone number.",
   });
 
-export const zProfileName = optionalText(
-  z
-    .string()
-    .trim()
-    .min(1)
-    .max(LIMITS.fullNameMax, {
-      message: `Name must be at most ${LIMITS.fullNameMax} characters.`,
-    })
-    .regex(PATTERNS.name, { message: "Name contains invalid characters." }),
-);
+/** One free-text display name (not the split first/last pair `zName` validates). */
+export const zFullName = z
+  .string()
+  .trim()
+  .min(1, { message: "Name is required." })
+  .max(LIMITS.fullNameMax, {
+    message: `Name must be at most ${LIMITS.fullNameMax} characters.`,
+  })
+  .regex(PATTERNS.name, { message: "Name contains invalid characters." });
+
+export const zProfileName = optionalText(zFullName);
 
 export const zNationality = optionalText(
   z

@@ -14,7 +14,10 @@ interface VerifyEmailDialogProps {
 }
 
 // Shown when a user tries a verified-email-gated action (e.g. booking) without a
-// verified email. Reuses EmailVerificationBanner for the send/resend + edit affordance.
+// verified email. Reuses EmailVerificationBanner for the send/resend + edit
+// affordance, including its no-email state — a phone sign-up reaches this dialog
+// with nothing on the account, so the copy has to ask for an address rather than
+// for confirmation of one.
 export default function VerifyEmailDialog({
   isOpen,
   onClose,
@@ -25,11 +28,20 @@ export default function VerifyEmailDialog({
   sent,
   onEditEmail,
 }: VerifyEmailDialogProps) {
+  const isAdding = !email;
+
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} ariaLabel="Verify your email" size="sm">
+    <Dialog
+      isOpen={isOpen}
+      onClose={onClose}
+      ariaLabel={isAdding ? "Add your email" : "Verify your email"}
+      size="sm"
+    >
       <div className="flex flex-col gap-5">
         <div className="text-center flex flex-col gap-1">
-          <h2 className="text-headline-sm text-text">Verify your email to book</h2>
+          <h2 className="text-headline-sm text-text">
+            {isAdding ? "Add your email to book" : "Verify your email to book"}
+          </h2>
           <p className="text-body-sm text-text-muted">
             We&apos;ll send your booking confirmation and trip documents here, so
             we need a verified email before you book.

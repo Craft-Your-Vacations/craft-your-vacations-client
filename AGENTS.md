@@ -69,6 +69,7 @@ Size material/lucide icons with the nearest standard step — `text-sm`(14) / `t
 | Text input (labeled OR compact/inline, optional leading `icon`) | `FormField` |
 | Dropdown | `SelectField` · Multiline | `TextAreaField` · Checkbox | `Checkbox` |
 | 6-digit OTP entry | `OtpInput` · Pill tab switcher | `SegmentedControl` |
+| Phone-then-code verification flow (sign-in, onboarding) | `PhoneOtpForm` (`onSendOtp`, `onVerifyOtp`, `isSending`, `isVerifying`, `error`, `submitLabel`) — owns the two steps, the E.164 conversion and the resend cooldown; the page supplies the two Supabase calls, which differ between sign-in and phone-change |
 | Brand icon badge beside a label | `IconBadge` · Bordered key/value chip | `InfoChip` |
 | Location / meta pill (city, tag, "needs attention") with optional leading icon | `Chip` (`variant`: onImage for pills over photography, onSurface for pills on cards, warning for outstanding-action pills) |
 | Author / reviewer avatar (photo, else initials) | `Avatar` (`variant`: onImage, onSurface) |
@@ -271,26 +272,55 @@ Auth is owned by **Supabase**. `.NET` is a resource server that validates Supaba
 - **Browser client:** `lib/supabase/client.ts` (`getSupabaseBrowserClient()`) — sign-in/out, session reads.
 - **Server client:** `lib/supabase/server.ts` (`createSupabaseServerClient()`) — used in `bffFetch` and the OAuth callback.
 - **Session refresh:** `proxy.ts` (Next 16 middleware) calls `supabase.auth.getClaims()` on every request to refresh the token cookie. `proxy.ts` does **not** redirect — session-refresh only.
-- **Client auth state:** Zustand `stores/useAuthStore.ts`, kept in sync by `hooks/useAuthListener.ts` (mounted once in `Providers` via `onAuthStateChange`). Read with selectors: `useAuthStore((s) => s.role)`. Fields: `status`, `userId`, `email`, `role`, `phoneVerified`. **Never** re-introduce a React context provider for this.
+- **Client auth state:** Zustand `stores/useAuthStore.ts`, kept in sync by `hooks/useAuthListener.ts` (mounted once in `Providers` via `onAuthStateChange`). Read with selectors: `useAuthStore((s) => s.role)`. Fields: `status`, `userId`, `email`, `role`, `phoneVerified`, `hasName`. **Never** re-introduce a React context provider for this.
 
 ### Custom JWT claims
-A Supabase access-token hook (DB function `custom_access_token_hook`, in `CYV-API/.../Data/Supabase/supabase_auth_glue.sql`) injects two claims:
+A Supabase access-token hook (DB function `custom_access_token_hook`, in `CYV-API/.../Data/Supabase/supabase_auth_glue.sql`) injects three claims:
 - `user_role` → drives `AdminGuard` (client) and `[Authorize(Roles="Admin")]` (.NET)
-- `phone_verified` → drives the onboarding gate
+- `phone_verified` → half of the onboarding gate
+- `has_name` → the other half; a phone sign-up is phone-verified from the instant it is created but has no name, so `phone_verified` alone would let it skip onboarding
 
-They live in the JWT **payload**, not on `session.user` — decode them with `decodeClaims()` (`lib/supabase/claims.ts`). Claims re-mint on every refresh, so after OTP verification call `supabase.auth.refreshSession()` to pick up the updated `phone_verified` (see `onboarding` and `profile` pages).
+Read the gate through `selectNeedsOnboarding` (`stores/useAuthStore.ts`), never by testing one claim: `RootGuard` and `AuthGuard` both use it.
+
+They live in the JWT **payload**, not on `session.user` — decode them with `decodeClaims()` (`lib/supabase/claims.ts`). Claims re-mint on every refresh, so after OTP verification **and after saving a name** call `supabase.auth.refreshSession()` to pick up the updated claims (see `onboarding` and `profile` pages).
 
 ### Sign in / up / out
-- **Login:** `supabase.auth.signInWithPassword()` / `signInWithOAuth({ provider: "google", options: { redirectTo: ".../auth/callback" } })`.
-- **OAuth callback:** `app/auth/callback/route.ts` exchanges the `code` for a session (PKCE).
-- **Register:** `POST /api/auth/register` → `.NET` creates the Supabase user via the Admin API with email **pre-confirmed** (sign-in stays non-blocking), then the client `signInWithPassword`. A DB trigger creates the `users_master` row.
+Two methods only: **phone OTP** and **Google**. There is no `/register` page — `/login` is both sign-in and sign-up, and `/register` redirects to it (`next.config.ts`).
+- **Phone:** `signInWithOtp({ phone })` → `verifyOtp({ phone, token, type: "sms" })`. One call does sign-in *and* sign-up: `shouldCreateUser` defaults to true, so an unknown number creates the auth user and `on_auth_user_created` creates the `users_master` row. The new account has no name, so the onboarding gate catches it.
+- **Google:** `signInWithOAuth({ provider: "google", options: { redirectTo: ".../auth/callback" } })`; `app/auth/callback/route.ts` exchanges the `code` for a session (PKCE).
+- **Adding or changing a phone on an existing account** (Google user in onboarding, or the profile page's `ChangePhoneDialog`) is a phone *change*, not a sign-in: `updateUser({ phone })` then `verifyOtp({ …, type: "phone_change" })`. Never `signInWithOtp` — that would create a second auth user.
+- **Phone numbers** go to Supabase in E.164 (`toE164Phone()` in `lib/utils.ts`). GoTrue stores them without the `+`; `normalize_phone()` in the SQL glue puts it back for `users_master`.
+- **Email/password** is still implemented end to end on .NET (`/api/auth/register`, `start-reset`, `reset-password`) but is not surfaced anywhere in the UI. Deliberate — see `PHONE_AUTH_PLAN.md` decision 3.3.
 - **Sign-out:** `signOutBrowser()` (`lib/supabase/signOut.ts`) → `supabase.auth.signOut()`; callers handle the post-sign-out redirect.
+
+### Onboarding
+`app/(auth)/onboarding/page.tsx` builds its step list from the profile (`stepsFor`), because each sign-in method leaves a different gap — Google arrives with a name and no phone, a phone sign-up with a verified phone and no name. Steps are decided **once** from the first profile read (render-time seeding) so completing one doesn't reshuffle the rest. An empty list means nothing is missing and the page redirects to `/`.
+
+| Signed up with | Steps |
+|---|---|
+| Google | phone → profile |
+| Phone OTP | details (name, optional email) → profile |
+| Email/password (legacy) | phone → email → profile |
+
+Email stays optional here and is only forced at booking. Adding one goes through the same confirm-by-link flow as changing one (`emailApi.sendChange`), so an address only lands on the account once the link is clicked.
 
 ### User data model
 `auth.users` (Supabase) holds identity (email, password, provider). `users_master` (Postgres, PK = the Supabase `uuid`) holds profile/role/phone. Signup + identity-link + email-change triggers keep them in sync (`supabase_auth_glue.sql`). Email verification is **non-blocking** — a custom banner flow drives `users_master.email_verified` (Google sign-ins are auto-verified).
 
 ### Rate limiting
 Lives on the **.NET backend**. The BFF forwards client IP via `X-Forwarded-For` / `X-Real-IP` (set in `lib/bff.ts`). See `docs/rate-limiting.md` for the full endpoint table and limits.
+
+Note the gap this leaves: phone OTP now goes **browser → Supabase directly**, so none of those .NET policies see it. Supabase's own limits are what protect it (30 SMS/hour per project by default, 60s per number), plus the CAPTCHA below.
+
+### CAPTCHA (Cloudflare Turnstile)
+`components/TurnstileWidget/TurnstileWidget.tsx`, consumed by `PhoneOtpForm`. Managed mode with `appearance: "interaction-only"`, so a legitimate visitor sees nothing.
+
+- **`NEXT_PUBLIC_TURNSTILE_SITE_KEY`** — the public sitekey. The entire feature is gated on it: `isCaptchaEnabled` is `Boolean(SITE_KEY)` and the component renders `null` without it. Unsetting the variable is the rollback.
+- **The secret key does NOT belong in this project.** It goes in the Supabase dashboard (Authentication → Attack Protection → CAPTCHA) and nowhere else. The app never calls `siteverify` — Supabase does, server-side. A secret in `.env.local` or on Vercel is an exposed secret; rotate it.
+- Sitekey and secret must be from the **same** widget. Mixing a dummy sitekey with a real secret (or vice versa) fails every auth call.
+- Tokens are **single-use** and expire in ~5 minutes, so every send/verify attempt needs a fresh one — hence the `resetKey` nonce `PhoneOtpForm` bumps after each attempt.
+- Only the **anonymous** entry points take a token (`signInWithOtp`, `verifyOtp`). `updateUser({ phone })` has no `captchaToken` option at all, so the phone-change path sends none.
+- Widget hostnames must list the apex **and** `www` explicitly, plus `localhost` while one Supabase project serves both dev and prod.
 
 ### Inactivity logout
 `hooks/useInactivityLogout.ts`, consumed in `RootGuard` / `AdminGuard`:
@@ -301,8 +331,8 @@ Lives on the **.NET backend**. The BFF forwards client IP via `X-Forwarded-For` 
 
 ### Route guards
 Auth redirect logic lives in **client-side guard components** (all read `useAuthStore`), not `proxy.ts`:
-- `RootGuard` — protects the main app; redirects unverified users to `/onboarding`; redirects Admins to `/admin`
-- `AuthGuard` — redirects logged-in users away from `/login`,`/register`; unauthenticated away from `/onboarding`
+- `RootGuard` — protects the main app; redirects users still needing onboarding (`selectNeedsOnboarding`) to `/onboarding`; redirects Admins to `/admin`
+- `AuthGuard` — redirects logged-in users away from `/login`; unauthenticated away from `/onboarding`
 - `AdminGuard` — requires `role === "Admin"`, else redirects
 - Guards return `null` while `status === "loading"` or a redirect is imminent (prevents flash of protected content). On sign-out `status` becomes `unauthenticated` and guards redirect to `/login`.
 
@@ -312,7 +342,7 @@ Auth redirect logic lives in **client-side guard components** (all read `useAuth
 
 ```
 app/
-  (auth)/           — Auth pages (login, register, reset-password, onboarding)
+  (auth)/           — Auth pages (login, reset-password, onboarding)
   (root)/           — Main app pages (with Navbar)
   api/              — Next.js route handlers (BFF entry points)
 components/         — Reusable UI components

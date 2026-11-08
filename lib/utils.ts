@@ -42,6 +42,19 @@ export function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+/**
+ * Indian mobile number -> E.164 ("+91XXXXXXXXXX"), the format Supabase Auth
+ * expects. GoTrue strips the "+" before storing, so both forms reach the same
+ * user — we send the canonical one.
+ */
+export function toE164Phone(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  const national = digits.startsWith("91") && digits.length > 10
+    ? digits.slice(2)
+    : digits;
+  return `+91${national}`;
+}
+
 export function isValidPhone(phone: string): boolean {
   const digits = phone.replace(/[\s\-+]/g, "");
   // 10 digits, or 12 digits starting with 91 (Indian country code)

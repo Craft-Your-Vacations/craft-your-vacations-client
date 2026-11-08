@@ -8,6 +8,8 @@ import {
   zOtp,
   zIdentifier,
   zProfileName,
+  zFullName,
+  optionalText,
   zNationality,
   zCountry,
   zProfession,
@@ -62,6 +64,17 @@ export const resetPasswordSchema = z
 
 export const phoneSchema = z.object({ phone: zPhone });
 export const otpSchema = z.object({ otp: zOtp });
+
+/**
+ * Onboarding "details" step — the gap a phone signup leaves behind. Supabase
+ * creates the account from the number alone, so there is no name and no email
+ * until we ask. Name is required; email is optional here and only forced at
+ * booking time.
+ */
+export const onboardingDetailsSchema = z.object({
+  name: zFullName,
+  email: optionalText(zEmail),
+});
 
 export const profileSchema = z.object({
   name: zProfileName,
