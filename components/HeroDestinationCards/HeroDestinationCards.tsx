@@ -102,6 +102,11 @@ export default function HeroDestinationCards({ items }: HeroDestinationCardsProp
                   alt={d.title}
                   fill
                   sizes="260px"
+                  // The three cards visible at lead=0 are above the fold, so
+                  // preload them instead of letting lazy-loading defer them.
+                  // Only these three — priority on everything would queue the
+                  // off-screen duplicates ahead of real content.
+                  priority={j < 3}
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/25 to-transparent" />

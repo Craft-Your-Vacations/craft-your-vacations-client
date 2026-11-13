@@ -26,9 +26,16 @@ type BffResult<T> =
   | { ok: true; data: T }
   | { ok: false; response: NextResponse };
 
+/**
+ * @param req The incoming request, when there is one. Route handlers always pass
+ * it. Server components have none, so they pass `null` — the only cost is that
+ * no client IP is forwarded, which matters solely for .NET's per-IP rate limits.
+ * Don't pass null from a route handler, or that endpoint silently stops being
+ * rate-limited by caller.
+ */
 export async function bffFetch<T>(
   path: string,
-  req: NextRequest,
+  req: NextRequest | null,
   options: BffFetchOptions = {},
 ): Promise<BffResult<T>> {
   const {
@@ -72,9 +79,9 @@ export async function bffFetch<T>(
   }
 
   // Forward client IP so .NET can rate-limit by real client IP, not the BFF's IP.
-  const forwardedFor = req.headers.get("x-forwarded-for");
+  const forwardedFor = req?.headers.get("x-forwarded-for");
   if (forwardedFor) fetchHeaders["X-Forwarded-For"] = forwardedFor;
-  const realIp = req.headers.get("x-real-ip");
+  const realIp = req?.headers.get("x-real-ip");
   if (realIp) fetchHeaders["X-Real-IP"] = realIp;
 
   // 3. Build fetch options (supports both Next.js revalidate and standard cache)

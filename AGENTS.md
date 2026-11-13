@@ -215,7 +215,9 @@ Next.js API Route (app/api/...)
 - On error, rejects with a readable `Error` extracted from the response body
 
 ### Layer 2 — Next.js → .NET: `lib/bff.ts`
-- Used only inside route handlers (`app/api/**/route.ts`) — never from components
+- Server-side only: route handlers (`app/api/**/route.ts`) and **server components**. Never from a client component — that is what `lib/api.ts` is for.
+- Route handlers pass the incoming `req`. A server component has none, so it passes `null`; the only consequence is that no client IP is forwarded, which matters solely for .NET's per-IP rate limits. **Never pass `null` from a route handler** — that endpoint would silently stop being rate limited by caller.
+- Prefer a server component over a client-side hook whenever the data shapes above-the-fold content. The home page is the worked example: fetching destinations client-side meant the hero's image URLs did not exist until the bundle had downloaded, hydrated and completed a round trip to .NET — three serial hops before the first image could start. Fetching in the server component puts the URLs in the initial HTML.
 - `isPublic: true` — skips auth check
 - `isPublic: false` (default) — reads the Supabase session via `createSupabaseServerClient()` (`lib/supabase/server.ts`); returns 401 if none; attaches the Supabase `access_token` as `Authorization: Bearer <token>`. `.NET` re-validates the JWT against Supabase's JWKS. Token refresh is handled by `proxy.ts` middleware, not here.
 - `cache` defaults to `{ revalidate: 300 }` (5-min ISR). Override:
@@ -253,7 +255,8 @@ Every `useQuery`/`useMutation` call lives in a dedicated hook file. Hooks import
 
 | Data | Where it lives |
 |------|---------------|
-| Anything from .NET backend | TanStack React Query |
+| Anything from .NET backend, **in a client component** | TanStack React Query |
+| Anything from .NET backend, **in a server component** | `bffFetch(path, null, { cache: { revalidate, tags } })` — React Query is a client-side cache and `useQuery` cannot run here. Next's tag cache is the server-side equivalent, and the admin mutation routes already call `revalidateTag("destinations" / "reviews" / "packages")`, so tagged server fetches invalidate from the same triggers. Tag every server fetch so it stays that way |
 | Auth session (status / role / phoneVerified) | Zustand `stores/useAuthStore.ts` (read via selectors, e.g. `useAuthStore((s) => s.role)`) |
 | Theme (dark/light) | `next-themes` (`useTheme()`) |
 | UI state shared across 2+ components | Zustand store (`stores/`) |

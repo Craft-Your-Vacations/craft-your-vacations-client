@@ -1,3 +1,7 @@
+"use client";
+
+// Framer Motion needs a client boundary. Previously inherited one from page.tsx,
+// which is now a server component.
 import Button from "@/components/Button/Button";
 import DestinationSlider from "@/components/DestinationSlider/DestinationSlider";
 import DestinationCardSkeleton from "@/components/DestinationCard/DestinationCardSkeleton";
