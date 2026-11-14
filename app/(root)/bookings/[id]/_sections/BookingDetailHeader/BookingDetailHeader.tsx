@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
+import BackLink from "@/components/BackLink/BackLink";
 import Chip from "@/components/Chip/Chip";
 import BookingStatusBadge from "@/components/BookingStatusBadge/BookingStatusBadge";
 import PendingDocumentsChip from "@/components/PendingDocumentsChip/PendingDocumentsChip";
@@ -48,13 +49,7 @@ export default function BookingDetailHeader({
       )}
 
       <div className="relative z-10 mx-auto flex max-w-(--container-max-w) flex-col gap-5 px-6 md:px-10">
-        <Link
-          href="/bookings"
-          className="inline-flex w-fit items-center gap-1.5 text-body-sm text-text-muted transition-colors hover:text-primary"
-        >
-          <ChevronLeft className="h-4 w-4 shrink-0" />
-          Back to bookings
-        </Link>
+        <BackLink href="/bookings" label="Back to bookings" />
 
         <div className="mt-1 flex flex-wrap items-center gap-2">
           <BookingStatusBadge status={booking.status} />

@@ -637,3 +637,65 @@
   animation: ken-burns 15s ease-in-out infinite alternate;
   will-change: transform;
 }
+
+/* --------------------------------------------------------------------------
+   SPLASH — brand screen shown on the first paint of a session
+   -------------------------------------------------------------------------- */
+/* Hidden until the inline script in layout.tsx opts in. This default matters:
+   if the script fails, is blocked, or JS is off, a splash that defaulted to
+   visible would cover the page permanently with no way to dismiss it. */
+#splash {
+  display: none;
+}
+
+html[data-splash] #splash {
+  display: grid;
+  position: fixed;
+  inset: 0;
+  z-index: 100; /* clears the whole app — highest in use elsewhere is z-70 */
+  place-content: center;
+  justify-items: center;
+  gap: 1.25rem;
+  background: var(--color-surface);
+}
+
+html[data-splash="out"] #splash {
+  animation: splash-out 0.4s ease forwards;
+}
+
+@keyframes splash-out {
+  to {
+    opacity: 0;
+    /* opacity alone would leave an invisible overlay eating every click */
+    visibility: hidden;
+  }
+}
+
+/* Indeterminate bar — pure CSS, so it costs no request and paints with the
+   background rather than waiting on the logo. */
+#splash-bar {
+  width: min(14rem, 50vw);
+  height: 2px;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--color-primary) 18%, transparent);
+}
+
+#splash-bar::after {
+  content: "";
+  display: block;
+  height: 100%;
+  width: 40%;
+  border-radius: inherit;
+  background: var(--color-primary);
+  animation: splash-bar 1.1s ease-in-out infinite;
+}
+
+@keyframes splash-bar {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(350%);
+  }
+}

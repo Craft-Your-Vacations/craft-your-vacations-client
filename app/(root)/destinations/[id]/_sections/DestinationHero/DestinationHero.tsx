@@ -22,6 +22,7 @@ export default function DestinationHero({ destination }: DestinationHeroProps) {
     <GlassHero
       image={imagePath}
       imageAlt={title}
+      back={{ href: "/destinations", label: "Back to destinations" }}
       eyebrow="Discover"
       title={title}
       description={content}

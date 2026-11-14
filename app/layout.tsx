@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Exo_2, Bricolage_Grotesque } from "next/font/google";
 import { Providers } from "@/components/Providers/providers";
+import Splash from "@/components/Splash/Splash";
 
 const exo2 = Exo_2({
   subsets: ["latin"],
@@ -29,6 +30,10 @@ export default function RootLayout({
       className={`${exo2.variable} ${bricolage.variable}`}
     >
       <body className="min-h-full flex flex-col">
+        {/* First child: its inline script must run before the rest of the
+            document is parsed. */}
+        <Splash />
+
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -3,6 +3,7 @@ import Image, { type StaticImageData } from "next/image";
 import { MapPin, ChevronDown } from "lucide-react";
 import Button from "@/components/Button/Button";
 import Chip from "@/components/Chip/Chip";
+import BackLink from "@/components/BackLink/BackLink";
 
 export interface HeroStat {
   value: string;
@@ -13,6 +14,8 @@ interface GlassHeroProps {
   /** Single background image (URL or static import). Falls back to a solid surface if omitted. */
   image?: string | StaticImageData;
   imageAlt?: string;
+  /** "Back to <list>" link above the eyebrow, for a hero on a detail page. */
+  back?: { href: string; label: string };
   /** Small label above the title (e.g. "Discover"). */
   eyebrow?: string;
   title: string;
@@ -40,6 +43,7 @@ interface GlassHeroProps {
 export default function GlassHero({
   image,
   imageAlt = "",
+  back,
   eyebrow,
   title,
   titleAccent,
@@ -91,6 +95,17 @@ export default function GlassHero({
         aria-hidden="true"
         className="absolute inset-y-0 left-0 w-full backdrop-blur-2xl backdrop-saturate-150 bg-linear-to-br from-black/80 to-black/50 border-r border-white/10 md:w-1/2"
       />
+
+      {/* Back link sits near the top rather than in the centred stack, where it
+          crowded the title. top-24 clears the fixed h-20 navbar; it stays over
+          the glass panel at every width, so it keeps its contrast. */}
+      {back && (
+        <div className="absolute inset-x-0 top-24 z-10">
+          <div className="mx-auto w-full max-w-(--container-max-w) px-6 md:px-10">
+            <BackLink href={back.href} label={back.label} variant="onImage" />
+          </div>
+        </div>
+      )}
 
       {/* Overlaid content, vertically centred */}
       <div className="absolute inset-0 flex items-center">

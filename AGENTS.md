@@ -78,6 +78,7 @@ Size material/lucide icons with the nearest standard step — `text-sm`(14) / `t
 | Booking-status pill | `BookingStatusBadge` (labels + colors from `lib/constants`; admin + customer) |
 | "Paperwork still outstanding" pill | `PendingDocumentsChip` (`booking`, `uploadedDocumentTypes`) — owns the confirmed-only rule and the singular/plural wording; renders nothing when there is nothing pending |
 | Multi-step progress dots (auth flows) | `ProgressDots` (`steps`, `current`) |
+| "Back to &lt;list&gt;" link on a detail page | `BackLink` (`href`, `label`, `variant`: onSurface for cards/headers, onImage over photography). Inside a `GlassHero` pass the `back` prop instead — the hero renders it in the right place with the right variant |
 | Confirm / status / success / error modal | `ConfirmDialog` · `ModalSuccess` · `ModalError` |
 | Any modal | `Dialog` base → a dedicated `<Name>Dialog` (never inline overlay markup) |
 | Customer-feedback section (home, destination detail) | `TravellerVoices` (`reviews`, `id`, `eyebrow`, `title`, `titleAccent`, `description`, optional `image`) — copy + one `ReviewCard` at a time on the left, a `PhotoMosaic` on the right. Returns null with no reviews, so callers skip the guard. Each page adds a thin `<Name>Section` adapter supplying its own wording |
